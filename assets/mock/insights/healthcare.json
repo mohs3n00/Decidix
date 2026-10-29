@@ -1,0 +1,61 @@
+{
+  "data": {
+    "sector": "healthcare",
+    "index": { "score": 66.9, "change": 1.2 },
+    "kpis": [
+      { "key": "life_expectancy", "label": "Life expectancy", "arabic_label": "متوسط العمر المتوقع", "value": 75.8, "unit": "years", "change": 0.5, "higher_is_better": true },
+      { "key": "doctors_per_1k", "label": "Doctors / 1k", "arabic_label": "الأطباء لكل ألف", "value": 3.4, "unit": "per_thousand", "change": 2.6, "higher_is_better": true },
+      { "key": "infant_mortality", "label": "Infant mortality", "arabic_label": "وفيات الرضع", "value": 8.1, "unit": "per_mille", "change": -4.2, "higher_is_better": false },
+      { "key": "immunisation", "label": "Immunisation", "arabic_label": "التحصين", "value": 92.4, "unit": "percent", "change": 1.1, "higher_is_better": true }
+    ],
+    "trend": {
+      "points": [
+        { "year": 2019, "value": 58.0 },
+        { "year": 2020, "value": 58.6 },
+        { "year": 2021, "value": 60.2 },
+        { "year": 2022, "value": 62.3 },
+        { "year": 2023, "value": 64.4 },
+        { "year": 2024, "value": 66.1 },
+        { "year": 2025, "value": 66.9 }
+      ]
+    },
+    "breakdown": {
+      "title": "Facility coverage",
+      "arabic_title": "تغطية المرافق",
+      "unit": "percent",
+      "bars": [
+        { "key": "hospitals", "label": "Hosp", "arabic_label": "مستشفيات", "value": 72 },
+        { "key": "clinics", "label": "Clinic", "arabic_label": "عيادات", "value": 65 },
+        { "key": "maternity", "label": "Mat", "arabic_label": "أمومة", "value": 58 },
+        { "key": "emergency", "label": "Emerg", "arabic_label": "طوارئ", "value": 49 },
+        { "key": "rural", "label": "Rural", "arabic_label": "ريفي", "value": 41 }
+      ]
+    },
+    "indicators": [
+      { "key": "primary_care_access", "label": "Primary care access", "arabic_label": "الوصول إلى الرعاية الأولية", "value": 78, "unit": "percent" },
+      { "key": "hospital_beds", "label": "Hospital beds / 1k", "arabic_label": "أسرّة المستشفيات لكل ألف", "value": 62, "unit": "percent" },
+      { "key": "emergency_30_min", "label": "Emergency <30 min", "arabic_label": "طوارئ خلال أقل من 30 دقيقة", "value": 54, "unit": "percent" },
+      { "key": "maternal_care", "label": "Maternal care", "arabic_label": "رعاية الأمومة", "value": 83, "unit": "percent" }
+    ],
+    "ranking": {
+      "top": [
+        { "rank": 1, "region_id": "central_capital", "name": "Central Capital", "arabic_name": "العاصمة المركزية", "score": 84 },
+        { "rank": 2, "region_id": "lakeside", "name": "Lakeside", "arabic_name": "ضفاف البحيرة", "score": 70 },
+        { "rank": 3, "region_id": "western_coast", "name": "Western Coast", "arabic_name": "الساحل الغربي", "score": 66 },
+        { "rank": 4, "region_id": "harbor_lowlands", "name": "Harbor Lowlands", "arabic_name": "سهول الميناء", "score": 65 },
+        { "rank": 5, "region_id": "northern_plains", "name": "Northern Plains", "arabic_name": "السهول الشمالية", "score": 61 }
+      ],
+      "bottom": [
+        { "rank": 12, "region_id": "frontier", "name": "Frontier", "arabic_name": "المنطقة الحدودية", "score": 40 },
+        { "rank": 11, "region_id": "steppe", "name": "Steppe", "arabic_name": "السهوب", "score": 42 },
+        { "rank": 10, "region_id": "delta", "name": "Delta", "arabic_name": "الدلتا", "score": 48 },
+        { "rank": 9, "region_id": "northern_highlands", "name": "Northern Highlands", "arabic_name": "المرتفعات الشمالية", "score": 49 },
+        { "rank": 8, "region_id": "riverside", "name": "Riverside", "arabic_name": "ضفة النهر", "score": 55 }
+      ]
+    },
+    "ai_insight": {
+      "text": "Rural emergency response exceeds 30 minutes in 5 regions. Mobile clinics are the highest-yield intervention.",
+      "arabic_text": "زمن الاستجابة للطوارئ في المناطق الريفية يتجاوز 30 دقيقة في 5 مناطق. العيادات المتنقلة هي التدخل الأعلى عائداً."
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "data": {
+    "summary": {
+      "projects_count": 5,
+      "total_budget": { "amount": 528000000, "currency": "USD" },
+      "delayed_count": 1
+    },
+    "items": [
+      {
+        "id": "proj_highlands_broadband",
+        "title": "Northern Highlands Broadband",
+        "arabic_title": "النطاق العريض في المرتفعات الشمالية",
+        "region": { "region_id": "northern_highlands", "name": "Northern Highlands", "arabic_name": "المرتفعات الشمالية" },
+        "status": "in_progress",
+        "progress": 64,
+        "budget": { "amount": 24000000, "currency": "USD" },
+        "due_date": "2026-03-31",
+        "completed_at": null
+      },
+      {
+        "id": "proj_delta_flood_defences",
+        "title": "Delta Flood Defences",
+        "arabic_title": "حواجز الفيضانات في الدلتا",
+        "region": { "region_id": "delta", "name": "Delta", "arabic_name": "الدلتا" },
+        "status": "in_progress",
+        "progress": 38,
+        "budget": { "amount": 62000000, "currency": "USD" },
+        "due_date": "2027-11-30",
+        "completed_at": null
+      },
+      {
+        "id": "proj_capital_metro_3",
+        "title": "Capital Metro Line 3",
+        "arabic_title": "الخط الثالث لمترو العاصمة",
+        "region": { "region_id": "central_capital", "name": "Central Capital", "arabic_name": "العاصمة المركزية" },
+        "status": "completed",
+        "progress": 100,
+        "budget": { "amount": 410000000, "currency": "USD" },
+        "due_date": null,
+        "completed_at": "2025-09-30"
+      },
+      {
+        "id": "proj_steppe_rural_schools",
+        "title": "Steppe Rural Schools",
+        "arabic_title": "مدارس السهوب الريفية",
+        "region": { "region_id": "steppe", "name": "Steppe", "arabic_name": "السهوب" },
+        "status": "planned",
+        "progress": 8,
+        "budget": { "amount": 14000000, "currency": "USD" },
+        "due_date": "2027-01-31",
+        "completed_at": null
+      },
+      {
+        "id": "proj_frontier_mobile_clinics",
+        "title": "Frontier Mobile Clinics",
+        "arabic_title": "العيادات المتنقلة في المنطقة الحدودية",
+        "region": { "region_id": "frontier", "name": "Frontier", "arabic_name": "المنطقة الحدودية" },
+        "status": "delayed",
+        "progress": 27,
+        "budget": { "amount": 18000000, "currency": "USD" },
+        "due_date": "2026-08-31",
+        "completed_at": null
+      }
+    ]
+  },
+  "meta": { "page": 1, "per_page": 20, "total": 5 }
+}

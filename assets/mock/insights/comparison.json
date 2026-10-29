@@ -1,0 +1,17 @@
+{
+  "data": {
+    "a": { "id": "central_capital", "name": "Central Capital", "arabic_name": "العاصمة المركزية", "score": 86 },
+    "b": { "id": "steppe", "name": "Steppe", "arabic_name": "السهوب", "score": 47 },
+    "metrics": [
+      { "key": "overall", "label": "Overall", "arabic_label": "الإجمالي", "score_a": 86, "score_b": 47 },
+      { "key": "education", "label": "Education", "arabic_label": "التعليم", "score_a": 89, "score_b": 51 },
+      { "key": "healthcare", "label": "Healthcare", "arabic_label": "الرعاية الصحية", "score_a": 84, "score_b": 42 },
+      { "key": "economy", "label": "Economy", "arabic_label": "الاقتصاد", "score_a": 90, "score_b": 44 },
+      { "key": "infrastructure", "label": "Infrastructure", "arabic_label": "البنية التحتية", "score_a": 82, "score_b": 48 }
+    ],
+    "gap_analysis": {
+      "text": "Central Capital leads Steppe by 39 index points. The widest gap is in economy.",
+      "arabic_text": "تتقدم العاصمة المركزية على السهوب بفارق 39 نقطة في المؤشر. وأوسع فجوة في الاقتصاد."
+    }
+  }
+}

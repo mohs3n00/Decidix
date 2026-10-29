@@ -1,0 +1,19 @@
+{
+  "data": {
+    "overall": { "score": 82, "band": "good" },
+    "dimensions": { "completeness": 91, "timeliness": 78, "accuracy": 86 },
+    "lowest_coverage_regions": [
+      { "region_id": "frontier", "name": "Frontier", "arabic_name": "المنطقة الحدودية", "coverage": 58 },
+      { "region_id": "steppe", "name": "Steppe", "arabic_name": "السهوب", "coverage": 62 },
+      { "region_id": "delta", "name": "Delta", "arabic_name": "الدلتا", "coverage": 68 },
+      { "region_id": "northern_highlands", "name": "Northern Highlands", "arabic_name": "المرتفعات الشمالية", "coverage": 71 },
+      { "region_id": "riverside", "name": "Riverside", "arabic_name": "ضفة النهر", "coverage": 74 },
+      { "region_id": "southern_basin", "name": "Southern Basin", "arabic_name": "الحوض الجنوبي", "coverage": 77 }
+    ],
+    "sources": [
+      { "id": "national_statistics_bureau", "name": "National Statistics Bureau", "arabic_name": "مكتب الإحصاء الوطني", "status": "synced", "age_days": 0 },
+      { "id": "ministry_of_health_registry", "name": "Ministry of Health registry", "arabic_name": "سجل وزارة الصحة", "status": "synced", "age_days": 2 },
+      { "id": "education_census", "name": "Education census", "arabic_name": "التعداد التعليمي", "status": "overdue", "age_days": 41 }
+    ]
+  }
+}

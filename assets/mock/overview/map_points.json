@@ -1,0 +1,16 @@
+{
+  "data": [
+    { "id": "central_capital", "name": "Central Capital", "arabic_name": "العاصمة المركزية", "score": 86, "priority": "low", "population": 9200000, "latitude": 30.04, "longitude": 31.24 },
+    { "id": "lakeside", "name": "Lakeside", "arabic_name": "ضفاف البحيرة", "score": 72, "priority": "low", "population": 2800000, "latitude": 24.1, "longitude": 32.9 },
+    { "id": "western_coast", "name": "Western Coast", "arabic_name": "الساحل الغربي", "score": 69, "priority": "low", "population": 4600000, "latitude": 31.2, "longitude": 29.9 },
+    { "id": "harbor_lowlands", "name": "Harbor Lowlands", "arabic_name": "سهول الميناء", "score": 66, "priority": "medium", "population": 3100000, "latitude": 31.1, "longitude": 30.5 },
+    { "id": "northern_plains", "name": "Northern Plains", "arabic_name": "السهول الشمالية", "score": 63, "priority": "medium", "population": 3400000, "latitude": 29.6, "longitude": 30.4 },
+    { "id": "eastern_valley", "name": "Eastern Valley", "arabic_name": "الوادي الشرقي", "score": 61, "priority": "medium", "population": 3900000, "latitude": 30.6, "longitude": 32.3 },
+    { "id": "southern_basin", "name": "Southern Basin", "arabic_name": "الحوض الجنوبي", "score": 59, "priority": "medium", "population": 3000000, "latitude": 25.7, "longitude": 32.6 },
+    { "id": "riverside", "name": "Riverside", "arabic_name": "ضفة النهر", "score": 58, "priority": "medium", "population": 2500000, "latitude": 27.2, "longitude": 31.2 },
+    { "id": "northern_highlands", "name": "Northern Highlands", "arabic_name": "المرتفعات الشمالية", "score": 54, "priority": "high", "population": 2100000, "latitude": 29.5, "longitude": 33.7 },
+    { "id": "delta", "name": "Delta", "arabic_name": "الدلتا", "score": 52, "priority": "high", "population": 2200000, "latitude": 31.0, "longitude": 31.4 },
+    { "id": "steppe", "name": "Steppe", "arabic_name": "السهوب", "score": 47, "priority": "high", "population": 1600000, "latitude": 27.5, "longitude": 27.5 },
+    { "id": "frontier", "name": "Frontier", "arabic_name": "المنطقة الحدودية", "score": 44, "priority": "high", "population": 1200000, "latitude": 25.5, "longitude": 34.8 }
+  ]
+}

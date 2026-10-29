@@ -1,0 +1,60 @@
+{
+  "data": [
+    {
+      "id": "rec_frontier_mobile_clinics",
+      "priority": "high",
+      "region": { "region_id": "frontier", "name": "Frontier", "arabic_name": "المنطقة الحدودية" },
+      "domain": "healthcare",
+      "title": "Mobile clinic network for Frontier",
+      "arabic_title": "شبكة عيادات متنقلة للمنطقة الحدودية",
+      "summary": "Emergency response averages 52 min. Mobile units cut it below 30.",
+      "arabic_summary": "متوسط زمن الاستجابة للطوارئ 52 دقيقة. الوحدات المتنقلة تخفضه إلى أقل من 30.",
+      "index_impact": 4.2,
+      "estimated_cost": { "amount": 18000000, "currency": "USD" },
+      "confidence": 91,
+      "status": "suggested"
+    },
+    {
+      "id": "rec_delta_harbor_rail",
+      "priority": "high",
+      "region": { "region_id": "delta", "name": "Delta", "arabic_name": "الدلتا" },
+      "domain": "infrastructure",
+      "title": "Rail link: Delta – Harbor Lowlands",
+      "arabic_title": "خط سكة حديد: الدلتا – سهول الميناء",
+      "summary": "Unlocks port access for 2.2M residents and agri exports.",
+      "arabic_summary": "يتيح الوصول إلى الميناء لـ 2.2 مليون نسمة وللصادرات الزراعية.",
+      "index_impact": 3.1,
+      "estimated_cost": { "amount": 140000000, "currency": "USD" },
+      "confidence": 84,
+      "status": "suggested"
+    },
+    {
+      "id": "rec_steppe_teacher_housing",
+      "priority": "medium",
+      "region": { "region_id": "steppe", "name": "Steppe", "arabic_name": "السهوب" },
+      "domain": "education",
+      "title": "Rural teacher housing programme",
+      "arabic_title": "برنامج إسكان المعلمين في الريف",
+      "summary": "Teacher vacancy is 3x the national rate.",
+      "arabic_summary": "معدل شغور وظائف المعلمين ثلاثة أضعاف المعدل الوطني.",
+      "index_impact": 2.6,
+      "estimated_cost": { "amount": 9000000, "currency": "USD" },
+      "confidence": 78,
+      "status": "suggested"
+    },
+    {
+      "id": "rec_highlands_broadband",
+      "priority": "medium",
+      "region": { "region_id": "northern_highlands", "name": "Northern Highlands", "arabic_name": "المرتفعات الشمالية" },
+      "domain": "infrastructure",
+      "title": "Broadband in Northern Highlands",
+      "arabic_title": "النطاق العريض في المرتفعات الشمالية",
+      "summary": "Only 46% coverage; enables remote schooling and telehealth.",
+      "arabic_summary": "تغطية 46% فقط؛ يتيح التعليم عن بُعد والطب عن بُعد.",
+      "index_impact": 2.2,
+      "estimated_cost": { "amount": 24000000, "currency": "USD" },
+      "confidence": 73,
+      "status": "suggested"
+    }
+  ]
+}

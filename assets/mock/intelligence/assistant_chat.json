@@ -1,0 +1,23 @@
+{
+  "data": {
+    "conversation_id": "conv_7f3a91",
+    "reply": {
+      "text": "Frontier needs help most. Its index is 44 and fell 1.7 points this year. Healthcare is the main gap: clinic density is 38% below the national mean.",
+      "table": {
+        "rows": [
+          { "region_id": "frontier", "name": "Frontier", "arabic_name": "المنطقة الحدودية", "score": 44, "change": -1.7 },
+          { "region_id": "steppe", "name": "Steppe", "arabic_name": "السهوب", "score": 47, "change": -2.1 },
+          { "region_id": "delta", "name": "Delta", "arabic_name": "الدلتا", "score": 52, "change": -0.8 }
+        ]
+      },
+      "sources": [
+        { "name": "Ministry of Health registry", "arabic_name": "سجل وزارة الصحة", "period": "2025-Q4" }
+      ]
+    },
+    "suggested_prompts": [
+      "Compare Delta and Lakeside",
+      "Why did Delta decline?",
+      "Summarise education trends"
+    ]
+  }
+}

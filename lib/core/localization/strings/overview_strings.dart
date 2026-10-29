@@ -1,0 +1,76 @@
+/// Dashboard, map, regions and region profile.
+const Map<String, String> overviewEn = {
+  'ov_eyebrow': 'Overview',
+  'ov_eyebrow_dashboard': 'Decidix · {period}',
+  'ov_title_dashboard': 'National Development',
+  'ov_title_map': 'Interactive Map',
+  'ov_title_regions': 'Regions',
+
+  'ov_index_title': 'Development Index',
+  'ov_index_vs': '{change} vs {year}',
+  'ov_index_out_of': 'out of {max} · {band}',
+  'ov_stat_regions': 'Regions',
+  'ov_stat_population': 'Population',
+  'ov_stat_at_risk': 'At risk',
+  'ov_national_trend': 'National trend',
+  'ov_needs_attention': 'Needs attention',
+
+  'map_sector_overall': 'Overall',
+  'map_sector_education': 'Education',
+  'map_sector_healthcare': 'Health',
+  'map_sector_economy': 'Economy',
+  'map_sector_infrastructure': 'Infra',
+  'map_legend_low': 'Low',
+  'map_legend_high': 'High',
+  'map_overall_score': 'Overall score · {people}',
+  'btn_open_region_profile': 'Open region profile',
+  'map_zoom_in': 'Zoom in',
+  'map_zoom_out': 'Zoom out',
+
+  'regions_search_hint': 'Search regions',
+
+  'profile_rank': 'Rank #{rank} of {total}',
+  'profile_size': '{residents} · {area} km²',
+  'profile_development_index': 'Development index',
+  'profile_history': 'Index history',
+  'profile_legend_national': 'National',
+  'profile_data_quality': 'Data quality {score}% · updated {date}',
+};
+
+const Map<String, String> overviewAr = {
+  'ov_eyebrow': 'نظرة عامة',
+  'ov_eyebrow_dashboard': 'ديسيدكس · {period}',
+  'ov_title_dashboard': 'التنمية الوطنية',
+  'ov_title_map': 'الخريطة التفاعلية',
+  'ov_title_regions': 'المناطق',
+
+  'ov_index_title': 'مؤشر التنمية',
+  'ov_index_vs': '{change} مقابل {year}',
+  'ov_index_out_of': 'من {max} · {band}',
+  'ov_stat_regions': 'المناطق',
+  'ov_stat_population': 'السكان',
+  'ov_stat_at_risk': 'معرّضة للخطر',
+  'ov_national_trend': 'الاتجاه الوطني',
+  'ov_needs_attention': 'تحتاج إلى اهتمام',
+
+  'map_sector_overall': 'الإجمالي',
+  'map_sector_education': 'التعليم',
+  'map_sector_healthcare': 'الصحة',
+  'map_sector_economy': 'الاقتصاد',
+  'map_sector_infrastructure': 'البنية',
+  'map_legend_low': 'منخفض',
+  'map_legend_high': 'مرتفع',
+  'map_overall_score': 'النتيجة الإجمالية · {people}',
+  'btn_open_region_profile': 'افتح ملف المنطقة',
+  'map_zoom_in': 'تكبير',
+  'map_zoom_out': 'تصغير',
+
+  'regions_search_hint': 'ابحث في المناطق',
+
+  'profile_rank': 'المرتبة {rank} من {total}',
+  'profile_size': '{residents} · {area} كم²',
+  'profile_development_index': 'مؤشر التنمية',
+  'profile_history': 'تاريخ المؤشر',
+  'profile_legend_national': 'الوطني',
+  'profile_data_quality': 'جودة البيانات {score}% · آخر تحديث {date}',
+};

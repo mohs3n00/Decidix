@@ -1,0 +1,61 @@
+{
+  "data": {
+    "sector": "economy",
+    "index": { "score": 65.0, "change": 2.2 },
+    "kpis": [
+      { "key": "unemployment", "label": "Unemployment", "arabic_label": "البطالة", "value": 6.1, "unit": "percent", "change": -0.4, "higher_is_better": false },
+      { "key": "youth_jobs", "label": "Youth jobs", "arabic_label": "وظائف الشباب", "value": 71.3, "unit": "percent", "change": 1.9, "higher_is_better": true },
+      { "key": "median_income", "label": "Median income", "arabic_label": "متوسط الدخل", "value": 1820, "unit": "usd", "change": 3.1, "higher_is_better": true },
+      { "key": "formal_sector", "label": "Formal sector", "arabic_label": "القطاع الرسمي", "value": 64.0, "unit": "percent", "change": 2.2, "higher_is_better": true }
+    ],
+    "trend": {
+      "points": [
+        { "year": 2019, "value": 57.1 },
+        { "year": 2020, "value": 54.9 },
+        { "year": 2021, "value": 57.4 },
+        { "year": 2022, "value": 59.9 },
+        { "year": 2023, "value": 62.0 },
+        { "year": 2024, "value": 63.6 },
+        { "year": 2025, "value": 65.0 }
+      ]
+    },
+    "breakdown": {
+      "title": "Employment share",
+      "arabic_title": "حصة التوظيف",
+      "unit": "percent",
+      "bars": [
+        { "key": "agriculture", "label": "Agri", "arabic_label": "زراعة", "value": 24 },
+        { "key": "manufacturing", "label": "Mfg", "arabic_label": "صناعة", "value": 21 },
+        { "key": "services", "label": "Svc", "arabic_label": "خدمات", "value": 21 },
+        { "key": "technology", "label": "Tech", "arabic_label": "تقنية", "value": 18 },
+        { "key": "other", "label": "Other", "arabic_label": "أخرى", "value": 16 }
+      ]
+    },
+    "indicators": [
+      { "key": "labour_participation", "label": "Labour participation", "arabic_label": "المشاركة في سوق العمل", "value": 68, "unit": "percent" },
+      { "key": "sme_growth", "label": "SME growth", "arabic_label": "نمو المنشآت الصغيرة", "value": 47, "unit": "percent" },
+      { "key": "export_diversification", "label": "Export diversification", "arabic_label": "تنويع الصادرات", "value": 52, "unit": "percent" },
+      { "key": "female_employment", "label": "Female employment", "arabic_label": "توظيف النساء", "value": 59, "unit": "percent" }
+    ],
+    "ranking": {
+      "top": [
+        { "rank": 1, "region_id": "central_capital", "name": "Central Capital", "arabic_name": "العاصمة المركزية", "score": 90 },
+        { "rank": 2, "region_id": "western_coast", "name": "Western Coast", "arabic_name": "الساحل الغربي", "score": 73 },
+        { "rank": 3, "region_id": "harbor_lowlands", "name": "Harbor Lowlands", "arabic_name": "سهول الميناء", "score": 71 },
+        { "rank": 4, "region_id": "lakeside", "name": "Lakeside", "arabic_name": "ضفاف البحيرة", "score": 69 },
+        { "rank": 5, "region_id": "northern_plains", "name": "Northern Plains", "arabic_name": "السهول الشمالية", "score": 64 }
+      ],
+      "bottom": [
+        { "rank": 12, "region_id": "frontier", "name": "Frontier", "arabic_name": "المنطقة الحدودية", "score": 38 },
+        { "rank": 11, "region_id": "steppe", "name": "Steppe", "arabic_name": "السهوب", "score": 41 },
+        { "rank": 10, "region_id": "northern_highlands", "name": "Northern Highlands", "arabic_name": "المرتفعات الشمالية", "score": 47 },
+        { "rank": 9, "region_id": "delta", "name": "Delta", "arabic_name": "الدلتا", "score": 50 },
+        { "rank": 8, "region_id": "riverside", "name": "Riverside", "arabic_name": "ضفة النهر", "score": 56 }
+      ]
+    },
+    "ai_insight": {
+      "text": "Service and tech jobs concentrate 61% in the capital. Delta and Frontier remain agri-dependent.",
+      "arabic_text": "تتركز 61% من وظائف الخدمات والتقنية في العاصمة. وتبقى الدلتا والمنطقة الحدودية معتمدتين على الزراعة."
+    }
+  }
+}

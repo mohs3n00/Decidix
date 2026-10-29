@@ -1,0 +1,61 @@
+{
+  "data": {
+    "sector": "education",
+    "index": { "score": 74.2, "change": 1.8 },
+    "kpis": [
+      { "key": "literacy_rate", "label": "Literacy rate", "arabic_label": "معدل القراءة والكتابة", "value": 96.2, "unit": "percent", "change": 0.6, "higher_is_better": true },
+      { "key": "school_enrolment", "label": "School enrolment", "arabic_label": "الالتحاق بالمدارس", "value": 91.8, "unit": "percent", "change": 1.4, "higher_is_better": true },
+      { "key": "teacher_pupil", "label": "Teacher : pupil", "arabic_label": "المعلم : الطالب", "value": 19, "unit": "pupils_per_teacher", "change": -2.1, "higher_is_better": false },
+      { "key": "tertiary_completion", "label": "Tertiary completion", "arabic_label": "إتمام التعليم العالي", "value": 34.5, "unit": "percent", "change": 3.2, "higher_is_better": true }
+    ],
+    "trend": {
+      "points": [
+        { "year": 2019, "value": 65.8 },
+        { "year": 2020, "value": 66.5 },
+        { "year": 2021, "value": 67.9 },
+        { "year": 2022, "value": 69.6 },
+        { "year": 2023, "value": 71.4 },
+        { "year": 2024, "value": 72.9 },
+        { "year": 2025, "value": 74.2 }
+      ]
+    },
+    "breakdown": {
+      "title": "Enrolment by level",
+      "arabic_title": "الالتحاق حسب المرحلة",
+      "unit": "percent",
+      "bars": [
+        { "key": "pre", "label": "Pre", "arabic_label": "ما قبل", "value": 48 },
+        { "key": "primary", "label": "Prim", "arabic_label": "ابتدائي", "value": 62 },
+        { "key": "secondary", "label": "Sec", "arabic_label": "ثانوي", "value": 71 },
+        { "key": "vocational", "label": "Voc", "arabic_label": "مهني", "value": 79 },
+        { "key": "university", "label": "Uni", "arabic_label": "جامعي", "value": 88 }
+      ]
+    },
+    "indicators": [
+      { "key": "primary_completion", "label": "Primary completion", "arabic_label": "إتمام المرحلة الابتدائية", "value": 94, "unit": "percent" },
+      { "key": "secondary_completion", "label": "Secondary completion", "arabic_label": "إتمام المرحلة الثانوية", "value": 81, "unit": "percent" },
+      { "key": "stem_graduates", "label": "STEM graduates", "arabic_label": "خريجو العلوم والتقنية", "value": 43, "unit": "percent" },
+      { "key": "digital_classrooms", "label": "Digital classrooms", "arabic_label": "الفصول الرقمية", "value": 58, "unit": "percent" }
+    ],
+    "ranking": {
+      "top": [
+        { "rank": 1, "region_id": "central_capital", "name": "Central Capital", "arabic_name": "العاصمة المركزية", "score": 89 },
+        { "rank": 2, "region_id": "lakeside", "name": "Lakeside", "arabic_name": "ضفاف البحيرة", "score": 74 },
+        { "rank": 3, "region_id": "western_coast", "name": "Western Coast", "arabic_name": "الساحل الغربي", "score": 70 },
+        { "rank": 4, "region_id": "northern_plains", "name": "Northern Plains", "arabic_name": "السهول الشمالية", "score": 66 },
+        { "rank": 5, "region_id": "harbor_lowlands", "name": "Harbor Lowlands", "arabic_name": "سهول الميناء", "score": 64 }
+      ],
+      "bottom": [
+        { "rank": 12, "region_id": "frontier", "name": "Frontier", "arabic_name": "المنطقة الحدودية", "score": 41 },
+        { "rank": 11, "region_id": "steppe", "name": "Steppe", "arabic_name": "السهوب", "score": 45 },
+        { "rank": 10, "region_id": "northern_highlands", "name": "Northern Highlands", "arabic_name": "المرتفعات الشمالية", "score": 51 },
+        { "rank": 9, "region_id": "delta", "name": "Delta", "arabic_name": "الدلتا", "score": 55 },
+        { "rank": 8, "region_id": "riverside", "name": "Riverside", "arabic_name": "ضفة النهر", "score": 58 }
+      ]
+    },
+    "ai_insight": {
+      "text": "Secondary dropout in Frontier and Steppe is twice the national rate, driven by distance to school rather than funding.",
+      "arabic_text": "التسرب من المرحلة الثانوية في المنطقة الحدودية والسهوب ضعف المعدل الوطني، بسبب بُعد المدارس لا نقص التمويل."
+    }
+  }
+}

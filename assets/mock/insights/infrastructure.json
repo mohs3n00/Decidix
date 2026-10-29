@@ -1,0 +1,61 @@
+{
+  "data": {
+    "sector": "infrastructure",
+    "index": { "score": 63.5, "change": 0.9 },
+    "kpis": [
+      { "key": "paved_roads", "label": "Paved roads", "arabic_label": "الطرق المعبّدة", "value": 72.4, "unit": "percent", "change": 1.3, "higher_is_better": true },
+      { "key": "broadband", "label": "Broadband", "arabic_label": "النطاق العريض", "value": 81.0, "unit": "percent", "change": 4.8, "higher_is_better": true },
+      { "key": "clean_water", "label": "Clean water", "arabic_label": "المياه النظيفة", "value": 94.1, "unit": "percent", "change": 0.7, "higher_is_better": true },
+      { "key": "grid_reliability", "label": "Grid reliability", "arabic_label": "موثوقية الشبكة", "value": 97.3, "unit": "percent", "change": 0.4, "higher_is_better": true }
+    ],
+    "trend": {
+      "points": [
+        { "year": 2019, "value": 56.0 },
+        { "year": 2020, "value": 57.2 },
+        { "year": 2021, "value": 58.6 },
+        { "year": 2022, "value": 60.1 },
+        { "year": 2023, "value": 61.7 },
+        { "year": 2024, "value": 62.9 },
+        { "year": 2025, "value": 63.5 }
+      ]
+    },
+    "breakdown": {
+      "title": "Access by network",
+      "arabic_title": "الوصول حسب الشبكة",
+      "unit": "percent",
+      "bars": [
+        { "key": "water", "label": "Water", "arabic_label": "مياه", "value": 94 },
+        { "key": "internet", "label": "Net", "arabic_label": "إنترنت", "value": 81 },
+        { "key": "road", "label": "Road", "arabic_label": "طرق", "value": 72 },
+        { "key": "rail", "label": "Rail", "arabic_label": "سكك حديد", "value": 66 },
+        { "key": "sanitation", "label": "Sanit", "arabic_label": "صرف صحي", "value": 58 }
+      ]
+    },
+    "indicators": [
+      { "key": "road_quality", "label": "Road quality", "arabic_label": "جودة الطرق", "value": 66, "unit": "percent" },
+      { "key": "rail_connectivity", "label": "Rail connectivity", "arabic_label": "الربط بالسكك الحديدية", "value": 49, "unit": "percent" },
+      { "key": "coverage_5g", "label": "5G coverage", "arabic_label": "تغطية الجيل الخامس", "value": 57, "unit": "percent" },
+      { "key": "sanitation", "label": "Sanitation", "arabic_label": "الصرف الصحي", "value": 71, "unit": "percent" }
+    ],
+    "ranking": {
+      "top": [
+        { "rank": 1, "region_id": "central_capital", "name": "Central Capital", "arabic_name": "العاصمة المركزية", "score": 82 },
+        { "rank": 2, "region_id": "lakeside", "name": "Lakeside", "arabic_name": "ضفاف البحيرة", "score": 75 },
+        { "rank": 3, "region_id": "western_coast", "name": "Western Coast", "arabic_name": "الساحل الغربي", "score": 67 },
+        { "rank": 4, "region_id": "eastern_valley", "name": "Eastern Valley", "arabic_name": "الوادي الشرقي", "score": 64 },
+        { "rank": 5, "region_id": "harbor_lowlands", "name": "Harbor Lowlands", "arabic_name": "سهول الميناء", "score": 64 }
+      ],
+      "bottom": [
+        { "rank": 12, "region_id": "frontier", "name": "Frontier", "arabic_name": "المنطقة الحدودية", "score": 45 },
+        { "rank": 11, "region_id": "steppe", "name": "Steppe", "arabic_name": "السهوب", "score": 48 },
+        { "rank": 10, "region_id": "northern_highlands", "name": "Northern Highlands", "arabic_name": "المرتفعات الشمالية", "score": 51 },
+        { "rank": 9, "region_id": "delta", "name": "Delta", "arabic_name": "الدلتا", "score": 55 },
+        { "rank": 8, "region_id": "riverside", "name": "Riverside", "arabic_name": "ضفة النهر", "score": 59 }
+      ]
+    },
+    "ai_insight": {
+      "text": "Rail connectivity is the weakest network; two corridors would link four high-priority regions to Central Capital.",
+      "arabic_text": "السكك الحديدية هي الشبكة الأضعف؛ وممرّان سيربطان أربع مناطق ذات أولوية بالعاصمة المركزية."
+    }
+  }
+}

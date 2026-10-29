@@ -1,0 +1,42 @@
+{
+  "data": {
+    "as_of": "2025-Q4",
+    "index": {
+      "score": 68.4,
+      "max_score": 100,
+      "change": 2.3,
+      "compared_with": "2024",
+      "band": "moderate_high",
+      "regions_count": 12,
+      "population": 39600000,
+      "at_risk_count": 4
+    },
+    "kpis": [
+      { "key": "education", "label": "Education", "arabic_label": "التعليم", "value": 74.2, "unit": "score_100", "change": 1.8, "higher_is_better": true, "sparkline": [65.8, 66.5, 67.9, 69.6, 71.4, 72.9, 74.2] },
+      { "key": "healthcare", "label": "Healthcare", "arabic_label": "الرعاية الصحية", "value": 66.9, "unit": "score_100", "change": 1.2, "higher_is_better": true, "sparkline": [58.0, 58.6, 60.2, 62.3, 64.4, 66.1, 66.9] },
+      { "key": "unemployment", "label": "Unemployment", "arabic_label": "البطالة", "value": 6.1, "unit": "percent", "change": -0.4, "higher_is_better": false, "sparkline": [7.4, 7.9, 7.2, 6.8, 6.6, 6.5, 6.1] },
+      { "key": "infrastructure", "label": "Infrastructure", "arabic_label": "البنية التحتية", "value": 63.5, "unit": "score_100", "change": 0.9, "higher_is_better": true, "sparkline": [56.0, 57.2, 58.6, 60.1, 61.7, 62.9, 63.5] }
+    ],
+    "trend": {
+      "range": "7Y",
+      "points": [
+        { "year": 2019, "value": 58.2 },
+        { "year": 2020, "value": 59.1 },
+        { "year": 2021, "value": 60.4 },
+        { "year": 2022, "value": 62.2 },
+        { "year": 2023, "value": 64.5 },
+        { "year": 2024, "value": 66.1 },
+        { "year": 2025, "value": 68.4 }
+      ]
+    },
+    "needs_attention": [
+      { "id": "frontier", "name": "Frontier", "arabic_name": "المنطقة الحدودية", "score": 44, "population": 1200000, "priority": "high", "change": -1.7 },
+      { "id": "steppe", "name": "Steppe", "arabic_name": "السهوب", "score": 47, "population": 1600000, "priority": "high", "change": -2.1 },
+      { "id": "delta", "name": "Delta", "arabic_name": "الدلتا", "score": 52, "population": 2200000, "priority": "high", "change": -0.8 }
+    ],
+    "ai_insight": {
+      "text": "Delta, Steppe and Frontier have declined for three consecutive periods. Healthcare access is the shared bottleneck, with clinic density 38% below the national mean.",
+      "arabic_text": "تراجعت الدلتا والسهوب والمنطقة الحدودية لثلاث فترات متتالية. الوصول إلى الرعاية الصحية هو الاختناق المشترك، إذ تقل كثافة العيادات بنسبة 38% عن المتوسط الوطني."
+    }
+  }
+}

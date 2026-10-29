@@ -1,0 +1,28 @@
+{
+  "data": {
+    "target_year": 2028,
+    "available_years": [2027, 2028, 2030],
+    "projected_index": 73.5,
+    "confidence": 87,
+    "series": [
+      { "year": 2021, "value": 60.4, "kind": "actual", "lower": null, "upper": null },
+      { "year": 2022, "value": 62.2, "kind": "actual", "lower": null, "upper": null },
+      { "year": 2023, "value": 64.5, "kind": "actual", "lower": null, "upper": null },
+      { "year": 2024, "value": 66.1, "kind": "actual", "lower": null, "upper": null },
+      { "year": 2025, "value": 68.4, "kind": "actual", "lower": null, "upper": null },
+      { "year": 2026, "value": 70.0, "kind": "forecast", "lower": 69.0, "upper": 71.0 },
+      { "year": 2027, "value": 71.8, "kind": "forecast", "lower": 70.2, "upper": 73.4 },
+      { "year": 2028, "value": 73.5, "kind": "forecast", "lower": 71.4, "upper": 75.6 }
+    ],
+    "models": [
+      { "id": "gradient_boosting", "name": "Gradient boosting", "arabic_name": "التعزيز المتدرج", "r2": 0.91 },
+      { "id": "random_forest", "name": "Random forest", "arabic_name": "الغابة العشوائية", "r2": 0.88 },
+      { "id": "temporal_ensemble", "name": "Temporal ensemble", "arabic_name": "المجموعة الزمنية", "r2": 0.93 }
+    ],
+    "top_improvers": [
+      { "region_id": "central_capital", "name": "Central Capital", "arabic_name": "العاصمة المركزية", "delta": 8.4 },
+      { "region_id": "lakeside", "name": "Lakeside", "arabic_name": "ضفاف البحيرة", "delta": 7.3 },
+      { "region_id": "western_coast", "name": "Western Coast", "arabic_name": "الساحل الغربي", "delta": 6.0 }
+    ]
+  }
+}

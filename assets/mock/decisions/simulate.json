@@ -1,0 +1,21 @@
+{
+  "data": {
+    "region_id": "frontier",
+    "horizon_months": 24,
+    "today_score": 44,
+    "projected_score": 51.0,
+    "gain": 7.0,
+    "total_package": { "amount": 120000000, "currency": "USD" },
+    "levers": [
+      { "domain": "education", "amount": 30000000, "gain": 1.5, "yield_per_million": 0.05 },
+      { "domain": "healthcare", "amount": 45000000, "gain": 3.11, "yield_per_million": 0.069 },
+      { "domain": "infrastructure", "amount": 20000000, "gain": 1.16, "yield_per_million": 0.058 },
+      { "domain": "economy", "amount": 25000000, "gain": 1.23, "yield_per_million": 0.049 }
+    ],
+    "best_lever": { "domain": "healthcare", "yield_per_million": 0.069 },
+    "note": {
+      "text": "Each $1M in healthcare returns 0.069 index points here, the highest yield of the four levers.",
+      "arabic_text": "كل مليون دولار في الرعاية الصحية يحقق 0.069 نقطة في المؤشر هنا، وهو أعلى عائد بين الروافع الأربع."
+    }
+  }
+}

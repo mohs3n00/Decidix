@@ -1,0 +1,71 @@
+{
+  "data": {
+    "summary": {
+      "open_this_week": { "value": 1284, "change": 6.2, "higher_is_better": false },
+      "resolved_rate": { "value": 73, "change": 3.4, "higher_is_better": true }
+    },
+    "items": [
+      {
+        "id": "rep_delta_bridge_cracks",
+        "category": "roads",
+        "title": "Bridge deck cracking near market road",
+        "arabic_title": "تشقق في سطح الجسر قرب طريق السوق",
+        "region": { "region_id": "delta", "name": "Delta", "arabic_name": "الدلتا" },
+        "created_at": "2025-11-03T10:00:00Z",
+        "likes": 128,
+        "liked_by_me": false,
+        "priority": "high",
+        "status": "escalated"
+      },
+      {
+        "id": "rep_frontier_clinic_medicines",
+        "category": "health",
+        "title": "Clinic out of essential medicines",
+        "arabic_title": "نفاد الأدوية الأساسية في العيادة",
+        "region": { "region_id": "frontier", "name": "Frontier", "arabic_name": "المنطقة الحدودية" },
+        "created_at": "2025-11-03T07:00:00Z",
+        "likes": 214,
+        "liked_by_me": false,
+        "priority": "medium",
+        "status": "under_review"
+      },
+      {
+        "id": "rep_steppe_no_water",
+        "category": "water",
+        "title": "No drinking water for 6 days",
+        "arabic_title": "انقطاع مياه الشرب لمدة 6 أيام",
+        "region": { "region_id": "steppe", "name": "Steppe", "arabic_name": "السهوب" },
+        "created_at": "2025-11-02T12:00:00Z",
+        "likes": 342,
+        "liked_by_me": false,
+        "priority": "high",
+        "status": "escalated"
+      },
+      {
+        "id": "rep_riverside_crowded_classes",
+        "category": "schools",
+        "title": "Overcrowded classrooms, 52 per class",
+        "arabic_title": "فصول مكتظة، 52 طالباً في الفصل",
+        "region": { "region_id": "riverside", "name": "Riverside", "arabic_name": "ضفة النهر" },
+        "created_at": "2025-10-31T12:00:00Z",
+        "likes": 87,
+        "liked_by_me": false,
+        "priority": "low",
+        "status": "resolved"
+      },
+      {
+        "id": "rep_highlands_unlit_highway",
+        "category": "roads",
+        "title": "Unlit highway section causing accidents",
+        "arabic_title": "جزء من الطريق السريع غير مضاء يتسبب بحوادث",
+        "region": { "region_id": "northern_highlands", "name": "Northern Highlands", "arabic_name": "المرتفعات الشمالية" },
+        "created_at": "2025-10-30T12:00:00Z",
+        "likes": 96,
+        "liked_by_me": false,
+        "priority": "medium",
+        "status": "under_review"
+      }
+    ]
+  },
+  "meta": { "page": 1, "per_page": 20, "total": 5 }
+}
