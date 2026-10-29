@@ -139,6 +139,15 @@ class ProjectsData {
     required this.meta,
   });
 
+  /// The same totals with a later page of projects added at the end.
+  ProjectsData withMore(List<Project> more, PageMeta newMeta) => ProjectsData(
+        projectsCount: projectsCount,
+        totalBudget: totalBudget,
+        delayedCount: delayedCount,
+        items: [...items, ...more],
+        meta: newMeta,
+      );
+
   factory ProjectsData.fromJson(JsonMap json, JsonMap? meta) {
     final summary = json.object('summary');
     final items = json.listOf('items', Project.fromJson);
@@ -236,11 +245,11 @@ class ReportsData {
     required this.meta,
   });
 
-  ReportsData withItems(List<CitizenReport> items) => ReportsData(
+  ReportsData withItems(List<CitizenReport> items, {PageMeta? newMeta}) => ReportsData(
         openThisWeek: openThisWeek,
         resolvedRate: resolvedRate,
         items: items,
-        meta: meta,
+        meta: newMeta ?? meta,
       );
 
   factory ReportsData.fromJson(JsonMap json, JsonMap? meta) {

@@ -38,22 +38,24 @@ class DevelopmentProjectsScreen extends ConsumerWidget {
       tabs: const DecisionsChipBar(selectedIndex: 1),
       eyebrow: fmt.tr('dc_eyebrow'),
       title: fmt.tr('dc_title_projects'),
-      onRefresh: () => refreshFuture(ref, projectsProvider),
+      onRefresh: () => refreshNotifier(ref, projectsProvider),
+      onLoadMore: ref.read(projectsProvider.notifier).loadMore,
+      loadingMore: projects.value?.loadingMore ?? false,
       children: [
         // The totals stay put while a filter reloads the list.
         if (projects.value != null)
           StatRow(
             tiles: [
               StatTile(
-                value: fmt.number(projects.value!.projectsCount, decimals: 0),
+                value: fmt.number(projects.value!.data.projectsCount, decimals: 0),
                 label: fmt.tr('proj_active'),
               ),
               StatTile(
-                value: fmt.money(projects.value!.totalBudget),
+                value: fmt.money(projects.value!.data.totalBudget),
                 label: fmt.tr('proj_budget'),
               ),
               StatTile(
-                value: fmt.number(projects.value!.delayedCount, decimals: 0),
+                value: fmt.number(projects.value!.data.delayedCount, decimals: 0),
                 label: fmt.tr('proj_delayed'),
               ),
             ],
@@ -70,10 +72,10 @@ class DevelopmentProjectsScreen extends ConsumerWidget {
           projects,
           skeletonRows: 4,
           onRetry: () => ref.invalidate(projectsProvider),
-          builder: (data) {
-            if (data.items.isEmpty) return const [EmptyView()];
+          builder: (paged) {
+            if (paged.data.items.isEmpty) return const [EmptyView()];
             return [
-              for (final project in data.items) _ProjectCard(project: project),
+              for (final project in paged.data.items) _ProjectCard(project: project),
             ];
           },
         ),

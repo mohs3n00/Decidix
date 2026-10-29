@@ -17,6 +17,14 @@ class DecidixPage extends StatelessWidget {
   final List<Widget> children;
   final Future<void> Function()? onRefresh;
 
+  /// Called when the user scrolls near the end of a long list. It may be
+  /// called several times while the end is on screen; the list's controller
+  /// ignores calls while a page is already loading or when there is no more.
+  final VoidCallback? onLoadMore;
+
+  /// A placeholder row is shown at the end while the next page loads.
+  final bool loadingMore;
+
   const DecidixPage({
     super.key,
     this.tabs,
@@ -24,7 +32,25 @@ class DecidixPage extends StatelessWidget {
     this.title,
     required this.children,
     this.onRefresh,
+    this.onLoadMore,
+    this.loadingMore = false,
   });
+
+  /// How far from the end (in pixels) the next page starts loading.
+  static const double _loadMoreDistance = 400;
+
+  bool _nearEnd(Notification notification) {
+    final ScrollMetrics? metrics = switch (notification) {
+      ScrollNotification(:final metrics) => metrics,
+      ScrollMetricsNotification(:final metrics) => metrics,
+      _ => null,
+    };
+    // Depth 0 is this page's list; the horizontal chip rows are deeper.
+    return metrics != null &&
+        metrics.axis == Axis.vertical &&
+        (notification as ViewportNotificationMixin).depth == 0 &&
+        metrics.extentAfter < _loadMoreDistance;
+  }
 
   /// Room under the last section for the floating bottom navigation.
   static const double bottomPadding = 128;
@@ -44,15 +70,28 @@ class DecidixPage extends StatelessWidget {
           if (i > 0 || tabs != null || title != null) const SizedBox(height: 20),
           child,
         ],
+        if (loadingMore) ...[const SizedBox(height: 12), const SkeletonBox(height: 78)],
       ],
     );
 
-    if (onRefresh == null) return list;
+    Widget page = list;
+    if (onLoadMore != null) {
+      page = NotificationListener<Notification>(
+        onNotification: (notification) {
+          // After the frame, so the list is never changed while it is laid out.
+          if (_nearEnd(notification)) Future.microtask(onLoadMore!);
+          return false;
+        },
+        child: list,
+      );
+    }
+
+    if (onRefresh == null) return page;
     return RefreshIndicator(
       color: AppColors.blue,
       backgroundColor: AppColors.white,
       onRefresh: onRefresh!,
-      child: list,
+      child: page,
     );
   }
 }

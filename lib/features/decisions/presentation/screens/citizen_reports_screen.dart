@@ -41,6 +41,8 @@ class CitizenReportsScreen extends ConsumerWidget {
       eyebrow: fmt.tr('dc_eyebrow'),
       title: fmt.tr('dc_title_reports'),
       onRefresh: () => refreshNotifier(ref, reportsProvider),
+      onLoadMore: controller.loadMore,
+      loadingMore: reports.value?.loadingMore ?? false,
       children: [
         if (reports.value != null)
           IntrinsicHeight(
@@ -50,16 +52,16 @@ class CitizenReportsScreen extends ConsumerWidget {
                 Expanded(
                   child: _StatCard(
                     label: fmt.tr('rep_open_week'),
-                    value: fmt.number(reports.value!.openThisWeek.value, decimals: 0),
-                    stat: reports.value!.openThisWeek,
+                    value: fmt.number(reports.value!.data.openThisWeek.value, decimals: 0),
+                    stat: reports.value!.data.openThisWeek,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _StatCard(
                     label: fmt.tr('rep_resolved_rate'),
-                    value: fmt.percent(reports.value!.resolvedRate.value),
-                    stat: reports.value!.resolvedRate,
+                    value: fmt.percent(reports.value!.data.resolvedRate.value),
+                    stat: reports.value!.data.resolvedRate,
                   ),
                 ),
               ],
@@ -77,10 +79,10 @@ class CitizenReportsScreen extends ConsumerWidget {
           reports,
           skeletonRows: 4,
           onRetry: () => ref.invalidate(reportsProvider),
-          builder: (data) {
-            if (data.items.isEmpty) return const [EmptyView()];
+          builder: (paged) {
+            if (paged.data.items.isEmpty) return const [EmptyView()];
             return [
-              for (final report in data.items)
+              for (final report in paged.data.items)
                 _ReportCard(report: report, onLike: () => controller.toggleLike(report.id)),
             ];
           },

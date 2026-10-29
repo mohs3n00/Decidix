@@ -57,7 +57,9 @@ class _RegionsScreenState extends ConsumerState<RegionsScreen> {
       tabs: const OverviewChipBar(selectedIndex: 2),
       eyebrow: fmt.tr('ov_eyebrow'),
       title: fmt.tr('ov_title_regions'),
-      onRefresh: () => refreshFuture(ref, regionsProvider),
+      onRefresh: () => refreshNotifier(ref, regionsProvider),
+      onLoadMore: ref.read(regionsProvider.notifier).loadMore,
+      loadingMore: regions.value?.loadingMore ?? false,
       children: [
         SearchField(
           controller: _search,
@@ -76,11 +78,11 @@ class _RegionsScreenState extends ConsumerState<RegionsScreen> {
           skeletonRows: 6,
           onRetry: () => ref.invalidate(regionsProvider),
           builder: (page) {
-            if (page.items.isEmpty) return const [EmptyView()];
+            if (page.data.isEmpty) return const [EmptyView()];
             return [
               Column(
                 children: [
-                  for (final (i, region) in page.items.indexed) ...[
+                  for (final (i, region) in page.data.indexed) ...[
                     if (i > 0) const SizedBox(height: 10),
                     RegionRow(
                       region: region,

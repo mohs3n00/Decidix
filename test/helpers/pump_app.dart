@@ -5,6 +5,7 @@ import 'package:decidix_app/api/transport/api_transport.dart';
 import 'package:decidix_app/api/transport/mock_transport.dart';
 import 'package:decidix_app/core/config/provider_retry.dart';
 import 'package:decidix_app/main.dart';
+import 'package:decidix_app/shared/paging.dart';
 import 'package:decidix_app/shared/widgets/decidix_chip.dart';
 import 'package:flutter/foundation.dart' show SynchronousFuture;
 import 'package:flutter/material.dart';
@@ -37,7 +38,14 @@ class TestTransport extends MockTransport {
 
 /// Starts the app on a phone-sized screen, on the mock data. Pass a
 /// [transport] to replace it, for example one that fails.
-Future<void> pumpApp(WidgetTester tester, {ApiTransport? transport}) async {
+///
+/// [pageSize] makes lists load that many items per page (the app uses 20), so
+/// loading more pages can be tested with the small mock data.
+Future<void> pumpApp(
+  WidgetTester tester, {
+  ApiTransport? transport,
+  int? pageSize,
+}) async {
   SharedPreferences.setMockInitialValues({});
   tester.view.physicalSize = const Size(1170, 2532);
   tester.view.devicePixelRatio = 3.0;
@@ -48,6 +56,7 @@ Future<void> pumpApp(WidgetTester tester, {ApiTransport? transport}) async {
       retry: noAutomaticRetry,
       overrides: [
         apiTransportProvider.overrideWithValue(transport ?? TestTransport()),
+        if (pageSize != null) listPageSizeProvider.overrideWithValue(pageSize),
       ],
       child: const DecidixApp(),
     ),

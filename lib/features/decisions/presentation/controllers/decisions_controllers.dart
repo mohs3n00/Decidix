@@ -6,6 +6,7 @@ import '../../../../api/models/common.dart';
 import '../../../../api/models/decisions.dart';
 import '../../../../api/models/overview.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../shared/paging.dart';
 import '../../../overview/presentation/controllers/regions_controller.dart';
 
 // -------------------------------------------------------------- simulator
@@ -166,10 +167,47 @@ class ProjectStatusFilter extends Notifier<ProjectStatus?> {
 final projectStatusFilterProvider =
     NotifierProvider<ProjectStatusFilter, ProjectStatus?>(ProjectStatusFilter.new);
 
-final projectsProvider = FutureProvider<ProjectsData>((ref) {
-  final status = ref.watch(projectStatusFilterProvider);
-  return ref.watch(decisionsApiProvider).getProjects(status: status);
-});
+/// The projects list: page 1, then more as the user scrolls. The totals above
+/// the list come with page 1 and stay.
+class ProjectsController extends AsyncNotifier<PagedState<ProjectsData>> {
+  /// Counts the starts from page 1, so a late page for an old filter is dropped.
+  int _generation = 0;
+
+  @override
+  Future<PagedState<ProjectsData>> build() async {
+    _generation++;
+    final status = ref.watch(projectStatusFilterProvider);
+    final data = await ref.watch(decisionsApiProvider).getProjects(
+          status: status,
+          perPage: ref.watch(listPageSizeProvider),
+        );
+    return PagedState(data, data.meta);
+  }
+
+  Future<void> loadMore() async {
+    final current = state.value;
+    if (current == null || current.loadingMore || !current.hasMore) return;
+
+    final generation = _generation;
+    state = AsyncData(current.copyWith(loadingMore: true));
+    try {
+      final next = await ref.read(decisionsApiProvider).getProjects(
+            status: ref.read(projectStatusFilterProvider),
+            page: current.meta.page + 1,
+            perPage: ref.read(listPageSizeProvider),
+          );
+      if (generation != _generation) return;
+      final merged = current.data.withMore(next.items, next.meta);
+      state = AsyncData(PagedState(merged, next.meta));
+    } on AppException {
+      if (generation != _generation) return;
+      state = AsyncData(current.copyWith(loadingMore: false));
+    }
+  }
+}
+
+final projectsProvider =
+    AsyncNotifierProvider<ProjectsController, PagedState<ProjectsData>>(ProjectsController.new);
 
 // ---------------------------------------------------------------- reports
 
@@ -184,45 +222,76 @@ class ReportCategoryFilter extends Notifier<ReportCategory?> {
 final reportCategoryFilterProvider =
     NotifierProvider<ReportCategoryFilter, ReportCategory?>(ReportCategoryFilter.new);
 
-class ReportsController extends AsyncNotifier<ReportsData> {
+/// The reports list: page 1, then more as the user scrolls.
+class ReportsController extends AsyncNotifier<PagedState<ReportsData>> {
+  /// Counts the starts from page 1, so a late page for an old filter is dropped.
+  int _generation = 0;
+
   @override
-  Future<ReportsData> build() {
-    final category = ref.watch(reportCategoryFilterProvider);
-    return ref.watch(decisionsApiProvider).getCitizenReports(category: category);
+  Future<PagedState<ReportsData>> build() async {
+    _generation++;
+    final data = await ref.watch(decisionsApiProvider).getCitizenReports(
+          category: ref.watch(reportCategoryFilterProvider),
+          perPage: ref.watch(listPageSizeProvider),
+        );
+    return PagedState(data, data.meta);
   }
 
-  /// The heart changes at once; it goes back if the server refuses, and takes
-  /// the server's count when it answers.
-  Future<void> toggleLike(String reportId) async {
-    final before = state.value;
-    if (before == null) return;
-    final report = before.items.where((r) => r.id == reportId).firstOrNull;
-    if (report == null) return;
+  Future<void> loadMore() async {
+    final current = state.value;
+    if (current == null || current.loadingMore || !current.hasMore) return;
 
-    final liked = !report.likedByMe;
-    state = AsyncData(_replace(
-      before,
-      report.copyWith(likedByMe: liked, likes: report.likes + (liked ? 1 : -1)),
-    ));
-
+    final generation = _generation;
+    state = AsyncData(current.copyWith(loadingMore: true));
     try {
-      final answer = await ref.read(decisionsApiProvider).toggleLike(reportId);
-      final latest = state.value;
-      if (latest == null) return;
-      final current = latest.items.where((r) => r.id == reportId).firstOrNull;
-      if (current == null) return;
-      state = AsyncData(
-        _replace(latest, current.copyWith(likes: answer.likes, likedByMe: answer.likedByMe)),
+      final next = await ref.read(decisionsApiProvider).getCitizenReports(
+            category: ref.read(reportCategoryFilterProvider),
+            page: current.meta.page + 1,
+            perPage: ref.read(listPageSizeProvider),
+          );
+      if (generation != _generation) return;
+      final merged = current.data.withItems(
+        [...current.data.items, ...next.items],
+        newMeta: next.meta,
       );
+      state = AsyncData(PagedState(merged, next.meta));
     } on AppException {
-      state = AsyncData(before);
+      if (generation != _generation) return;
+      state = AsyncData(current.copyWith(loadingMore: false));
     }
   }
 
-  ReportsData _replace(ReportsData data, CitizenReport report) {
-    return data.withItems([for (final r in data.items) r.id == report.id ? report : r]);
+  /// The heart changes at once; it goes back if the server refuses, and takes
+  /// the server's count when it answers. Only this report changes, so pages
+  /// that load meanwhile are kept.
+  Future<void> toggleLike(String reportId) async {
+    final report = _find(reportId);
+    if (report == null) return;
+
+    final liked = !report.likedByMe;
+    _update(report.copyWith(likedByMe: liked, likes: report.likes + (liked ? 1 : -1)));
+
+    try {
+      final answer = await ref.read(decisionsApiProvider).toggleLike(reportId);
+      final current = _find(reportId);
+      if (current != null) {
+        _update(current.copyWith(likes: answer.likes, likedByMe: answer.likedByMe));
+      }
+    } on AppException {
+      _update(report);
+    }
+  }
+
+  CitizenReport? _find(String id) =>
+      state.value?.data.items.where((r) => r.id == id).firstOrNull;
+
+  void _update(CitizenReport report) {
+    final current = state.value;
+    if (current == null) return;
+    final items = [for (final r in current.data.items) r.id == report.id ? report : r];
+    state = AsyncData(current.copyWith(data: current.data.withItems(items)));
   }
 }
 
 final reportsProvider =
-    AsyncNotifierProvider<ReportsController, ReportsData>(ReportsController.new);
+    AsyncNotifierProvider<ReportsController, PagedState<ReportsData>>(ReportsController.new);
