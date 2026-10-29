@@ -8,6 +8,7 @@
 // Without RENDER_OUT it is skipped, so the normal test run ignores it.
 import 'dart:io';
 import 'dart:ui' as ui;
+
 import 'package:decidix_app/api/api_providers.dart';
 import 'package:decidix_app/core/config/provider_retry.dart';
 import 'package:decidix_app/main.dart';
@@ -18,6 +19,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../helpers/pump_app.dart';
 
 const _screens = <String, String>{
@@ -55,60 +57,63 @@ void main() {
       .where((s) => s.isNotEmpty)
       .toSet();
 
-  testWidgets(
-    'render every screen',
-    (tester) async {
-      await tester.runAsync(() async {
-        await _loadFont('Outfit', 'assets/fonts/Outfit-Variable.ttf');
-        await _loadFont('Cairo', 'assets/fonts/Cairo-Variable.ttf');
-        // The Material icons (arrows, hearts) ship with the Flutter SDK.
-        final icons = File('C:/src/flutter/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf');
-        if (icons.existsSync()) await _loadFont('MaterialIcons', icons.path);
-      });
-
-      SharedPreferences.setMockInitialValues({'app_locale': language});
-      // The map's tile cache asks for a folder; any folder will do here.
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(
-        const MethodChannel('plugins.flutter.io/path_provider'),
-        (call) async => Directory.systemTemp.path,
+  testWidgets('render every screen', (tester) async {
+    await tester.runAsync(() async {
+      await _loadFont('Outfit', 'assets/fonts/Outfit-Variable.ttf');
+      await _loadFont('Cairo', 'assets/fonts/Cairo-Variable.ttf');
+      // The Material icons (arrows, hearts) ship with the Flutter SDK.
+      final icons = File(
+        'C:/src/flutter/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
       );
-      tester.view.physicalSize = const Size(780, 2400);
-      tester.view.devicePixelRatio = 2.0;
-      addTearDown(tester.view.reset);
+      if (icons.existsSync()) await _loadFont('MaterialIcons', icons.path);
+    });
 
-      final boundary = GlobalKey();
-      await tester.pumpWidget(
-        RepaintBoundary(
-          key: boundary,
-          child: ProviderScope(
-            retry: noAutomaticRetry,
-            overrides: [apiTransportProvider.overrideWithValue(TestTransport())],
-            child: const DecidixApp(),
-          ),
+    SharedPreferences.setMockInitialValues({'app_locale': language});
+    // The map's tile cache asks for a folder; any folder will do here.
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (call) async => Directory.systemTemp.path,
+        );
+    tester.view.physicalSize = const Size(780, 2400);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(tester.view.reset);
+
+    final boundary = GlobalKey();
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: boundary,
+        child: ProviderScope(
+          retry: noAutomaticRetry,
+          overrides: [apiTransportProvider.overrideWithValue(TestTransport())],
+          child: const DecidixApp(),
         ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    Directory(out!).createSync(recursive: true);
+    final context = tester.element(find.byType(Scaffold).first);
+
+    for (final entry in _screens.entries) {
+      if (only.isNotEmpty && !only.contains(entry.key)) continue;
+      GoRouter.of(context).go(entry.value);
+      await tester.pumpAndSettle();
+      // The icons are SVG files that decode on a real thread.
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 150)),
       );
       await tester.pumpAndSettle();
 
-      Directory(out!).createSync(recursive: true);
-      final context = tester.element(find.byType(Scaffold).first);
-
-      for (final entry in _screens.entries) {
-        if (only.isNotEmpty && !only.contains(entry.key)) continue;
-        GoRouter.of(context).go(entry.value);
-        await tester.pumpAndSettle();
-        // The icons are SVG files that decode on a real thread.
-        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
-        await tester.pumpAndSettle();
-
-        await tester.runAsync(() async {
-          final render = boundary.currentContext!.findRenderObject() as RenderRepaintBoundary;
-          final image = await render.toImage(pixelRatio: 1.0);
-          final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          File('$out/${entry.key}_$language.png').writeAsBytesSync(bytes!.buffer.asUint8List());
-        });
-      }
-    },
-    skip: out == null,
-  );
+      await tester.runAsync(() async {
+        final render =
+            boundary.currentContext!.findRenderObject()
+                as RenderRepaintBoundary;
+        final image = await render.toImage(pixelRatio: 1.0);
+        final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+        File('$out/${entry.key}_$language.png')
+            .writeAsBytesSync(bytes!.buffer.asUint8List());
+      });
+    }
+  }, skip: out == null);
 }

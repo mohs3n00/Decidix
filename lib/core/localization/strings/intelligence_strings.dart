@@ -12,7 +12,8 @@ const Map<String, String> intelligenceEn = {
   'pred_improvers': 'Regions most likely to improve',
   'pred_by_year': '+{n} by {year}',
 
-  'asst_greeting': 'Hi, I am Decidix AI. Ask me about any region, indicator or trade-off.',
+  'asst_greeting':
+      'Hi, I am Decidix AI. Ask me about any region, indicator or trade-off.',
   'asst_input_hint': 'Ask Decidix AI',
   'asst_prompt_1': 'Which region needs help most?',
   'asst_prompt_2': 'Why did Delta decline?',
@@ -44,7 +45,8 @@ const Map<String, String> intelligenceAr = {
   'pred_improvers': 'المناطق الأكثر احتمالاً للتحسن',
   'pred_by_year': '+{n} بحلول {year}',
 
-  'asst_greeting': 'مرحباً، أنا مساعد ديسيدكس الذكي. اسألني عن أي منطقة أو مؤشر أو مفاضلة.',
+  'asst_greeting':
+      'مرحباً، أنا مساعد ديسيدكس الذكي. اسألني عن أي منطقة أو مؤشر أو مفاضلة.',
   'asst_input_hint': 'اسأل مساعد ديسيدكس',
   'asst_prompt_1': 'أي منطقة تحتاج إلى أكبر دعم؟',
   'asst_prompt_2': 'لماذا تراجعت الدلتا؟',

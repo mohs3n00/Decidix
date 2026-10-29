@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_shadows.dart';
@@ -57,7 +58,9 @@ class DecidixButton extends StatelessWidget {
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTypography.labelMStrong.copyWith(color: foreground),
+                    style: AppTypography.labelMStrong.copyWith(
+                      color: foreground,
+                    ),
                   ),
                 ),
                 if (trailing != null) ...[const SizedBox(width: 8), trailing!],

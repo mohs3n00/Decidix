@@ -10,17 +10,24 @@ class AppException implements Exception {
 
 /// No connection, timeout or an unreachable host.
 class NetworkException extends AppException {
-  const NetworkException([super.message = 'Network connection error', super.statusCode]);
+  const NetworkException([
+    super.message = 'Network connection error',
+    super.statusCode,
+  ]);
 }
 
 /// 5xx from the server.
 class ServerException extends AppException {
-  const ServerException([super.message = 'Server error occurred', super.statusCode]);
+  const ServerException([
+    super.message = 'Server error occurred',
+    super.statusCode,
+  ]);
 }
 
 /// 401: the request needs a sign-in, or the token expired.
 class UnauthorizedException extends AppException {
-  const UnauthorizedException([String message = 'Not signed in']) : super(message, 401);
+  const UnauthorizedException([String message = 'Not signed in'])
+    : super(message, 401);
 }
 
 /// 404: the id does not exist.

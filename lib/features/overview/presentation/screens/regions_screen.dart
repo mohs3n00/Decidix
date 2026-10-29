@@ -1,7 +1,9 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../api/models/common.dart';
 import '../../../../core/format/formatters.dart';
 import '../../../../shared/widgets/chip_scroll_row.dart';
@@ -21,7 +23,12 @@ class RegionsScreen extends ConsumerStatefulWidget {
 
 class _RegionsScreenState extends ConsumerState<RegionsScreen> {
   /// null is "All".
-  static const _filters = <Priority?>[null, Priority.high, Priority.medium, Priority.low];
+  static const _filters = <Priority?>[
+    null,
+    Priority.high,
+    Priority.medium,
+    Priority.low,
+  ];
 
   late final TextEditingController _search;
   Timer? _debounce;
@@ -29,7 +36,9 @@ class _RegionsScreenState extends ConsumerState<RegionsScreen> {
   @override
   void initState() {
     super.initState();
-    _search = TextEditingController(text: ref.read(regionsFilterProvider).query);
+    _search = TextEditingController(
+      text: ref.read(regionsFilterProvider).query,
+    );
   }
 
   @override
@@ -68,10 +77,12 @@ class _RegionsScreenState extends ConsumerState<RegionsScreen> {
         ),
         ChipScrollRow(
           labels: [
-            for (final p in _filters) p == null ? fmt.tr('filter_all') : fmt.priority(p),
+            for (final p in _filters)
+              p == null ? fmt.tr('filter_all') : fmt.priority(p),
           ],
           selectedIndex: _filters.indexOf(filter.priority),
-          onSelected: (i) => ref.read(regionsFilterProvider.notifier).setPriority(_filters[i]),
+          onSelected: (i) =>
+              ref.read(regionsFilterProvider.notifier).setPriority(_filters[i]),
         ),
         ...asyncSections(
           regions,
@@ -86,7 +97,8 @@ class _RegionsScreenState extends ConsumerState<RegionsScreen> {
                     if (i > 0) const SizedBox(height: 10),
                     RegionRow(
                       region: region,
-                      onTap: () => context.push('/overview/regions/${region.id}'),
+                      onTap: () =>
+                          context.push('/overview/regions/${region.id}'),
                     ),
                   ],
                 ],

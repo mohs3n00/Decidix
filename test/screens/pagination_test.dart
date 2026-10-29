@@ -3,6 +3,7 @@ import 'package:decidix_app/core/errors/app_exception.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import '../helpers/pump_app.dart';
 
 /// Remembers which pages were asked for, and can fail page 2.
@@ -11,17 +12,25 @@ class _Pages extends TestTransport {
   bool failSecondPage = false;
 
   @override
-  Future<ApiEnvelope> get(String path, {Map<String, dynamic>? query, CancelToken? cancelToken}) {
+  Future<ApiEnvelope> get(
+    String path, {
+    Map<String, dynamic>? query,
+    CancelToken? cancelToken,
+  }) {
     final page = query?['page'];
     if (page is int) (asked[path] ??= []).add(page);
-    if (failSecondPage && page == 2) return Future.error(const NetworkException());
+    if (failSecondPage && page == 2) {
+      return Future.error(const NetworkException());
+    }
     return super.get(path, query: query, cancelToken: cancelToken);
   }
 }
 
 void main() {
   group('Regions', () {
-    testWidgets('start with one page and load the next while scrolling', (tester) async {
+    testWidgets('start with one page and load the next while scrolling', (
+      tester,
+    ) async {
       final transport = _Pages();
       await pumpApp(tester, transport: transport, pageSize: 5);
       await tapChip(tester, 'Regions');
@@ -51,7 +60,9 @@ void main() {
       expect(transport.asked['/regions'], [1, 2, 3]);
     });
 
-    testWidgets('a new filter starts again from page 1 without leftovers', (tester) async {
+    testWidgets('a new filter starts again from page 1 without leftovers', (
+      tester,
+    ) async {
       final transport = _Pages();
       await pumpApp(tester, transport: transport, pageSize: 5);
       await tapChip(tester, 'Regions');
@@ -65,35 +76,46 @@ void main() {
       expect(find.text('Delta'), findsOneWidget); // once, not duplicated
     });
 
-    testWidgets('a failed page keeps the list and the next scroll tries again', (tester) async {
-      final transport = _Pages()..failSecondPage = true;
-      await pumpApp(tester, transport: transport, pageSize: 5);
-      await tapChip(tester, 'Regions');
+    testWidgets(
+      'a failed page keeps the list and the next scroll tries again',
+      (tester) async {
+        final transport = _Pages()..failSecondPage = true;
+        await pumpApp(tester, transport: transport, pageSize: 5);
+        await tapChip(tester, 'Regions');
 
-      await tester.drag(find.byType(ListView).first, const Offset(0, -2000));
-      await tester.pumpAndSettle();
+        await tester.drag(find.byType(ListView).first, const Offset(0, -2000));
+        await tester.pumpAndSettle();
 
-      expect(find.text('We couldn’t load this data'), findsNothing); // no error screen
-      expect(find.text('Central Capital', skipOffstage: false), findsOneWidget);
-      expect(transport.asked['/regions'], contains(2));
+        expect(
+          find.text('We couldn’t load this data'),
+          findsNothing,
+        ); // no error screen
+        expect(
+          find.text('Central Capital', skipOffstage: false),
+          findsOneWidget,
+        );
+        expect(transport.asked['/regions'], contains(2));
 
-      transport.failSecondPage = false;
-      await tester.drag(find.byType(ListView).first, const Offset(0, -300));
-      await tester.pumpAndSettle();
-      await scrollTo(tester, find.text('Delta'));
-      expect(find.text('Delta'), findsOneWidget);
-    });
+        transport.failSecondPage = false;
+        await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+        await tester.pumpAndSettle();
+        await scrollTo(tester, find.text('Delta'));
+        expect(find.text('Delta'), findsOneWidget);
+      },
+    );
 
-    testWidgets('a short list that fits the screen loads its other pages by itself',
-        (tester) async {
-      final transport = _Pages();
-      await pumpApp(tester, transport: transport, pageSize: 2);
-      await tapChip(tester, 'Regions');
+    testWidgets(
+      'a short list that fits the screen loads its other pages by itself',
+      (tester) async {
+        final transport = _Pages();
+        await pumpApp(tester, transport: transport, pageSize: 2);
+        await tapChip(tester, 'Regions');
 
-      // 2 rows do not fill a phone screen, so there is nothing to scroll:
-      // the next pages must be requested anyway.
-      expect(transport.asked['/regions'], containsAll([1, 2]));
-    });
+        // 2 rows do not fill a phone screen, so there is nothing to scroll:
+        // the next pages must be requested anyway.
+        expect(transport.asked['/regions'], containsAll([1, 2]));
+      },
+    );
   });
 
   group('Projects', () {
@@ -104,7 +126,10 @@ void main() {
       await tester.pumpAndSettle();
       await tapChip(tester, 'Projects');
 
-      await scrollTo(tester, find.text('Frontier Mobile Clinics')); // the 5th of 5
+      await scrollTo(
+        tester,
+        find.text('Frontier Mobile Clinics'),
+      ); // the 5th of 5
       expect(transport.asked['/decisions/projects'], [1, 2, 3]);
 
       await scrollToTop(tester);
@@ -113,14 +138,19 @@ void main() {
   });
 
   group('Citizen reports', () {
-    testWidgets('load page by page and likes still work on later pages', (tester) async {
+    testWidgets('load page by page and likes still work on later pages', (
+      tester,
+    ) async {
       final transport = _Pages();
       await pumpApp(tester, transport: transport, pageSize: 2);
       await tester.tap(find.text('Decisions'));
       await tester.pumpAndSettle();
       await tapChip(tester, 'Reports');
 
-      await scrollTo(tester, find.text('Unlit highway section causing accidents'));
+      await scrollTo(
+        tester,
+        find.text('Unlit highway section causing accidents'),
+      );
       expect(transport.asked['/decisions/citizen-reports'], [1, 2, 3]);
 
       expect(find.text('96'), findsOneWidget);
@@ -128,8 +158,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('97'), findsOneWidget);
       // The reports loaded before are still there.
-      expect(find.text('Bridge deck cracking near market road', skipOffstage: false),
-          findsOneWidget);
+      expect(
+        find.text('Bridge deck cracking near market road', skipOffstage: false),
+        findsOneWidget,
+      );
     });
   });
 }

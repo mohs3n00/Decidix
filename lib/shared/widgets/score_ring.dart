@@ -1,5 +1,7 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import '../../api/models/common.dart';
@@ -37,12 +39,13 @@ class ScoreRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ringColor = color ??
+    final ringColor =
+        color ??
         (score >= 75
             ? AppColors.success
             : score >= 60
-                ? AppColors.blue
-                : AppColors.danger);
+            ? AppColors.blue
+            : AppColors.danger);
 
     return Semantics(
       label: score.toStringAsFixed(0),

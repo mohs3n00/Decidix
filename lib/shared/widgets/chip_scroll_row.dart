@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+
 import '../../core/constants/app_colors.dart';
 import 'decidix_chip.dart';
 
@@ -47,7 +48,9 @@ class _ChipScrollRowState extends State<ChipScrollRow> {
   void initState() {
     super.initState();
     _controller.addListener(_updateFades);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _reveal(animate: false));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _reveal(animate: false),
+    );
   }
 
   @override
@@ -56,8 +59,9 @@ class _ChipScrollRowState extends State<ChipScrollRow> {
     final countChanged = oldWidget.labels.length != widget.labels.length;
     if (countChanged) _keys = _newKeys();
     if (countChanged || oldWidget.selectedIndex != widget.selectedIndex) {
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) => _reveal(animate: !countChanged));
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _reveal(animate: !countChanged),
+      );
     }
   }
 

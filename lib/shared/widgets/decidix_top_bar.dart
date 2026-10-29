@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
@@ -48,23 +49,35 @@ class DecidixTopBar extends StatelessWidget {
                 width: 18,
                 height: 18,
                 matchTextDirection: true,
-                colorFilter: const ColorFilter.mode(AppColors.navy, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(
+                  AppColors.navy,
+                  BlendMode.srcIn,
+                ),
               ),
             )
           else
-            AccountAvatar(onTap: onAvatarTap),
+            AccountAvatar(
+              onTap: onAvatarTap,
+              semanticLabel: context.tr('btn_account'),
+            ),
           const Spacer(),
-          GestureDetector(
-            onTap: onLanguageTap,
-            behavior: HitTestBehavior.opaque,
-            child: Container(
-              height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              alignment: Alignment.center,
-              decoration: _pillDecoration(BoxShape.rectangle),
-              child: Text(
-                languageLabel ?? (isRtl ? 'English' : 'عربي'),
-                style: AppTypography.labelMStrong,
+          Semantics(
+            button: true,
+            label: context.tr('btn_language'),
+            value: languageLabel ?? (isRtl ? 'English' : 'عربي'),
+            excludeSemantics: true,
+            child: GestureDetector(
+              onTap: onLanguageTap,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                height: 40,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                alignment: Alignment.center,
+                decoration: _pillDecoration(BoxShape.rectangle),
+                child: Text(
+                  languageLabel ?? (isRtl ? 'English' : 'عربي'),
+                  style: AppTypography.labelMStrong,
+                ),
               ),
             ),
           ),
@@ -74,12 +87,15 @@ class DecidixTopBar extends StatelessWidget {
             children: [
               _RoundButton(
                 onTap: onNotificationTap,
-                semanticLabel: 'Notifications',
+                semanticLabel: context.tr('btn_notifications'),
                 child: SvgPicture.asset(
                   AppAssets.icNotifications,
                   width: 18,
                   height: 18,
-                  colorFilter: const ColorFilter.mode(AppColors.navy, BlendMode.srcIn),
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.navy,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
               if (hasUnreadNotifications)
@@ -106,11 +122,11 @@ class DecidixTopBar extends StatelessWidget {
 }
 
 BoxDecoration _pillDecoration(BoxShape shape) => BoxDecoration(
-      color: AppColors.white,
-      shape: shape,
-      borderRadius: shape == BoxShape.rectangle ? AppRadius.pillRadius : null,
-      boxShadow: AppShadows.pill,
-    );
+  color: AppColors.white,
+  shape: shape,
+  borderRadius: shape == BoxShape.rectangle ? AppRadius.pillRadius : null,
+  boxShadow: AppShadows.pill,
+);
 
 class _RoundButton extends StatelessWidget {
   final VoidCallback? onTap;

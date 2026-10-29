@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../api/api_providers.dart';
 import '../../../../api/models/intelligence.dart';
 import '../../../../core/errors/app_exception.dart';
@@ -11,7 +12,9 @@ class PredictionYear extends Notifier<int?> {
   void select(int year) => state = year;
 }
 
-final predictionYearProvider = NotifierProvider<PredictionYear, int?>(PredictionYear.new);
+final predictionYearProvider = NotifierProvider<PredictionYear, int?>(
+  PredictionYear.new,
+);
 
 final predictionsProvider = FutureProvider<Predictions>((ref) {
   final year = ref.watch(predictionYearProvider);
@@ -30,19 +33,19 @@ class ChatBubble {
   final bool isError;
 
   const ChatBubble.user(this.text)
-      : fromUser = true,
-        reply = null,
-        isError = false;
+    : fromUser = true,
+      reply = null,
+      isError = false;
 
   ChatBubble.assistant(ChatReply this.reply)
-      : fromUser = false,
-        text = reply.text,
-        isError = false;
+    : fromUser = false,
+      text = reply.text,
+      isError = false;
 
   const ChatBubble.error(this.text)
-      : fromUser = false,
-        reply = null,
-        isError = true;
+    : fromUser = false,
+      reply = null,
+      isError = true;
 }
 
 class AssistantState {
@@ -84,7 +87,11 @@ class AssistantController extends Notifier<AssistantState> {
   AssistantState build() => const AssistantState();
 
   /// [language] is `en` or `ar`; [errorText] is shown if the answer fails.
-  Future<void> send(String text, {required String language, required String errorText}) async {
+  Future<void> send(
+    String text, {
+    required String language,
+    required String errorText,
+  }) async {
     final message = text.trim();
     if (message.isEmpty || state.waiting) return;
 
@@ -94,7 +101,9 @@ class AssistantController extends Notifier<AssistantState> {
     );
 
     try {
-      final reply = await ref.read(intelligenceApiProvider).sendMessage(
+      final reply = await ref
+          .read(intelligenceApiProvider)
+          .sendMessage(
             message: message,
             language: language,
             conversationId: state.conversationId,
@@ -115,7 +124,9 @@ class AssistantController extends Notifier<AssistantState> {
 }
 
 final assistantControllerProvider =
-    NotifierProvider<AssistantController, AssistantState>(AssistantController.new);
+    NotifierProvider<AssistantController, AssistantState>(
+      AssistantController.new,
+    );
 
 // -------------------------------------------------------- recommendations
 
@@ -135,10 +146,15 @@ class RecommendationsController extends AsyncNotifier<List<Recommendation>> {
     final before = state.value;
     if (before == null) return false;
 
-    state = AsyncData([for (final r in before) if (r.id != id) r]);
+    state = AsyncData([
+      for (final r in before)
+        if (r.id != id) r,
+    ]);
     try {
       final api = ref.read(intelligenceApiProvider);
-      accept ? await api.acceptRecommendation(id) : await api.dismissRecommendation(id);
+      accept
+          ? await api.acceptRecommendation(id)
+          : await api.dismissRecommendation(id);
       return true;
     } on AppException {
       state = AsyncData(before);
@@ -149,5 +165,5 @@ class RecommendationsController extends AsyncNotifier<List<Recommendation>> {
 
 final recommendationsProvider =
     AsyncNotifierProvider<RecommendationsController, List<Recommendation>>(
-  RecommendationsController.new,
-);
+      RecommendationsController.new,
+    );

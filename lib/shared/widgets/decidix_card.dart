@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_shadows.dart';
@@ -48,7 +49,11 @@ class DecidixCard extends StatelessWidget {
     return Semantics(
       button: true,
       label: semanticLabel,
-      child: GestureDetector(onTap: onTap, behavior: HitTestBehavior.opaque, child: card),
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: card,
+      ),
     );
   }
 }

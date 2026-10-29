@@ -1,10 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../api/api_providers.dart';
 import '../../../../api/models/common.dart';
 import '../../../../api/models/insights.dart';
 import '../../../overview/presentation/controllers/regions_controller.dart';
 
-final sectorProvider = FutureProvider.family<SectorInsights, Domain>((ref, sector) {
+final sectorProvider = FutureProvider.family<SectorInsights, Domain>((
+  ref,
+  sector,
+) {
   return ref.watch(insightsApiProvider).getSector(sector);
 });
 
@@ -27,7 +31,9 @@ class ComparisonChoiceNotifier extends Notifier<ComparisonChoice> {
 }
 
 final comparisonChoiceProvider =
-    NotifierProvider<ComparisonChoiceNotifier, ComparisonChoice>(ComparisonChoiceNotifier.new);
+    NotifierProvider<ComparisonChoiceNotifier, ComparisonChoice>(
+      ComparisonChoiceNotifier.new,
+    );
 
 final comparisonProvider = FutureProvider<RegionComparison>((ref) async {
   final regions = await ref.watch(allRegionsProvider.future);
@@ -45,8 +51,9 @@ class HistoricalSector extends Notifier<String> {
   void select(String sector) => state = sector;
 }
 
-final historicalSectorProvider =
-    NotifierProvider<HistoricalSector, String>(HistoricalSector.new);
+final historicalSectorProvider = NotifierProvider<HistoricalSector, String>(
+  HistoricalSector.new,
+);
 
 final historicalProvider = FutureProvider<HistoricalData>((ref) {
   final sector = ref.watch(historicalSectorProvider);

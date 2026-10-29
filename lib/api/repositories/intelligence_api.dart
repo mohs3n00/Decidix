@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import '../../core/network/api_endpoints.dart';
 import '../models/common.dart';
 import '../models/intelligence.dart';
@@ -44,17 +45,25 @@ class IntelligenceApi {
       query: {if (priority != null) 'priority': priority.name},
     );
     return [
-      for (final item in asMapList(response.data, 'data')) Recommendation.fromJson(item),
+      for (final item in asMapList(response.data, 'data'))
+        Recommendation.fromJson(item),
     ];
   }
 
-  Future<RecommendationResult> acceptRecommendation(String id, {CancelToken? cancelToken}) =>
-      _answer(ApiEndpoints.recommendationAccept(id), cancelToken);
+  Future<RecommendationResult> acceptRecommendation(
+    String id, {
+    CancelToken? cancelToken,
+  }) => _answer(ApiEndpoints.recommendationAccept(id), cancelToken);
 
-  Future<RecommendationResult> dismissRecommendation(String id, {CancelToken? cancelToken}) =>
-      _answer(ApiEndpoints.recommendationDismiss(id), cancelToken);
+  Future<RecommendationResult> dismissRecommendation(
+    String id, {
+    CancelToken? cancelToken,
+  }) => _answer(ApiEndpoints.recommendationDismiss(id), cancelToken);
 
-  Future<RecommendationResult> _answer(String path, CancelToken? cancelToken) async {
+  Future<RecommendationResult> _answer(
+    String path,
+    CancelToken? cancelToken,
+  ) async {
     final response = await _transport.post(path, cancelToken: cancelToken);
     return RecommendationResult.fromJson(asMap(response.data, 'data'));
   }

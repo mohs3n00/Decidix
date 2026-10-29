@@ -27,15 +27,15 @@ class OverviewIndex {
   });
 
   factory OverviewIndex.fromJson(JsonMap json) => OverviewIndex(
-        score: json.number('score'),
-        maxScore: json.number('max_score'),
-        change: json.number('change'),
-        comparedWith: json.string('compared_with'),
-        band: parseEnum(IndexBand.values, json['band'], IndexBand.unknown),
-        regionsCount: json.integer('regions_count'),
-        population: json.integer('population'),
-        atRiskCount: json.integer('at_risk_count'),
-      );
+    score: json.number('score'),
+    maxScore: json.number('max_score'),
+    change: json.number('change'),
+    comparedWith: json.string('compared_with'),
+    band: parseEnum(IndexBand.values, json['band'], IndexBand.unknown),
+    regionsCount: json.integer('regions_count'),
+    population: json.integer('population'),
+    atRiskCount: json.integer('at_risk_count'),
+  );
 }
 
 /// A region in a list (Regions screen, "Needs attention").
@@ -63,14 +63,14 @@ class RegionListItem {
   });
 
   factory RegionListItem.fromJson(JsonMap json) => RegionListItem(
-        id: json.string('id'),
-        name: LocalizedText.read(json, 'name'),
-        rank: json.maybeInteger('rank'),
-        score: json.number('score'),
-        change: json.number('change'),
-        priority: parsePriority(json['priority']),
-        population: json.integer('population'),
-      );
+    id: json.string('id'),
+    name: LocalizedText.read(json, 'name'),
+    rank: json.maybeInteger('rank'),
+    score: json.number('score'),
+    change: json.number('change'),
+    priority: parsePriority(json['priority']),
+    population: json.integer('population'),
+  );
 }
 
 class OverviewData {
@@ -126,14 +126,14 @@ class MapPoint {
   });
 
   factory MapPoint.fromJson(JsonMap json) => MapPoint(
-        id: json.string('id'),
-        name: LocalizedText.read(json, 'name'),
-        score: json.number('score'),
-        priority: parsePriority(json['priority']),
-        population: json.integer('population'),
-        latitude: json.number('latitude'),
-        longitude: json.number('longitude'),
-      );
+    id: json.string('id'),
+    name: LocalizedText.read(json, 'name'),
+    score: json.number('score'),
+    priority: parsePriority(json['priority']),
+    population: json.integer('population'),
+    latitude: json.number('latitude'),
+    longitude: json.number('longitude'),
+  );
 }
 
 class DomainScore {
@@ -141,13 +141,17 @@ class DomainScore {
   final LocalizedText label;
   final double score;
 
-  const DomainScore({required this.key, required this.label, required this.score});
+  const DomainScore({
+    required this.key,
+    required this.label,
+    required this.score,
+  });
 
   factory DomainScore.fromJson(JsonMap json) => DomainScore(
-        key: parseDomain(json['key']),
-        label: LocalizedText.read(json, 'label'),
-        score: json.number('score'),
-      );
+    key: parseDomain(json['key']),
+    label: LocalizedText.read(json, 'label'),
+    score: json.number('score'),
+  );
 }
 
 class RegionProfile {

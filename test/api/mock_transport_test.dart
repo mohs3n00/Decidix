@@ -23,13 +23,15 @@ SimulationRequest _request({
   double healthcare = 45e6,
   double infrastructure = 20e6,
   double economy = 25e6,
-}) =>
-    SimulationRequest(regionId: region, allocations: {
-      Domain.education: education,
-      Domain.healthcare: healthcare,
-      Domain.infrastructure: infrastructure,
-      Domain.economy: economy,
-    });
+}) => SimulationRequest(
+  regionId: region,
+  allocations: {
+    Domain.education: education,
+    Domain.healthcare: healthcare,
+    Domain.infrastructure: infrastructure,
+    Domain.economy: economy,
+  },
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -75,8 +77,12 @@ void main() {
     });
 
     test('searches names in English and Arabic', () async {
-      expect((await api.getRegions(query: 'del')).items.map((r) => r.id), ['delta']);
-      expect((await api.getRegions(query: 'الدلتا')).items.map((r) => r.id), ['delta']);
+      expect((await api.getRegions(query: 'del')).items.map((r) => r.id), [
+        'delta',
+      ]);
+      expect((await api.getRegions(query: 'الدلتا')).items.map((r) => r.id), [
+        'delta',
+      ]);
       expect((await api.getRegions(query: 'nowhere')).items, isEmpty);
     });
 
@@ -105,11 +111,17 @@ void main() {
       expect(profile.rankTotal, 12);
       expect(profile.historyRegion.last.value, 44.0);
       expect(profile.domains, hasLength(4));
-      expect(profile.domains.every((d) => d.score >= 0 && d.score <= 100), isTrue);
+      expect(
+        profile.domains.every((d) => d.score >= 0 && d.score <= 100),
+        isTrue,
+      );
     });
 
     test('an unknown region is not found', () async {
-      expect(() => api.getRegion('atlantis'), throwsA(isA<NotFoundException>()));
+      expect(
+        () => api.getRegion('atlantis'),
+        throwsA(isA<NotFoundException>()),
+      );
     });
   });
 
@@ -175,23 +187,31 @@ void main() {
       expect(data.models, hasLength(3));
     });
 
-    test('the assistant answers with a table and keeps the conversation id', () async {
-      final reply = await api.sendMessage(
-        message: 'Which region needs help most?',
-        language: 'en',
-        conversationId: 'conv_x',
-      );
-      expect(reply.conversationId, 'conv_x');
-      expect(reply.table, hasLength(3));
-      expect(reply.sources.single.period, '2025-Q4');
-      expect(reply.suggestedPrompts, isNotEmpty);
-    });
+    test(
+      'the assistant answers with a table and keeps the conversation id',
+      () async {
+        final reply = await api.sendMessage(
+          message: 'Which region needs help most?',
+          language: 'en',
+          conversationId: 'conv_x',
+        );
+        expect(reply.conversationId, 'conv_x');
+        expect(reply.table, hasLength(3));
+        expect(reply.sources.single.period, '2025-Q4');
+        expect(reply.suggestedPrompts, isNotEmpty);
+      },
+    );
 
     test('an empty message is rejected like the server would', () async {
       expect(
         () => api.sendMessage(message: '   ', language: 'en'),
-        throwsA(isA<ValidationException>()
-            .having((e) => e.fields.keys, 'fields', contains('message'))),
+        throwsA(
+          isA<ValidationException>().having(
+            (e) => e.fields.keys,
+            'fields',
+            contains('message'),
+          ),
+        ),
       );
     });
 
@@ -203,11 +223,15 @@ void main() {
     });
 
     test('adding to the plan or dismissing removes the suggestion', () async {
-      final added = await api.acceptRecommendation('rec_frontier_mobile_clinics');
+      final added = await api.acceptRecommendation(
+        'rec_frontier_mobile_clinics',
+      );
       expect(added.status, RecommendationStatus.inPlan);
       expect(await api.getRecommendations(), hasLength(3));
 
-      final dismissed = await api.dismissRecommendation('rec_delta_harbor_rail');
+      final dismissed = await api.dismissRecommendation(
+        'rec_delta_harbor_rail',
+      );
       expect(dismissed.status, RecommendationStatus.dismissed);
       final left = await api.getRecommendations();
       expect(left.map((r) => r.id), isNot(contains('rec_delta_harbor_rail')));
@@ -215,7 +239,10 @@ void main() {
     });
 
     test('an unknown recommendation is not found', () async {
-      expect(() => api.acceptRecommendation('nope'), throwsA(isA<NotFoundException>()));
+      expect(
+        () => api.acceptRecommendation('nope'),
+        throwsA(isA<NotFoundException>()),
+      );
     });
   });
 
@@ -251,14 +278,21 @@ void main() {
     test('a negative amount is rejected and names the field', () async {
       expect(
         () => api.simulate(_request(education: -1)),
-        throwsA(isA<ValidationException>()
-            .having((e) => e.fields.keys, 'fields', contains('allocations.education'))),
+        throwsA(
+          isA<ValidationException>().having(
+            (e) => e.fields.keys,
+            'fields',
+            contains('allocations.education'),
+          ),
+        ),
       );
     });
 
     test('an unknown region is rejected', () async {
-      expect(() => api.simulate(_request(region: 'atlantis')),
-          throwsA(isA<ValidationException>()));
+      expect(
+        () => api.simulate(_request(region: 'atlantis')),
+        throwsA(isA<ValidationException>()),
+      );
     });
 
     test('projects can be filtered by status and keep their summary', () async {
@@ -271,7 +305,9 @@ void main() {
       expect(delayed.projectsCount, 5);
       expect(delayed.totalBudget.amount, 528e6);
 
-      final done = (await api.getProjects(status: ProjectStatus.completed)).items.single;
+      final done = (await api.getProjects(status: ProjectStatus.completed))
+          .items
+          .single;
       expect(done.dueDate, isNull);
       expect(done.completedAt, isNotNull);
     });
@@ -279,15 +315,23 @@ void main() {
     test('citizen reports can be filtered by category', () async {
       final roads = await api.getCitizenReports(category: ReportCategory.roads);
       expect(roads.items, hasLength(2));
-      expect(roads.items.every((r) => r.category == ReportCategory.roads), isTrue);
+      expect(
+        roads.items.every((r) => r.category == ReportCategory.roads),
+        isTrue,
+      );
 
-      final escalated = await api.getCitizenReports(status: ReportStatus.escalated);
+      final escalated = await api.getCitizenReports(
+        status: ReportStatus.escalated,
+      );
       expect(escalated.items, hasLength(2));
     });
 
     test('report times are moved to the real now', () async {
       final data = await api.getCitizenReports();
-      expect(_now.difference(data.items.first.createdAt), const Duration(hours: 2));
+      expect(
+        _now.difference(data.items.first.createdAt),
+        const Duration(hours: 2),
+      );
       expect(_now.difference(data.items[2].createdAt), const Duration(days: 1));
     });
 

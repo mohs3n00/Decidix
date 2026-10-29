@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
 
@@ -23,7 +24,11 @@ class HatchPainter extends CustomPainter {
       ..strokeCap = StrokeCap.butt;
     // Lines rising to the right, one every [gap] pixels along the bottom edge.
     for (var x = -size.height; x < size.width; x += gap) {
-      canvas.drawLine(Offset(x, size.height), Offset(x + size.height, 0), paint);
+      canvas.drawLine(
+        Offset(x, size.height),
+        Offset(x + size.height, 0),
+        paint,
+      );
     }
   }
 

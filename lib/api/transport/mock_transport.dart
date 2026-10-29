@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:math' as math;
+
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
+
 import '../../core/errors/app_exception.dart';
 import '../models/json.dart';
 import 'api_transport.dart';
@@ -24,18 +26,21 @@ class MockTransport implements ApiTransport {
     AssetBundle? bundle,
     DateTime Function()? now,
     this.latency = const Duration(milliseconds: 150),
-  })  : _bundle = bundle ?? rootBundle,
-        _now = now ?? DateTime.now;
+  }) : _bundle = bundle ?? rootBundle,
+       _now = now ?? DateTime.now;
 
   static const _root = 'assets/mock';
 
   /// "Now" inside the report examples; timestamps are moved to the real now.
   static final _reportAnchor = DateTime.utc(2025, 11, 3, 12);
 
-  static final _sectorPath = RegExp(r'^/insights/(education|healthcare|economy|infrastructure)$');
+  static final _sectorPath = RegExp(
+    r'^/insights/(education|healthcare|economy|infrastructure)$',
+  );
   static final _regionPath = RegExp(r'^/regions/([a-z0-9_]+)$');
-  static final _recommendationPath =
-      RegExp(r'^/intelligence/recommendations/([^/]+)/(accept|dismiss)$');
+  static final _recommendationPath = RegExp(
+    r'^/intelligence/recommendations/([^/]+)/(accept|dismiss)$',
+  );
   static final _likePath = RegExp(r'^/decisions/citizen-reports/([^/]+)/like$');
 
   final AssetBundle _bundle;
@@ -114,9 +119,11 @@ class MockTransport implements ApiTransport {
     final search = _text(params, 'q')?.trim().toLowerCase();
     if (search != null && search.isNotEmpty) {
       rows = rows
-          .where((r) =>
-              (r['name'] as String).toLowerCase().contains(search) ||
-              (r['arabic_name'] as String).contains(search))
+          .where(
+            (r) =>
+                (r['name'] as String).toLowerCase().contains(search) ||
+                (r['arabic_name'] as String).contains(search),
+          )
           .toList();
     }
 
@@ -134,14 +141,24 @@ class MockTransport implements ApiTransport {
     final shift = _number(row['score']) - _number(data['score']);
 
     for (final key in const [
-      'id', 'name', 'arabic_name', 'rank', 'score', 'change', 'priority', 'population',
+      'id',
+      'name',
+      'arabic_name',
+      'rank',
+      'score',
+      'change',
+      'priority',
+      'population',
     ]) {
       data[key] = row[key];
     }
     data['rank_total'] = rows.length;
 
     for (final domain in asMapList(data['domains'], 'domains')) {
-      domain['score'] = (_number(domain['score']) + shift).round().clamp(0, 100);
+      domain['score'] = (_number(domain['score']) + shift).round().clamp(
+        0,
+        100,
+      );
     }
     final history = asMap(data['history'], 'history');
     for (final point in asMapList(history['region'], 'history.region')) {
@@ -163,9 +180,15 @@ class MockTransport implements ApiTransport {
     final b = asMap((await _regionProfile(bId)).data, 'b');
 
     final labels = {
-      for (final m in asMapList(example['metrics'], 'metrics')) m['key'] as String: m,
+      for (final m in asMapList(example['metrics'], 'metrics'))
+        m['key'] as String: m,
     };
-    JsonMap metric(String key, Object? scoreA, Object? scoreB, JsonMap fallback) {
+    JsonMap metric(
+      String key,
+      Object? scoreA,
+      Object? scoreB,
+      JsonMap fallback,
+    ) {
       final label = labels[key] ?? fallback;
       return {
         'key': key,
@@ -181,39 +204,49 @@ class MockTransport implements ApiTransport {
     final metrics = <JsonMap>[
       metric('overall', a['score'], b['score'], const {}),
       for (var i = 0; i < domainsA.length; i++)
-        metric(domainsA[i]['key'] as String, domainsA[i]['score'], domainsB[i]['score'],
-            domainsA[i]),
+        metric(
+          domainsA[i]['key'] as String,
+          domainsA[i]['score'],
+          domainsB[i]['score'],
+          domainsA[i],
+        ),
     ];
 
     final aLeads = _number(a['score']) >= _number(b['score']);
     final leader = aLeads ? a : b;
     final trailer = aLeads ? b : a;
     final gap = (_number(leader['score']) - _number(trailer['score'])).round();
-    final widest = metrics.skip(1).reduce((x, y) =>
-        (_number(x['score_a']) - _number(x['score_b'])).abs() >=
-                (_number(y['score_a']) - _number(y['score_b'])).abs()
-            ? x
-            : y);
+    final widest = metrics
+        .skip(1)
+        .reduce(
+          (x, y) =>
+              (_number(x['score_a']) - _number(x['score_b'])).abs() >=
+                  (_number(y['score_a']) - _number(y['score_b'])).abs()
+              ? x
+              : y,
+        );
 
     return ApiEnvelope({
       'a': _side(a),
       'b': _side(b),
       'metrics': metrics,
       'gap_analysis': {
-        'text': '${leader['name']} leads ${trailer['name']} by $gap index points. '
+        'text':
+            '${leader['name']} leads ${trailer['name']} by $gap index points. '
             'The widest gap is in ${(widest['label'] as String).toLowerCase()}.',
-        'arabic_text': 'تتقدم ${leader['arabic_name']} على ${trailer['arabic_name']} '
+        'arabic_text':
+            'تتقدم ${leader['arabic_name']} على ${trailer['arabic_name']} '
             'بفارق $gap نقطة في المؤشر. وأوسع فجوة في ${widest['arabic_label']}.',
       },
     });
   }
 
   JsonMap _side(JsonMap profile) => {
-        'id': profile['id'],
-        'name': profile['name'],
-        'arabic_name': profile['arabic_name'],
-        'score': profile['score'],
-      };
+    'id': profile['id'],
+    'name': profile['name'],
+    'arabic_name': profile['arabic_name'],
+    'score': profile['score'],
+  };
 
   Future<ApiEnvelope> _priority(Map<String, dynamic> params) async {
     final data = await _data('insights/priority.json');
@@ -223,11 +256,15 @@ class MockTransport implements ApiTransport {
   }
 
   Future<ApiEnvelope> _recommendations(Map<String, dynamic> params) async {
-    var items = asMapList((await _load('intelligence/recommendations.json'))['data']);
+    var items = asMapList(
+      (await _load('intelligence/recommendations.json'))['data'],
+    );
     items = items
-        .where((r) =>
-            !_plannedRecommendations.contains(r['id']) &&
-            !_dismissedRecommendations.contains(r['id']))
+        .where(
+          (r) =>
+              !_plannedRecommendations.contains(r['id']) &&
+              !_dismissedRecommendations.contains(r['id']),
+        )
         .toList();
     final priority = _text(params, 'priority');
     if (priority != null && priority != 'all') {
@@ -263,8 +300,9 @@ class MockTransport implements ApiTransport {
 
     final shift = _now().toUtc().difference(_reportAnchor);
     for (final report in items) {
-      report['created_at'] =
-          DateTime.parse(report['created_at'] as String).add(shift).toIso8601String();
+      report['created_at'] = DateTime.parse(report['created_at'] as String)
+          .add(shift)
+          .toIso8601String();
       if (_likedReports.contains(report['id'])) {
         report['likes'] = _number(report['likes']).toInt() + 1;
         report['liked_by_me'] = true;
@@ -296,7 +334,10 @@ class MockTransport implements ApiTransport {
 
     final recommendation = _recommendationPath.firstMatch(route);
     if (recommendation != null) {
-      return _answerRecommendation(recommendation[1]!, accept: recommendation[2] == 'accept');
+      return _answerRecommendation(
+        recommendation[1]!,
+        accept: recommendation[2] == 'accept',
+      );
     }
     final like = _likePath.firstMatch(route);
     if (like != null) return _toggleLike(like[1]!);
@@ -308,7 +349,9 @@ class MockTransport implements ApiTransport {
     final request = _body(body);
     final message = (request['message'] as String?)?.trim() ?? '';
     if (message.isEmpty) {
-      throw const ValidationException('Invalid request', {'message': 'is required'});
+      throw const ValidationException('Invalid request', {
+        'message': 'is required',
+      });
     }
     final data = await _data('intelligence/assistant_chat.json');
     final conversation = request['conversation_id'];
@@ -321,11 +364,17 @@ class MockTransport implements ApiTransport {
     final regionId = request['region_id'];
     final allocations = request['allocations'];
     if (allocations is! Map) {
-      throw const ValidationException('Invalid request', {'allocations': 'is required'});
+      throw const ValidationException('Invalid request', {
+        'allocations': 'is required',
+      });
     }
-    final row = (await _regionRows()).where((r) => r['id'] == regionId).firstOrNull;
+    final row = (await _regionRows())
+        .where((r) => r['id'] == regionId)
+        .firstOrNull;
     if (row == null) {
-      throw const ValidationException('Invalid request', {'region_id': 'is not a region'});
+      throw const ValidationException('Invalid request', {
+        'region_id': 'is not a region',
+      });
     }
 
     final example = await _data('decisions/simulate.json');
@@ -336,9 +385,14 @@ class MockTransport implements ApiTransport {
       final domain = lever['domain'] as String;
       final amount = _number(allocations[domain] ?? 0);
       if (amount < 0) {
-        throw ValidationException('Invalid request', {'allocations.$domain': 'must not be negative'});
+        throw ValidationException('Invalid request', {
+          'allocations.$domain': 'must not be negative',
+        });
       }
-      final leverGain = _round(amount / 1e6 * _number(lever['yield_per_million']), 2);
+      final leverGain = _round(
+        amount / 1e6 * _number(lever['yield_per_million']),
+        2,
+      );
       levers.add({
         'domain': domain,
         'amount': amount,
@@ -363,8 +417,13 @@ class MockTransport implements ApiTransport {
     });
   }
 
-  Future<ApiEnvelope> _answerRecommendation(String id, {required bool accept}) async {
-    final items = asMapList((await _load('intelligence/recommendations.json'))['data']);
+  Future<ApiEnvelope> _answerRecommendation(
+    String id, {
+    required bool accept,
+  }) async {
+    final items = asMapList(
+      (await _load('intelligence/recommendations.json'))['data'],
+    );
     if (!items.any((r) => r['id'] == id)) {
       throw NotFoundException('Recommendation "$id" does not exist');
     }
@@ -379,7 +438,9 @@ class MockTransport implements ApiTransport {
   }
 
   Future<ApiEnvelope> _toggleLike(String id) async {
-    final items = asMapList((await _data('decisions/citizen_reports.json'))['items']);
+    final items = asMapList(
+      (await _data('decisions/citizen_reports.json'))['items'],
+    );
     final report = items.where((r) => r['id'] == id).firstOrNull;
     if (report == null) throw NotFoundException('Report "$id" does not exist');
 
@@ -402,7 +463,8 @@ class MockTransport implements ApiTransport {
     return asMap(jsonDecode(await _bundle.loadString('$_root/$file')), file);
   }
 
-  Future<JsonMap> _data(String file) async => asMap((await _load(file))['data'], '$file data');
+  Future<JsonMap> _data(String file) async =>
+      asMap((await _load(file))['data'], '$file data');
 
   Future<ApiEnvelope> _file(String file) async {
     final json = await _load(file);
@@ -416,17 +478,25 @@ class MockTransport implements ApiTransport {
 
   JsonMap _body(Object? body) {
     if (body is JsonMap) return body;
-    throw const ValidationException('Invalid request', {'body': 'must be a JSON object'});
+    throw const ValidationException('Invalid request', {
+      'body': 'must be a JSON object',
+    });
   }
 
-  ({List<JsonMap> items, JsonMap meta}) _paginate(List<JsonMap> all, Map<String, dynamic> params) {
+  ({List<JsonMap> items, JsonMap meta}) _paginate(
+    List<JsonMap> all,
+    Map<String, dynamic> params,
+  ) {
     final perPage = _integer(params, 'per_page', 20).clamp(1, 100).toInt();
     final page = math.max(1, _integer(params, 'page', 1));
     final start = (page - 1) * perPage;
     final items = start >= all.length
         ? <JsonMap>[]
         : all.sublist(start, math.min(all.length, start + perPage));
-    return (items: items, meta: {'page': page, 'per_page': perPage, 'total': all.length});
+    return (
+      items: items,
+      meta: {'page': page, 'per_page': perPage, 'total': all.length},
+    );
   }
 
   String? _text(Map<String, dynamic> params, String key) {

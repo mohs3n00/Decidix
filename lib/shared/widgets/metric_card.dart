@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../api/models/common.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
@@ -38,7 +39,9 @@ class MetricCard extends StatelessWidget {
                   metric.label.resolve(locale),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTypography.captionMedium.copyWith(color: AppColors.ink),
+                  style: AppTypography.captionMedium.copyWith(
+                    color: AppColors.ink,
+                  ),
                 ),
               ),
               if (icon != null)
@@ -46,7 +49,10 @@ class MetricCard extends StatelessWidget {
                   icon!,
                   width: 16,
                   height: 16,
-                  colorFilter: const ColorFilter.mode(AppColors.blue, BlendMode.srcIn),
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.blue,
+                    BlendMode.srcIn,
+                  ),
                 ),
             ],
           ),
@@ -69,16 +75,24 @@ class MetricCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   text.unit,
-                  style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
+                  style: AppTypography.captionRegular.copyWith(
+                    color: AppColors.ink,
+                  ),
                 ),
               ],
             ],
           ),
           const SizedBox(height: 8),
-          Row(
+          // On a narrow card or with large text the sparkline drops below.
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            runSpacing: 8,
             children: [
-              TrendIndicator(value: metric.change, inverted: !metric.higherIsBetter),
-              const Spacer(),
+              TrendIndicator(
+                value: metric.change,
+                inverted: !metric.higherIsBetter,
+              ),
               if (metric.sparkline.length > 1)
                 Sparkline(
                   values: metric.sparkline,

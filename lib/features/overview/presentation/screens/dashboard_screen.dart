@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../api/models/common.dart';
 import '../../../../core/format/formatters.dart';
 import '../../../../shared/widgets/ai_insight_panel.dart';
@@ -45,7 +46,9 @@ class DashboardScreen extends ConsumerWidget {
             title: fmt.tr('ov_needs_attention'),
             actionLabel: fmt.tr('label_see_all'),
             onAction: () {
-              ref.read(regionsFilterProvider.notifier).setPriority(Priority.high);
+              ref
+                  .read(regionsFilterProvider.notifier)
+                  .setPriority(Priority.high);
               context.go('/overview/regions');
             },
             child: Column(

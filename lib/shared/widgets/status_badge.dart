@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_typography.dart';
@@ -16,25 +17,25 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final (background, foreground) = switch (tone) {
       BadgeTone.high => (
-          AppColors.danger.withValues(alpha: 0.10),
-          AppColors.dangerText,
-        ),
+        AppColors.danger.withValues(alpha: 0.10),
+        AppColors.dangerText,
+      ),
       BadgeTone.medium => (
-          AppColors.warning.withValues(alpha: 0.15),
-          AppColors.warningText,
-        ),
+        AppColors.warning.withValues(alpha: 0.15),
+        AppColors.warningText,
+      ),
       BadgeTone.low => (
-          AppColors.success.withValues(alpha: 0.12),
-          AppColors.successText,
-        ),
+        AppColors.success.withValues(alpha: 0.12),
+        AppColors.successText,
+      ),
       BadgeTone.info => (
-          AppColors.blue.withValues(alpha: 0.10),
-          AppColors.blue,
-        ),
+        AppColors.blue.withValues(alpha: 0.10),
+        AppColors.blue,
+      ),
       BadgeTone.neutral => (
-          AppColors.ink.withValues(alpha: 0.10),
-          AppColors.ink,
-        ),
+        AppColors.ink.withValues(alpha: 0.10),
+        AppColors.ink,
+      ),
     };
 
     return Container(

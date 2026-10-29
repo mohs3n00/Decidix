@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../api/models/common.dart';
 import '../../../../core/format/formatters.dart';
 import '../../../../shared/widgets/ai_insight_panel.dart';
@@ -46,7 +47,10 @@ class SectorScreen extends ConsumerWidget {
           final percent = d.breakdown.unit == MetricUnit.percent;
           final maxBar = percent
               ? 100.0
-              : d.breakdown.bars.fold<double>(1, (m, b) => b.value > m ? b.value : m);
+              : d.breakdown.bars.fold<double>(
+                  1,
+                  (m, b) => b.value > m ? b.value : m,
+                );
 
           return [
             MetricGrid(metrics: d.kpis),
@@ -59,14 +63,18 @@ class SectorScreen extends ConsumerWidget {
                 child: TrendLineCard(points: d.trend),
               ),
             Section(
-              title: '${d.breakdown.title.resolve(locale)}${percent ? ' (%)' : ''}',
+              title:
+                  '${d.breakdown.title.resolve(locale)}${percent ? ' (%)' : ''}',
               child: DecidixCard(
                 child: BarChartView(
                   maxValue: maxBar,
                   valueLabel: (v) => fmt.number(v, decimals: 0),
                   bars: [
                     for (final bar in d.breakdown.bars)
-                      ChartBarData(label: bar.label.resolve(locale), value: bar.value),
+                      ChartBarData(
+                        label: bar.label.resolve(locale),
+                        value: bar.value,
+                      ),
                   ],
                 ),
               ),
@@ -90,7 +98,10 @@ class SectorScreen extends ConsumerWidget {
             ),
             Section(
               title: fmt.tr('in_regional_ranking'),
-              child: RegionalRanking(top: d.rankingTop, bottom: d.rankingBottom),
+              child: RegionalRanking(
+                top: d.rankingTop,
+                bottom: d.rankingBottom,
+              ),
             ),
             AiInsightPanel(
               label: fmt.tr('label_ai_insight'),

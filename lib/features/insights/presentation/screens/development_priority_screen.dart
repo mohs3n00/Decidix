@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../api/models/common.dart';
 import '../../../../api/models/insights.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -35,11 +36,17 @@ class DevelopmentPriorityScreen extends ConsumerWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(child: _Count(count: data.high, level: Priority.high)),
+                Expanded(
+                  child: _Count(count: data.high, level: Priority.high),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _Count(count: data.medium, level: Priority.medium)),
+                Expanded(
+                  child: _Count(count: data.medium, level: Priority.medium),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _Count(count: data.low, level: Priority.low)),
+                Expanded(
+                  child: _Count(count: data.low, level: Priority.low),
+                ),
               ],
             ),
           ),
@@ -51,7 +58,8 @@ class DevelopmentPriorityScreen extends ConsumerWidget {
                   if (i > 0) const SizedBox(height: 10),
                   _QueueCard(
                     entry: entry,
-                    onTap: () => context.push('/overview/regions/${entry.regionId}'),
+                    onTap: () =>
+                        context.push('/overview/regions/${entry.regionId}'),
                   ),
                 ],
               ],
@@ -83,7 +91,10 @@ class _Count extends StatelessWidget {
             style: AppTypography.adapt(context, AppTypography.numberL),
           ),
           const SizedBox(height: 6),
-          StatusBadge(label: fmt.priority(level), tone: RegionRow.toneFor(level)),
+          StatusBadge(
+            label: fmt.priority(level),
+            tone: RegionRow.toneFor(level),
+          ),
         ],
       ),
     );
@@ -121,12 +132,16 @@ class _QueueCard extends StatelessWidget {
                   children: [
                     Text(
                       '${entry.rank}',
-                      style: AppTypography.captionMedium.copyWith(color: AppColors.ink),
+                      style: AppTypography.captionMedium.copyWith(
+                        color: AppColors.ink,
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    StatusBadge(
-                      label: fmt.priority(entry.priority),
-                      tone: RegionRow.toneFor(entry.priority),
+                    Flexible(
+                      child: StatusBadge(
+                        label: fmt.priority(entry.priority),
+                        tone: RegionRow.toneFor(entry.priority),
+                      ),
                     ),
                   ],
                 ),
@@ -136,7 +151,9 @@ class _QueueCard extends StatelessWidget {
                     'domain': entry.weakestDomain.label.resolve(locale),
                     'score': fmt.number(entry.weakestDomain.score, decimals: 0),
                   }),
-                  style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
+                  style: AppTypography.captionRegular.copyWith(
+                    color: AppColors.ink,
+                  ),
                 ),
               ],
             ),
@@ -151,7 +168,9 @@ class _QueueCard extends StatelessWidget {
               ),
               Text(
                 fmt.tr('prio_need_score'),
-                style: AppTypography.microRegular.copyWith(color: AppColors.ink),
+                style: AppTypography.microRegular.copyWith(
+                  color: AppColors.ink,
+                ),
               ),
             ],
           ),

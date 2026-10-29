@@ -9,11 +9,11 @@ class SimulationRequest {
   const SimulationRequest({required this.regionId, required this.allocations});
 
   Map<String, dynamic> toJson() => {
-        'region_id': regionId,
-        'allocations': {
-          for (final entry in allocations.entries) wireName(entry.key): entry.value,
-        },
-      };
+    'region_id': regionId,
+    'allocations': {
+      for (final entry in allocations.entries) wireName(entry.key): entry.value,
+    },
+  };
 }
 
 class SimulationLever {
@@ -32,11 +32,11 @@ class SimulationLever {
   });
 
   factory SimulationLever.fromJson(JsonMap json) => SimulationLever(
-        domain: parseDomain(json['domain']),
-        amount: json.number('amount'),
-        gain: json.number('gain'),
-        yieldPerMillion: json.number('yield_per_million'),
-      );
+    domain: parseDomain(json['domain']),
+    amount: json.number('amount'),
+    gain: json.number('gain'),
+    yieldPerMillion: json.number('yield_per_million'),
+  );
 }
 
 class SimulationResult {
@@ -111,15 +111,19 @@ class Project {
   });
 
   factory Project.fromJson(JsonMap json) => Project(
-        id: json.string('id'),
-        title: LocalizedText.read(json, 'title'),
-        region: RegionRef.fromJson(json.object('region')),
-        status: parseEnum(ProjectStatus.values, json['status'], ProjectStatus.unknown),
-        progress: json.number('progress'),
-        budget: Money.fromJson(json.object('budget')),
-        dueDate: _date(json.maybeString('due_date')),
-        completedAt: _date(json.maybeString('completed_at')),
-      );
+    id: json.string('id'),
+    title: LocalizedText.read(json, 'title'),
+    region: RegionRef.fromJson(json.object('region')),
+    status: parseEnum(
+      ProjectStatus.values,
+      json['status'],
+      ProjectStatus.unknown,
+    ),
+    progress: json.number('progress'),
+    budget: Money.fromJson(json.object('budget')),
+    dueDate: _date(json.maybeString('due_date')),
+    completedAt: _date(json.maybeString('completed_at')),
+  );
 }
 
 DateTime? _date(String? raw) => raw == null ? null : DateTime.parse(raw);
@@ -141,12 +145,12 @@ class ProjectsData {
 
   /// The same totals with a later page of projects added at the end.
   ProjectsData withMore(List<Project> more, PageMeta newMeta) => ProjectsData(
-        projectsCount: projectsCount,
-        totalBudget: totalBudget,
-        delayedCount: delayedCount,
-        items: [...items, ...more],
-        meta: newMeta,
-      );
+    projectsCount: projectsCount,
+    totalBudget: totalBudget,
+    delayedCount: delayedCount,
+    items: [...items, ...more],
+    meta: newMeta,
+  );
 
   factory ProjectsData.fromJson(JsonMap json, JsonMap? meta) {
     final summary = json.object('summary');
@@ -189,28 +193,36 @@ class CitizenReport {
   });
 
   CitizenReport copyWith({int? likes, bool? likedByMe}) => CitizenReport(
-        id: id,
-        category: category,
-        title: title,
-        region: region,
-        createdAt: createdAt,
-        likes: likes ?? this.likes,
-        likedByMe: likedByMe ?? this.likedByMe,
-        priority: priority,
-        status: status,
-      );
+    id: id,
+    category: category,
+    title: title,
+    region: region,
+    createdAt: createdAt,
+    likes: likes ?? this.likes,
+    likedByMe: likedByMe ?? this.likedByMe,
+    priority: priority,
+    status: status,
+  );
 
   factory CitizenReport.fromJson(JsonMap json) => CitizenReport(
-        id: json.string('id'),
-        category: parseEnum(ReportCategory.values, json['category'], ReportCategory.unknown),
-        title: LocalizedText.read(json, 'title'),
-        region: RegionRef.fromJson(json.object('region')),
-        createdAt: DateTime.parse(json.string('created_at')),
-        likes: json.integer('likes'),
-        likedByMe: json.flag('liked_by_me'),
-        priority: parsePriority(json['priority']),
-        status: parseEnum(ReportStatus.values, json['status'], ReportStatus.unknown),
-      );
+    id: json.string('id'),
+    category: parseEnum(
+      ReportCategory.values,
+      json['category'],
+      ReportCategory.unknown,
+    ),
+    title: LocalizedText.read(json, 'title'),
+    region: RegionRef.fromJson(json.object('region')),
+    createdAt: DateTime.parse(json.string('created_at')),
+    likes: json.integer('likes'),
+    likedByMe: json.flag('liked_by_me'),
+    priority: parsePriority(json['priority']),
+    status: parseEnum(
+      ReportStatus.values,
+      json['status'],
+      ReportStatus.unknown,
+    ),
+  );
 }
 
 /// A headline number with its change ("Open this week", "Resolved rate").
@@ -226,10 +238,10 @@ class ReportStat {
   });
 
   factory ReportStat.fromJson(JsonMap json) => ReportStat(
-        value: json.number('value'),
-        change: json.number('change'),
-        higherIsBetter: json.flag('higher_is_better'),
-      );
+    value: json.number('value'),
+    change: json.number('change'),
+    higherIsBetter: json.flag('higher_is_better'),
+  );
 }
 
 class ReportsData {
@@ -245,7 +257,8 @@ class ReportsData {
     required this.meta,
   });
 
-  ReportsData withItems(List<CitizenReport> items, {PageMeta? newMeta}) => ReportsData(
+  ReportsData withItems(List<CitizenReport> items, {PageMeta? newMeta}) =>
+      ReportsData(
         openThisWeek: openThisWeek,
         resolvedRate: resolvedRate,
         items: items,
@@ -269,11 +282,15 @@ class LikeResult {
   final int likes;
   final bool likedByMe;
 
-  const LikeResult({required this.id, required this.likes, required this.likedByMe});
+  const LikeResult({
+    required this.id,
+    required this.likes,
+    required this.likedByMe,
+  });
 
   factory LikeResult.fromJson(JsonMap json) => LikeResult(
-        id: json.string('id'),
-        likes: json.integer('likes'),
-        likedByMe: json.flag('liked_by_me'),
-      );
+    id: json.string('id'),
+    likes: json.integer('likes'),
+    likedByMe: json.flag('liked_by_me'),
+  );
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import 'section_header.dart';
@@ -67,10 +68,14 @@ class DecidixPage extends StatelessWidget {
           PageTitle(eyebrow: eyebrow, title: title!),
         ],
         for (final (i, child) in children.indexed) ...[
-          if (i > 0 || tabs != null || title != null) const SizedBox(height: 20),
+          if (i > 0 || tabs != null || title != null)
+            const SizedBox(height: 20),
           child,
         ],
-        if (loadingMore) ...[const SizedBox(height: 12), const SkeletonBox(height: 78)],
+        if (loadingMore) ...[
+          const SizedBox(height: 12),
+          const SkeletonBox(height: 78),
+        ],
       ],
     );
 
@@ -116,8 +121,10 @@ class PageTitle extends StatelessWidget {
         if (eyebrow != null)
           Text(
             eyebrow!,
-            style: AppTypography.adapt(context, AppTypography.captionRegular)
-                .copyWith(color: AppColors.fadedInk),
+            style: AppTypography.adapt(
+              context,
+              AppTypography.captionRegular,
+            ).copyWith(color: AppColors.fadedInk),
           ),
         if (eyebrow != null) const SizedBox(height: 6),
         Text.rich(
@@ -126,7 +133,10 @@ class PageTitle extends StatelessWidget {
             children: [
               TextSpan(text: head),
               if (tail.isNotEmpty)
-                TextSpan(text: tail, style: TextStyle(color: AppColors.fadedInk)),
+                TextSpan(
+                  text: tail,
+                  style: TextStyle(color: AppColors.fadedInk),
+                ),
             ],
           ),
         ),
@@ -156,7 +166,11 @@ class Section extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (title != null) ...[
-          SectionHeader(title: title!, actionLabel: actionLabel, onAction: onAction),
+          SectionHeader(
+            title: title!,
+            actionLabel: actionLabel,
+            onAction: onAction,
+          ),
           const SizedBox(height: 12),
         ],
         child,

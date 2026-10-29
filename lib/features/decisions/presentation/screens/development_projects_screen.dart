@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../../../api/models/decisions.dart';
 import '../../../../api/models/json.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -48,7 +49,10 @@ class DevelopmentProjectsScreen extends ConsumerWidget {
           StatRow(
             tiles: [
               StatTile(
-                value: fmt.number(projects.value!.data.projectsCount, decimals: 0),
+                value: fmt.number(
+                  projects.value!.data.projectsCount,
+                  decimals: 0,
+                ),
                 label: fmt.tr('proj_active'),
               ),
               StatTile(
@@ -56,7 +60,10 @@ class DevelopmentProjectsScreen extends ConsumerWidget {
                 label: fmt.tr('proj_budget'),
               ),
               StatTile(
-                value: fmt.number(projects.value!.data.delayedCount, decimals: 0),
+                value: fmt.number(
+                  projects.value!.data.delayedCount,
+                  decimals: 0,
+                ),
                 label: fmt.tr('proj_delayed'),
               ),
             ],
@@ -64,10 +71,14 @@ class DevelopmentProjectsScreen extends ConsumerWidget {
         ChipScrollRow(
           labels: [
             for (final s in _filters)
-              s == null ? fmt.tr('filter_all') : fmt.tr('proj_status_${wireName(s)}'),
+              s == null
+                  ? fmt.tr('filter_all')
+                  : fmt.tr('proj_status_${wireName(s)}'),
           ],
           selectedIndex: _filters.indexOf(filter),
-          onSelected: (i) => ref.read(projectStatusFilterProvider.notifier).select(_filters[i]),
+          onSelected: (i) => ref
+              .read(projectStatusFilterProvider.notifier)
+              .select(_filters[i]),
         ),
         ...asyncSections(
           projects,
@@ -76,7 +87,8 @@ class DevelopmentProjectsScreen extends ConsumerWidget {
           builder: (paged) {
             if (paged.data.items.isEmpty) return const [EmptyView()];
             return [
-              for (final project in paged.data.items) _ProjectCard(project: project),
+              for (final project in paged.data.items)
+                _ProjectCard(project: project),
             ];
           },
         ),
@@ -118,7 +130,12 @@ class _ProjectCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: Text(project.title.resolve(locale), style: AppTypography.titleS)),
+              Expanded(
+                child: Text(
+                  project.title.resolve(locale),
+                  style: AppTypography.titleS,
+                ),
+              ),
               const SizedBox(width: 8),
               if (project.status != ProjectStatus.unknown)
                 StatusBadge(
@@ -134,10 +151,18 @@ class _ProjectCard extends StatelessWidget {
                 AppAssets.icLocation,
                 width: 14,
                 height: 14,
-                colorFilter: const ColorFilter.mode(AppColors.ink, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(
+                  AppColors.ink,
+                  BlendMode.srcIn,
+                ),
               ),
               const SizedBox(width: 6),
-              Text(project.region.name.resolve(locale), style: caption),
+              Flexible(
+                child: Text(
+                  project.region.name.resolve(locale),
+                  style: caption,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -151,27 +176,55 @@ class _ProjectCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Text(fmt.percent(project.progress), style: AppTypography.labelMStrong),
+              Text(
+                fmt.percent(project.progress),
+                style: AppTypography.labelMStrong,
+              ),
             ],
           ),
           const SizedBox(height: 12),
-          Row(
+          // Budget and due date: side by side, or one under the other when the
+          // card is narrow or the text is large.
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            runSpacing: 4,
+            spacing: 12,
             children: [
-              Text(fmt.tr('proj_budget'), style: caption),
-              const SizedBox(width: 6),
-              Text(fmt.money(project.budget), style: AppTypography.captionStrong),
-              const Spacer(),
-              // A finished project has no due date; it shows its status.
-              Text(
-                fmt.tr(project.dueDate == null ? 'proj_status_label' : 'proj_due'),
-                style: caption,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(fmt.tr('proj_budget'), style: caption),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      fmt.money(project.budget),
+                      style: AppTypography.captionStrong,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 6),
-              Text(
-                project.dueDate == null
-                    ? fmt.tr('proj_done')
-                    : fmt.monthYear(project.dueDate!),
-                style: AppTypography.captionStrong,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // A finished project has no due date; it shows its status.
+                  Text(
+                    fmt.tr(
+                      project.dueDate == null
+                          ? 'proj_status_label'
+                          : 'proj_due',
+                    ),
+                    style: caption,
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      project.dueDate == null
+                          ? fmt.tr('proj_done')
+                          : fmt.monthYear(project.dueDate!),
+                      style: AppTypography.captionStrong,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

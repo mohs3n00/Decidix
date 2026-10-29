@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 /// Checks on the project files that a build depends on. They fail early and
@@ -18,9 +19,17 @@ void main() {
       if (path.endsWith('/')) {
         final dir = Directory(path);
         expect(dir.existsSync(), isTrue, reason: '$path is listed but missing');
-        expect(dir.listSync().whereType<File>(), isNotEmpty, reason: '$path is empty');
+        expect(
+          dir.listSync().whereType<File>(),
+          isNotEmpty,
+          reason: '$path is empty',
+        );
       } else {
-        expect(File(path).existsSync(), isTrue, reason: '$path is listed but missing');
+        expect(
+          File(path).existsSync(),
+          isTrue,
+          reason: '$path is listed but missing',
+        );
       }
     }
   });
@@ -29,16 +38,27 @@ void main() {
     for (final file in ['Outfit-Variable.ttf', 'Cairo-Variable.ttf']) {
       final bytes = File('assets/fonts/$file').readAsBytesSync();
       // 0x00010000 is the signature of a TrueType file.
-      expect(bytes.sublist(0, 4), [0, 1, 0, 0], reason: '$file is not a TrueType font');
+      expect(bytes.sublist(0, 4), [
+        0,
+        1,
+        0,
+        0,
+      ], reason: '$file is not a TrueType font');
       expect(pubspec, contains('assets/fonts/$file'));
     }
-    expect(pubspec, isNot(contains('google_fonts')),
-        reason: 'fonts are bundled; google_fonts would download them at start');
+    expect(
+      pubspec,
+      isNot(contains('google_fonts')),
+      reason: 'fonts are bundled; google_fonts would download them at start',
+    );
   });
 
   test('the font licences are shipped with the fonts', () {
     for (final file in ['OFL-Outfit.txt', 'OFL-Cairo.txt']) {
-      expect(File('assets/fonts/$file').readAsStringSync(), contains('SIL OPEN FONT LICENSE'));
+      expect(
+        File('assets/fonts/$file').readAsStringSync(),
+        contains('SIL OPEN FONT LICENSE'),
+      );
     }
   });
 }

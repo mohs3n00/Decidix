@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 
 /// The page canvas: almost white, with a faint cyan and blue glow behind the

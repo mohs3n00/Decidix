@@ -58,6 +58,9 @@ const Map<String, String> commonEn = {
 
   // Top bar and shell
   'btn_back': 'Back',
+  'btn_account': 'Account',
+  'btn_notifications': 'Notifications',
+  'btn_language': 'Change language',
   'notifications_empty': 'You have no new notifications.',
   'label_ai_insight': 'AI insight',
   'label_see_all': 'See all',
@@ -152,6 +155,9 @@ const Map<String, String> commonAr = {
 
   // Top bar and shell
   'btn_back': 'رجوع',
+  'btn_account': 'الحساب',
+  'btn_notifications': 'الإشعارات',
+  'btn_language': 'تغيير اللغة',
   'notifications_empty': 'لا توجد إشعارات جديدة.',
   'label_ai_insight': 'رؤية الذكاء الاصطناعي',
   'label_see_all': 'عرض الكل',

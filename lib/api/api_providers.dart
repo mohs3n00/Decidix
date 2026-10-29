@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../core/config/app_config.dart';
 import '../core/network/api_client.dart';
 import '../core/network/api_endpoints.dart';
@@ -39,14 +40,18 @@ final apiTransportProvider = Provider<ApiTransport>((ref) {
   );
 });
 
-final overviewApiProvider =
-    Provider<OverviewApi>((ref) => OverviewApi(ref.watch(apiTransportProvider)));
+final overviewApiProvider = Provider<OverviewApi>(
+  (ref) => OverviewApi(ref.watch(apiTransportProvider)),
+);
 
-final insightsApiProvider =
-    Provider<InsightsApi>((ref) => InsightsApi(ref.watch(apiTransportProvider)));
+final insightsApiProvider = Provider<InsightsApi>(
+  (ref) => InsightsApi(ref.watch(apiTransportProvider)),
+);
 
-final intelligenceApiProvider =
-    Provider<IntelligenceApi>((ref) => IntelligenceApi(ref.watch(apiTransportProvider)));
+final intelligenceApiProvider = Provider<IntelligenceApi>(
+  (ref) => IntelligenceApi(ref.watch(apiTransportProvider)),
+);
 
-final decisionsApiProvider =
-    Provider<DecisionsApi>((ref) => DecisionsApi(ref.watch(apiTransportProvider)));
+final decisionsApiProvider = Provider<DecisionsApi>(
+  (ref) => DecisionsApi(ref.watch(apiTransportProvider)),
+);

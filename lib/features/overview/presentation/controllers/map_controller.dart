@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../api/api_providers.dart';
 import '../../../../api/models/overview.dart';
 
@@ -25,5 +26,6 @@ class SelectedMapRegion extends Notifier<String?> {
   void select(String? regionId) => state = regionId;
 }
 
-final selectedMapRegionProvider =
-    NotifierProvider<SelectedMapRegion, String?>(SelectedMapRegion.new);
+final selectedMapRegionProvider = NotifierProvider<SelectedMapRegion, String?>(
+  SelectedMapRegion.new,
+);

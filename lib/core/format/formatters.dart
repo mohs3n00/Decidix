@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+
 import '../../api/models/common.dart';
 import '../../api/models/insights.dart';
 import '../../api/models/json.dart';
@@ -45,7 +46,9 @@ class Fmt {
       RegExp(r'\B(?=(\d{3})+(?!\d))'),
       (_) => ',',
     );
-    final fraction = parts.length > 1 ? parts[1].replaceFirst(RegExp(r'0+$'), '') : '';
+    final fraction = parts.length > 1
+        ? parts[1].replaceFirst(RegExp(r'0+$'), '')
+        : '';
     final sign = value < 0 ? '-' : '';
     return fraction.isEmpty ? '$sign$grouped' : '$sign$grouped.$fraction';
   }
@@ -71,7 +74,8 @@ class Fmt {
   }
 
   /// `94` becomes `94%`.
-  String percent(num value, {int decimals = 0}) => '${number(value, decimals: decimals)}%';
+  String percent(num value, {int decimals = 0}) =>
+      '${number(value, decimals: decimals)}%';
 
   /// A change without its sign: the arrow and the colour show the direction.
   String percentChange(num change) => '${number(change.abs())}%';
@@ -111,7 +115,8 @@ class Fmt {
       unit == MetricUnit.percent ? percent(value) : number(value);
 
   /// `2026-03-31` becomes `Mar 2026`.
-  String monthYear(DateTime date) => '${tr('month_short_${date.month}')} ${date.year}';
+  String monthYear(DateTime date) =>
+      '${tr('month_short_${date.month}')} ${date.year}';
 
   /// `2h ago`, `1d ago`.
   String timeAgo(DateTime moment, DateTime now) {

@@ -26,7 +26,10 @@ class InsightsApi {
   }
 
   /// [sector] is `overall`, `education`, `healthcare` or `economy`.
-  Future<HistoricalData> getHistorical({String sector = 'overall', String range = '7Y'}) async {
+  Future<HistoricalData> getHistorical({
+    String sector = 'overall',
+    String range = '7Y',
+  }) async {
     final response = await _transport.get(
       ApiEndpoints.historical,
       query: {'sector': sector, 'range': range},
@@ -35,7 +38,10 @@ class InsightsApi {
   }
 
   Future<PriorityOverview> getPriority({int limit = 6}) async {
-    final response = await _transport.get(ApiEndpoints.priority, query: {'limit': limit});
+    final response = await _transport.get(
+      ApiEndpoints.priority,
+      query: {'limit': limit},
+    );
     return PriorityOverview.fromJson(asMap(response.data, 'data'));
   }
 

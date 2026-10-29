@@ -3,6 +3,7 @@ import 'package:decidix_app/core/errors/app_exception.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import '../helpers/pump_app.dart';
 
 /// The mock, remembering every POST and failing the likes on request.
@@ -11,8 +12,14 @@ class _Recording extends TestTransport {
   bool failLikes = false;
 
   @override
-  Future<ApiEnvelope> post(String path, {Object? body, CancelToken? cancelToken}) {
-    if (path == '/decisions/simulate') simulations.add(body! as Map<String, dynamic>);
+  Future<ApiEnvelope> post(
+    String path, {
+    Object? body,
+    CancelToken? cancelToken,
+  }) {
+    if (path == '/decisions/simulate') {
+      simulations.add(body! as Map<String, dynamic>);
+    }
     if (failLikes && path.endsWith('/like')) {
       return Future.error(const NetworkException());
     }
@@ -20,7 +27,10 @@ class _Recording extends TestTransport {
   }
 }
 
-Future<void> openDecisions(WidgetTester tester, {ApiTransport? transport}) async {
+Future<void> openDecisions(
+  WidgetTester tester, {
+  ApiTransport? transport,
+}) async {
   await pumpApp(tester, transport: transport);
   await tester.tap(find.text('Decisions'));
   await tester.pumpAndSettle();
@@ -28,11 +38,16 @@ Future<void> openDecisions(WidgetTester tester, {ApiTransport? transport}) async
 
 void main() {
   group('Simulator', () {
-    testWidgets('starts with the weakest region and the default budget', (tester) async {
+    testWidgets('starts with the weakest region and the default budget', (
+      tester,
+    ) async {
       await openDecisions(tester);
 
       expect(find.text('What-If Simulator'), findsOneWidget);
-      expect(find.widgetWithText(InkWell, 'x'), findsNothing); // no stray placeholder
+      expect(
+        find.widgetWithText(InkWell, 'x'),
+        findsNothing,
+      ); // no stray placeholder
       expect(find.text('Frontier'), findsOneWidget); // the select field
       expect(find.text('Today 44'), findsOneWidget);
       expect(find.text('Projected in 24 months'), findsOneWidget);
@@ -46,7 +61,9 @@ void main() {
       await scrollTo(tester, find.text('SIMULATION NOTE'));
     });
 
-    testWidgets('moving a slider asks the server once, after a pause', (tester) async {
+    testWidgets('moving a slider asks the server once, after a pause', (
+      tester,
+    ) async {
       final transport = _Recording();
       await openDecisions(tester, transport: transport);
       transport.simulations.clear(); // the first, automatic request
@@ -64,7 +81,8 @@ void main() {
 
       await tester.pumpAndSettle(const Duration(milliseconds: 400));
       expect(transport.simulations, hasLength(1));
-      final healthcare = (transport.simulations.single['allocations'] as Map)['healthcare'];
+      final healthcare =
+          (transport.simulations.single['allocations'] as Map)['healthcare'];
       expect(healthcare, isNot(45000000.0));
     });
 
@@ -87,7 +105,12 @@ void main() {
 
       await tester.tap(find.text('Frontier'));
       await tester.pumpAndSettle();
-      await tester.tap(find.descendant(of: find.byType(BottomSheet), matching: find.text('Lakeside')));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(BottomSheet),
+          matching: find.text('Lakeside'),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(transport.simulations.last['region_id'], 'lakeside');
@@ -113,10 +136,15 @@ void main() {
       expect(find.text('Mar 2026'), findsOneWidget);
 
       await scrollTo(tester, find.text('Capital Metro Line 3'));
-      expect(find.text('Done'), findsOneWidget); // finished: shows its status, not a date
+      expect(
+        find.text('Done'),
+        findsOneWidget,
+      ); // finished: shows its status, not a date
     });
 
-    testWidgets('a status chip filters the list and keeps the totals', (tester) async {
+    testWidgets('a status chip filters the list and keeps the totals', (
+      tester,
+    ) async {
       await openProjects(tester);
       await tapChip(tester, 'Delayed');
 
@@ -127,19 +155,27 @@ void main() {
   });
 
   group('Citizen reports', () {
-    Future<void> openReports(WidgetTester tester, {ApiTransport? transport}) async {
+    Future<void> openReports(
+      WidgetTester tester, {
+      ApiTransport? transport,
+    }) async {
       await openDecisions(tester, transport: transport);
       await tapChip(tester, 'Reports');
     }
 
-    testWidgets('shows the stats and the reports with their age', (tester) async {
+    testWidgets('shows the stats and the reports with their age', (
+      tester,
+    ) async {
       await openReports(tester);
 
       expect(find.text('Citizen Reports'), findsOneWidget);
       expect(find.text('1,284'), findsOneWidget);
       expect(find.text('73%'), findsOneWidget);
       expect(find.text('Open this week'), findsOneWidget);
-      expect(find.text('Bridge deck cracking near market road'), findsOneWidget);
+      expect(
+        find.text('Bridge deck cracking near market road'),
+        findsOneWidget,
+      );
       expect(find.text('2h ago'), findsOneWidget);
       expect(find.text('128'), findsOneWidget);
       expect(find.text('Escalated'), findsWidgets);
@@ -153,7 +189,9 @@ void main() {
       expect(find.text('Bridge deck cracking near market road'), findsNothing);
     });
 
-    testWidgets('liking updates the count and unliking puts it back', (tester) async {
+    testWidgets('liking updates the count and unliking puts it back', (
+      tester,
+    ) async {
       await openReports(tester);
 
       await tester.tap(find.bySemanticsLabel('Like').first);
@@ -166,7 +204,9 @@ void main() {
       expect(find.text('128'), findsOneWidget);
     });
 
-    testWidgets('if the server refuses the like, the count goes back', (tester) async {
+    testWidgets('if the server refuses the like, the count goes back', (
+      tester,
+    ) async {
       final transport = _Recording()..failLikes = true;
       await openReports(tester, transport: transport);
 

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../localization/locale_controller.dart';
 import 'api_endpoints.dart';
 import 'auth_token.dart';
@@ -22,18 +23,19 @@ class ApiClient {
     String Function()? languageCode,
     AuthTokenReader? authToken,
     bool logRequests = kDebugMode,
-  }) : dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: baseUrl,
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 15),
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json',
-                },
-              ),
-            ) {
+  }) : dio =
+           dio ??
+           Dio(
+             BaseOptions(
+               baseUrl: baseUrl,
+               connectTimeout: const Duration(seconds: 15),
+               receiveTimeout: const Duration(seconds: 15),
+               headers: {
+                 'Content-Type': 'application/json',
+                 'Accept': 'application/json',
+               },
+             ),
+           ) {
     this.dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {

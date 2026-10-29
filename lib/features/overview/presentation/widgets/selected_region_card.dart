@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../../../api/models/overview.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -16,7 +17,11 @@ class SelectedRegionCard extends StatelessWidget {
   final MapPoint point;
   final VoidCallback onOpenProfile;
 
-  const SelectedRegionCard({super.key, required this.point, required this.onOpenProfile});
+  const SelectedRegionCard({
+    super.key,
+    required this.point,
+    required this.onOpenProfile,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +51,12 @@ class SelectedRegionCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      fmt.tr('map_overall_score', {'people': fmt.people(point.population)}),
-                      style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
+                      fmt.tr('map_overall_score', {
+                        'people': fmt.people(point.population),
+                      }),
+                      style: AppTypography.captionRegular.copyWith(
+                        color: AppColors.ink,
+                      ),
                     ),
                   ],
                 ),
@@ -67,7 +76,10 @@ class SelectedRegionCard extends StatelessWidget {
               width: 16,
               height: 16,
               matchTextDirection: true,
-              colorFilter: const ColorFilter.mode(AppColors.cyan, BlendMode.srcIn),
+              colorFilter: const ColorFilter.mode(
+                AppColors.cyan,
+                BlendMode.srcIn,
+              ),
             ),
           ),
         ],

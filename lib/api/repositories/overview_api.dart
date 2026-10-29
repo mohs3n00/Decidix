@@ -12,13 +12,22 @@ class OverviewApi {
 
   /// [range] is `3Y`, `5Y` or `7Y`.
   Future<OverviewData> getOverview({String range = '7Y'}) async {
-    final response = await _transport.get(ApiEndpoints.overview, query: {'range': range});
+    final response = await _transport.get(
+      ApiEndpoints.overview,
+      query: {'range': range},
+    );
     return OverviewData.fromJson(asMap(response.data, 'data'));
   }
 
   Future<List<MapPoint>> getMapPoints({String sector = 'overall'}) async {
-    final response = await _transport.get(ApiEndpoints.mapPoints, query: {'sector': sector});
-    return [for (final item in asMapList(response.data, 'data')) MapPoint.fromJson(item)];
+    final response = await _transport.get(
+      ApiEndpoints.mapPoints,
+      query: {'sector': sector},
+    );
+    return [
+      for (final item in asMapList(response.data, 'data'))
+        MapPoint.fromJson(item),
+    ];
   }
 
   /// [query] searches names in both languages. A null [priority] means all.
@@ -38,7 +47,8 @@ class OverviewApi {
       },
     );
     final items = [
-      for (final item in asMapList(response.data, 'data')) RegionListItem.fromJson(item),
+      for (final item in asMapList(response.data, 'data'))
+        RegionListItem.fromJson(item),
     ];
     return Paged(items, PageMeta.read(response.meta, itemCount: items.length));
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_typography.dart';
@@ -39,7 +40,9 @@ class StatTile extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: AppTypography.captionRegular.copyWith(
-            color: dark ? AppColors.white.withValues(alpha: 0.6) : AppColors.ink,
+            color: dark
+                ? AppColors.white.withValues(alpha: 0.6)
+                : AppColors.ink,
           ),
         ),
       ],
@@ -53,14 +56,20 @@ class StatTile extends StatelessWidget {
           borderRadius: AppRadius.innerRadius,
           border: Border.all(color: AppColors.white),
         ),
-        child: SizedBox(width: double.infinity, child: Center(child: content)),
+        child: SizedBox(
+          width: double.infinity,
+          child: Center(child: content),
+        ),
       );
     }
     if (!dark) {
       return DecidixCard(
         borderRadius: AppRadius.innerRadius,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-        child: SizedBox(width: double.infinity, child: Center(child: content)),
+        child: SizedBox(
+          width: double.infinity,
+          child: Center(child: content),
+        ),
       );
     }
     return Container(
@@ -70,7 +79,10 @@ class StatTile extends StatelessWidget {
         borderRadius: AppRadius.innerRadius,
         border: Border.all(color: AppColors.white.withValues(alpha: 0.12)),
       ),
-      child: SizedBox(width: double.infinity, child: Center(child: content)),
+      child: SizedBox(
+        width: double.infinity,
+        child: Center(child: content),
+      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'chip_scroll_row.dart';
 
 /// Chip bar used by the Overview, Insights, Intelligence and Decisions

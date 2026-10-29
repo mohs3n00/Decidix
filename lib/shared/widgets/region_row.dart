@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../api/models/common.dart';
 import '../../api/models/overview.dart';
 import '../../core/constants/app_colors.dart';
@@ -41,7 +42,10 @@ class RegionRow extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          ScoreRing(score: region.score, color: ScoreRing.colorFor(region.priority)),
+          ScoreRing(
+            score: region.score,
+            color: ScoreRing.colorFor(region.priority),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -56,7 +60,9 @@ class RegionRow extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   fmt.people(region.population),
-                  style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
+                  style: AppTypography.captionRegular.copyWith(
+                    color: AppColors.ink,
+                  ),
                 ),
               ],
             ),
@@ -65,7 +71,10 @@ class RegionRow extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              StatusBadge(label: fmt.priority(region.priority), tone: toneFor(region.priority)),
+              StatusBadge(
+                label: fmt.priority(region.priority),
+                tone: toneFor(region.priority),
+              ),
               const SizedBox(height: 6),
               TrendIndicator(value: region.change, suffix: ''),
             ],

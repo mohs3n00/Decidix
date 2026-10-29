@@ -68,7 +68,10 @@ Future<void> pumpApp(
 Future<void> scrollTo(WidgetTester tester, Finder finder) async {
   // The page's own ListView, not the horizontal chip rows inside it.
   final page = find
-      .descendant(of: find.byType(ListView).first, matching: find.byType(Scrollable))
+      .descendant(
+        of: find.byType(ListView).first,
+        matching: find.byType(Scrollable),
+      )
       .first;
   await tester.scrollUntilVisible(finder, 300, scrollable: page);
   await tester.pumpAndSettle();
@@ -86,7 +89,11 @@ Future<void> tapChip(WidgetTester tester, String label) async {
 
 /// Taps the bottom tab with this label.
 Future<void> openTab(WidgetTester tester, String label) async {
-  await tester.tap(find.descendant(of: find.byType(Scaffold).first, matching: find.text(label)).last);
+  await tester.tap(
+    find
+        .descendant(of: find.byType(Scaffold).first, matching: find.text(label))
+        .last,
+  );
   await tester.pumpAndSettle();
 }
 
@@ -94,7 +101,10 @@ Future<void> openTab(WidgetTester tester, String label) async {
 /// you come back to it).
 Future<void> scrollToTop(WidgetTester tester) async {
   final page = find
-      .descendant(of: find.byType(ListView).first, matching: find.byType(Scrollable))
+      .descendant(
+        of: find.byType(ListView).first,
+        matching: find.byType(Scrollable),
+      )
       .first;
   await tester.drag(page, const Offset(0, 4000));
   await tester.pumpAndSettle();

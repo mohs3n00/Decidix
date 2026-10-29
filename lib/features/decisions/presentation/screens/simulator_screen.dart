@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../api/models/common.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_radius.dart';
@@ -73,7 +74,9 @@ class SimulatorScreen extends ConsumerWidget {
                   children: [
                     Text(
                       fmt.tr('sim_total'),
-                      style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
+                      style: AppTypography.captionRegular.copyWith(
+                        color: AppColors.ink,
+                      ),
                     ),
                     Text(
                       fmt.money(Money(s.total, 'USD')),
@@ -114,7 +117,9 @@ class _ResultCard extends StatelessWidget {
     final fmt = context.fmt;
     final result = state.result;
     const onHero = AppColors.fadedInk;
-    final gainColor = result.gain < 0 ? AppColors.dangerText : AppColors.successText;
+    final gainColor = result.gain < 0
+        ? AppColors.dangerText
+        : AppColors.successText;
 
     return HeroCard(
       child: Opacity(
@@ -163,7 +168,10 @@ class _ResultCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: gainColor.withValues(alpha: 0.10),
                     borderRadius: AppRadius.pillRadius,
@@ -174,7 +182,9 @@ class _ResultCard extends StatelessWidget {
                       'change':
                           '${result.gain < 0 ? '-' : '+'}${result.gain.abs().toStringAsFixed(1)}',
                     }),
-                    style: AppTypography.captionStrong.copyWith(color: gainColor),
+                    style: AppTypography.captionStrong.copyWith(
+                      color: gainColor,
+                    ),
                   ),
                 ),
               ],
@@ -185,7 +195,9 @@ class _ResultCard extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 fmt.tr('error_loading'),
-                style: AppTypography.captionMedium.copyWith(color: AppColors.dangerText),
+                style: AppTypography.captionMedium.copyWith(
+                  color: AppColors.dangerText,
+                ),
               ),
             ],
           ],
@@ -217,7 +229,10 @@ class _AllocationSlider extends StatelessWidget {
         Row(
           children: [
             Expanded(child: Text(label, style: AppTypography.labelM)),
-            Text(money, style: AppTypography.labelMStrong.copyWith(color: AppColors.blue)),
+            Text(
+              money,
+              style: AppTypography.labelMStrong.copyWith(color: AppColors.blue),
+            ),
           ],
         ),
         SliderTheme(
@@ -247,7 +262,8 @@ class _RingThumb extends SliderComponentShape {
   const _RingThumb();
 
   @override
-  Size getPreferredSize(bool isEnabled, bool isDiscrete) => const Size.fromRadius(11);
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) =>
+      const Size.fromRadius(11);
 
   @override
   void paint(

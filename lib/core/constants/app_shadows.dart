@@ -36,11 +36,7 @@ class AppShadows {
 
   /// Small round buttons (language, notifications): y4 blur12, 8%.
   static const List<BoxShadow> pill = [
-    BoxShadow(
-      color: Color(0x14061A3A),
-      blurRadius: 12,
-      offset: Offset(0, 4),
-    ),
+    BoxShadow(color: Color(0x14061A3A), blurRadius: 12, offset: Offset(0, 4)),
   ];
 
   static const List<BoxShadow> avatar = [
@@ -54,10 +50,6 @@ class AppShadows {
 
   /// The white circle on the active tab: y6 blur16, 14%.
   static const List<BoxShadow> activeTab = [
-    BoxShadow(
-      color: Color(0x24061A3A),
-      blurRadius: 16,
-      offset: Offset(0, 6),
-    ),
+    BoxShadow(color: Color(0x24061A3A), blurRadius: 16, offset: Offset(0, 6)),
   ];
 }

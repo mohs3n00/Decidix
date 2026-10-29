@@ -1,5 +1,7 @@
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import 'hatched_bar.dart';
@@ -37,7 +39,11 @@ class ChartBand {
   final List<double> upper;
   final int startIndex;
 
-  const ChartBand({required this.lower, required this.upper, required this.startIndex});
+  const ChartBand({
+    required this.lower,
+    required this.upper,
+    required this.startIndex,
+  });
 }
 
 /// Smooth line chart drawn with a painter: any number of lines, dashed
@@ -109,7 +115,9 @@ class _LinePainter extends CustomPainter {
     var count = 0;
     final values = <double>[];
     for (final s in series) {
-      count = count > s.startIndex + s.values.length ? count : s.startIndex + s.values.length;
+      count = count > s.startIndex + s.values.length
+          ? count
+          : s.startIndex + s.values.length;
       values.addAll(s.values);
     }
     if (band != null) {
@@ -131,7 +139,8 @@ class _LinePainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
     double x(int i) => edgeToEdge ? i * w / (count - 1) : (i + 0.5) * w / count;
-    double y(double v) => h - _inset - (v - low) / (high - low) * (h - 2 * _inset);
+    double y(double v) =>
+        h - _inset - (v - low) / (high - low) * (h - 2 * _inset);
 
     if (showGrid) {
       final grid = Paint()
@@ -140,7 +149,13 @@ class _LinePainter extends CustomPainter {
       for (var k = 0; k < 4; k++) {
         final yy = _inset + k * (h - 2 * _inset) / 3;
         canvas.drawPath(
-          _dashed(Path()..moveTo(0, yy)..lineTo(w, yy), 3, 4),
+          _dashed(
+            Path()
+              ..moveTo(0, yy)
+              ..lineTo(w, yy),
+            3,
+            4,
+          ),
           grid..style = PaintingStyle.stroke,
         );
       }
@@ -156,13 +171,17 @@ class _LinePainter extends CustomPainter {
         area.lineTo(x(b.startIndex + i), y(b.lower[i]));
       }
       area.close();
-      canvas.drawPath(area, Paint()..color = AppColors.blue.withValues(alpha: 0.12));
+      canvas.drawPath(
+        area,
+        Paint()..color = AppColors.blue.withValues(alpha: 0.12),
+      );
     }
 
     for (final s in series) {
       if (s.values.isEmpty) continue;
       final points = [
-        for (var i = 0; i < s.values.length; i++) Offset(x(s.startIndex + i), y(s.values[i])),
+        for (var i = 0; i < s.values.length; i++)
+          Offset(x(s.startIndex + i), y(s.values[i])),
       ];
       final line = _smooth(points);
 
@@ -220,7 +239,10 @@ class _LinePainter extends CustomPainter {
     for (final metric in source.computeMetrics()) {
       var distance = 0.0;
       while (distance < metric.length) {
-        result.addPath(metric.extractPath(distance, distance + dash), Offset.zero);
+        result.addPath(
+          metric.extractPath(distance, distance + dash),
+          Offset.zero,
+        );
         distance += dash + gap;
       }
     }
@@ -305,8 +327,10 @@ class BarChartView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The value above and the label below grow with the user's text size.
+    final labels = MediaQuery.textScalerOf(context).scale(44);
     return SizedBox(
-      height: barAreaHeight + 44,
+      height: barAreaHeight + labels,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -317,19 +341,29 @@ class BarChartView extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      valueLabel(bar.value),
-                      style: AppTypography.microMedium.copyWith(color: AppColors.ink),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        valueLabel(bar.value),
+                        maxLines: 1,
+                        style: AppTypography.microMedium.copyWith(
+                          color: AppColors.ink,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 4),
                     // The highlighted bar is solid, the others are striped.
                     SizedBox(
-                      height: (bar.value / maxValue).clamp(0.0, 1.0) * barAreaHeight,
+                      height:
+                          (bar.value / maxValue).clamp(0.0, 1.0) *
+                          barAreaHeight,
                       width: double.infinity,
                       child: i == highlightIndex
                           ? const DecoratedBox(
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.all(Radius.circular(10)),
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(10),
+                                ),
                                 gradient: LinearGradient(
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
@@ -338,7 +372,9 @@ class BarChartView extends StatelessWidget {
                               ),
                             )
                           : const HatchFill(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(10),
+                              ),
                             ),
                     ),
                     const SizedBox(height: 6),
@@ -346,7 +382,9 @@ class BarChartView extends StatelessWidget {
                       bar.label,
                       maxLines: 1,
                       overflow: TextOverflow.clip,
-                      style: AppTypography.microRegular.copyWith(color: AppColors.ink),
+                      style: AppTypography.microRegular.copyWith(
+                        color: AppColors.ink,
+                      ),
                     ),
                   ],
                 ),

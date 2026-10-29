@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import 'hatched_bar.dart';
@@ -39,12 +40,19 @@ class ProgressRow extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               valueLabel,
-              style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
+              style: AppTypography.captionRegular.copyWith(
+                color: AppColors.ink,
+              ),
             ),
           ],
         ),
         const SizedBox(height: 6),
-        HatchedBar(value: progress, height: 8, gradient: gradient, color: color),
+        HatchedBar(
+          value: progress,
+          height: 8,
+          gradient: gradient,
+          color: color,
+        ),
       ],
     );
   }

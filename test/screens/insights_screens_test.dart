@@ -2,6 +2,7 @@ import 'package:decidix_app/shared/widgets/decidix_chip.dart';
 import 'package:decidix_app/shared/widgets/select_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import '../helpers/pump_app.dart';
 
 Future<void> openInsights(WidgetTester tester) async {
@@ -12,32 +13,34 @@ Future<void> openInsights(WidgetTester tester) async {
 
 void main() {
   group('Sector screens', () {
-    testWidgets('education shows KPIs, trend, bars, indicators, ranking and insight',
-        (tester) async {
-      await openInsights(tester);
+    testWidgets(
+      'education shows KPIs, trend, bars, indicators, ranking and insight',
+      (tester) async {
+        await openInsights(tester);
 
-      expect(find.text('Education Analytics'), findsOneWidget);
-      expect(find.text('Literacy rate'), findsOneWidget);
-      expect(find.text('96.2'), findsOneWidget);
-      expect(find.text('1:19'), findsOneWidget); // teacher : pupil
-      expect(find.text('Index trend, 2019–2025'), findsOneWidget);
+        expect(find.text('Education Analytics'), findsOneWidget);
+        expect(find.text('Literacy rate'), findsOneWidget);
+        expect(find.text('96.2'), findsOneWidget);
+        expect(find.text('1:19'), findsOneWidget); // teacher : pupil
+        expect(find.text('Index trend, 2019–2025'), findsOneWidget);
 
-      await scrollTo(tester, find.text('Enrolment by level (%)'));
-      await scrollTo(tester, find.text('Key indicators'));
-      expect(find.text('Primary completion'), findsOneWidget);
-      expect(find.text('94%'), findsOneWidget);
+        await scrollTo(tester, find.text('Enrolment by level (%)'));
+        await scrollTo(tester, find.text('Key indicators'));
+        expect(find.text('Primary completion'), findsOneWidget);
+        expect(find.text('94%'), findsOneWidget);
 
-      await scrollTo(tester, find.text('Regional ranking'));
-      expect(find.text('Central Capital'), findsOneWidget);
-      expect(find.text('Frontier'), findsNothing);
+        await scrollTo(tester, find.text('Regional ranking'));
+        expect(find.text('Central Capital'), findsOneWidget);
+        expect(find.text('Frontier'), findsNothing);
 
-      await tester.tap(find.widgetWithText(DecidixChip, 'Bottom'));
-      await tester.pumpAndSettle();
-      expect(find.text('Frontier'), findsOneWidget);
-      expect(find.text('Central Capital'), findsNothing);
+        await tester.tap(find.widgetWithText(DecidixChip, 'Bottom'));
+        await tester.pumpAndSettle();
+        expect(find.text('Frontier'), findsOneWidget);
+        expect(find.text('Central Capital'), findsNothing);
 
-      await scrollTo(tester, find.textContaining('Secondary dropout'));
-    });
+        await scrollTo(tester, find.textContaining('Secondary dropout'));
+      },
+    );
 
     testWidgets('the sector tabs open the four sectors', (tester) async {
       await openInsights(tester);
@@ -63,16 +66,24 @@ void main() {
       await tapChip(tester, 'Compare');
 
       expect(find.text('Compare Regions'), findsOneWidget);
-      expect(find.widgetWithText(SelectField, 'Central Capital'), findsOneWidget);
+      expect(
+        find.widgetWithText(SelectField, 'Central Capital'),
+        findsOneWidget,
+      );
       expect(find.widgetWithText(SelectField, 'Frontier'), findsOneWidget);
       expect(find.text('VS'), findsOneWidget);
       expect(find.text('Overall'), findsOneWidget);
 
       await scrollTo(tester, find.text('GAP ANALYSIS'));
-      expect(find.textContaining('Central Capital leads Frontier by 42'), findsOneWidget);
+      expect(
+        find.textContaining('Central Capital leads Frontier by 42'),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('picking another region reloads the comparison', (tester) async {
+    testWidgets('picking another region reloads the comparison', (
+      tester,
+    ) async {
       await openInsights(tester);
       await tapChip(tester, 'Compare');
 
@@ -80,17 +91,27 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Choose a region'), findsOneWidget);
 
-      await tester.tap(find.descendant(of: find.byType(BottomSheet), matching: find.text('Lakeside')));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(BottomSheet),
+          matching: find.text('Lakeside'),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.widgetWithText(SelectField, 'Lakeside'), findsOneWidget);
       await scrollTo(tester, find.text('GAP ANALYSIS'));
-      expect(find.textContaining('Central Capital leads Lakeside by 14'), findsOneWidget);
+      expect(
+        find.textContaining('Central Capital leads Lakeside by 14'),
+        findsOneWidget,
+      );
     });
   });
 
   group('History', () {
-    testWidgets('shows the change since 2019, annual change and milestones', (tester) async {
+    testWidgets('shows the change since 2019, annual change and milestones', (
+      tester,
+    ) async {
       await openInsights(tester);
       await tapChip(tester, 'History');
 
@@ -106,7 +127,9 @@ void main() {
       expect(find.text('+4.8 digital access'), findsOneWidget);
     });
 
-    testWidgets('the sector chips reload without leaving the screen', (tester) async {
+    testWidgets('the sector chips reload without leaving the screen', (
+      tester,
+    ) async {
       await openInsights(tester);
       await tapChip(tester, 'History');
       await tester.tap(find.widgetWithText(DecidixChip, 'Health'));
@@ -123,8 +146,14 @@ void main() {
       await tapChip(tester, 'Priority');
 
       expect(find.text('Development Priority'), findsOneWidget);
-      expect(find.text('Medium'), findsWidgets); // the count tile and queue badges
-      expect(find.text('5'), findsWidgets); // medium priority regions (and rank 5 in the queue)
+      expect(
+        find.text('Medium'),
+        findsWidgets,
+      ); // the count tile and queue badges
+      expect(
+        find.text('5'),
+        findsWidgets,
+      ); // medium priority regions (and rank 5 in the queue)
 
       await scrollTo(tester, find.text('Priority queue'));
       expect(find.text('Frontier'), findsOneWidget);
@@ -144,7 +173,9 @@ void main() {
   });
 
   group('Data quality', () {
-    testWidgets('shows the score, the three dimensions, coverage and sources', (tester) async {
+    testWidgets('shows the score, the three dimensions, coverage and sources', (
+      tester,
+    ) async {
       await openInsights(tester);
       await tapChip(tester, 'Data Quality');
 

@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../api/api_providers.dart';
 import '../../../../api/models/common.dart';
 import '../../../../api/models/decisions.dart';
@@ -62,10 +64,8 @@ class SimulatorState {
 
   double get total => allocations.values.fold(0, (sum, amount) => sum + amount);
 
-  RegionListItem get region => regions.firstWhere(
-        (r) => r.id == regionId,
-        orElse: () => regions.first,
-      );
+  RegionListItem get region =>
+      regions.firstWhere((r) => r.id == regionId, orElse: () => regions.first);
 }
 
 /// Runs the simulation for the region and money on the sliders.
@@ -89,7 +89,9 @@ class SimulatorController extends AsyncNotifier<SimulatorState> {
     // Start with the weakest region: the one most likely to need money.
     final regions = await ref.watch(allRegionsProvider.future);
     final regionId = regions.last.id;
-    final result = await ref.read(decisionsApiProvider).simulate(
+    final result = await ref
+        .read(decisionsApiProvider)
+        .simulate(
           SimulationRequest(regionId: regionId, allocations: simulatorDefaults),
         );
     return SimulatorState(
@@ -124,7 +126,9 @@ class SimulatorController extends AsyncNotifier<SimulatorState> {
   void reset() {
     final current = state.value;
     if (current == null) return;
-    state = AsyncData(current.copyWith(allocations: simulatorDefaults, busy: true));
+    state = AsyncData(
+      current.copyWith(allocations: simulatorDefaults, busy: true),
+    );
     _timer?.cancel();
     _run();
   }
@@ -136,12 +140,19 @@ class SimulatorController extends AsyncNotifier<SimulatorState> {
     _inFlight?.cancel();
     final token = _inFlight = CancelToken();
     try {
-      final result = await ref.read(decisionsApiProvider).simulate(
-            SimulationRequest(regionId: current.regionId, allocations: current.allocations),
+      final result = await ref
+          .read(decisionsApiProvider)
+          .simulate(
+            SimulationRequest(
+              regionId: current.regionId,
+              allocations: current.allocations,
+            ),
             cancelToken: token,
           );
       if (token.isCancelled) return;
-      state = AsyncData(state.value!.copyWith(result: result, busy: false, failed: false));
+      state = AsyncData(
+        state.value!.copyWith(result: result, busy: false, failed: false),
+      );
     } on RequestCancelledException {
       // A newer request replaced this one.
     } on AppException {
@@ -152,7 +163,9 @@ class SimulatorController extends AsyncNotifier<SimulatorState> {
 }
 
 final simulatorControllerProvider =
-    AsyncNotifierProvider<SimulatorController, SimulatorState>(SimulatorController.new);
+    AsyncNotifierProvider<SimulatorController, SimulatorState>(
+      SimulatorController.new,
+    );
 
 // --------------------------------------------------------------- projects
 
@@ -165,7 +178,9 @@ class ProjectStatusFilter extends Notifier<ProjectStatus?> {
 }
 
 final projectStatusFilterProvider =
-    NotifierProvider<ProjectStatusFilter, ProjectStatus?>(ProjectStatusFilter.new);
+    NotifierProvider<ProjectStatusFilter, ProjectStatus?>(
+      ProjectStatusFilter.new,
+    );
 
 /// The projects list: page 1, then more as the user scrolls. The totals above
 /// the list come with page 1 and stay.
@@ -177,10 +192,9 @@ class ProjectsController extends AsyncNotifier<PagedState<ProjectsData>> {
   Future<PagedState<ProjectsData>> build() async {
     _generation++;
     final status = ref.watch(projectStatusFilterProvider);
-    final data = await ref.watch(decisionsApiProvider).getProjects(
-          status: status,
-          perPage: ref.watch(listPageSizeProvider),
-        );
+    final data = await ref
+        .watch(decisionsApiProvider)
+        .getProjects(status: status, perPage: ref.watch(listPageSizeProvider));
     return PagedState(data, data.meta);
   }
 
@@ -191,7 +205,9 @@ class ProjectsController extends AsyncNotifier<PagedState<ProjectsData>> {
     final generation = _generation;
     state = AsyncData(current.copyWith(loadingMore: true));
     try {
-      final next = await ref.read(decisionsApiProvider).getProjects(
+      final next = await ref
+          .read(decisionsApiProvider)
+          .getProjects(
             status: ref.read(projectStatusFilterProvider),
             page: current.meta.page + 1,
             perPage: ref.read(listPageSizeProvider),
@@ -207,7 +223,9 @@ class ProjectsController extends AsyncNotifier<PagedState<ProjectsData>> {
 }
 
 final projectsProvider =
-    AsyncNotifierProvider<ProjectsController, PagedState<ProjectsData>>(ProjectsController.new);
+    AsyncNotifierProvider<ProjectsController, PagedState<ProjectsData>>(
+      ProjectsController.new,
+    );
 
 // ---------------------------------------------------------------- reports
 
@@ -220,7 +238,9 @@ class ReportCategoryFilter extends Notifier<ReportCategory?> {
 }
 
 final reportCategoryFilterProvider =
-    NotifierProvider<ReportCategoryFilter, ReportCategory?>(ReportCategoryFilter.new);
+    NotifierProvider<ReportCategoryFilter, ReportCategory?>(
+      ReportCategoryFilter.new,
+    );
 
 /// The reports list: page 1, then more as the user scrolls.
 class ReportsController extends AsyncNotifier<PagedState<ReportsData>> {
@@ -230,7 +250,9 @@ class ReportsController extends AsyncNotifier<PagedState<ReportsData>> {
   @override
   Future<PagedState<ReportsData>> build() async {
     _generation++;
-    final data = await ref.watch(decisionsApiProvider).getCitizenReports(
+    final data = await ref
+        .watch(decisionsApiProvider)
+        .getCitizenReports(
           category: ref.watch(reportCategoryFilterProvider),
           perPage: ref.watch(listPageSizeProvider),
         );
@@ -244,16 +266,18 @@ class ReportsController extends AsyncNotifier<PagedState<ReportsData>> {
     final generation = _generation;
     state = AsyncData(current.copyWith(loadingMore: true));
     try {
-      final next = await ref.read(decisionsApiProvider).getCitizenReports(
+      final next = await ref
+          .read(decisionsApiProvider)
+          .getCitizenReports(
             category: ref.read(reportCategoryFilterProvider),
             page: current.meta.page + 1,
             perPage: ref.read(listPageSizeProvider),
           );
       if (generation != _generation) return;
-      final merged = current.data.withItems(
-        [...current.data.items, ...next.items],
-        newMeta: next.meta,
-      );
+      final merged = current.data.withItems([
+        ...current.data.items,
+        ...next.items,
+      ], newMeta: next.meta);
       state = AsyncData(PagedState(merged, next.meta));
     } on AppException {
       if (generation != _generation) return;
@@ -269,13 +293,17 @@ class ReportsController extends AsyncNotifier<PagedState<ReportsData>> {
     if (report == null) return;
 
     final liked = !report.likedByMe;
-    _update(report.copyWith(likedByMe: liked, likes: report.likes + (liked ? 1 : -1)));
+    _update(
+      report.copyWith(likedByMe: liked, likes: report.likes + (liked ? 1 : -1)),
+    );
 
     try {
       final answer = await ref.read(decisionsApiProvider).toggleLike(reportId);
       final current = _find(reportId);
       if (current != null) {
-        _update(current.copyWith(likes: answer.likes, likedByMe: answer.likedByMe));
+        _update(
+          current.copyWith(likes: answer.likes, likedByMe: answer.likedByMe),
+        );
       }
     } on AppException {
       _update(report);
@@ -288,10 +316,14 @@ class ReportsController extends AsyncNotifier<PagedState<ReportsData>> {
   void _update(CitizenReport report) {
     final current = state.value;
     if (current == null) return;
-    final items = [for (final r in current.data.items) r.id == report.id ? report : r];
+    final items = [
+      for (final r in current.data.items) r.id == report.id ? report : r,
+    ];
     state = AsyncData(current.copyWith(data: current.data.withItems(items)));
   }
 }
 
 final reportsProvider =
-    AsyncNotifierProvider<ReportsController, PagedState<ReportsData>>(ReportsController.new);
+    AsyncNotifierProvider<ReportsController, PagedState<ReportsData>>(
+      ReportsController.new,
+    );

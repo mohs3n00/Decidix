@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import '../../core/network/api_endpoints.dart';
 import '../models/decisions.dart';
 import '../models/json.dart';
@@ -61,7 +62,9 @@ class DecisionsApi {
 
   /// Likes the report, or removes the like if it is already liked.
   Future<LikeResult> toggleLike(String reportId) async {
-    final response = await _transport.post(ApiEndpoints.citizenReportLike(reportId));
+    final response = await _transport.post(
+      ApiEndpoints.citizenReportLike(reportId),
+    );
     return LikeResult.fromJson(asMap(response.data, 'data'));
   }
 }

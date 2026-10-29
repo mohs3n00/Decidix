@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/format/formatters.dart';
 import '../../../../shared/widgets/chip_scroll_row.dart';
 import '../../../../shared/widgets/decidix_page.dart';
@@ -13,7 +14,13 @@ import '../widgets/selected_region_card.dart';
 class InteractiveMapScreen extends ConsumerWidget {
   const InteractiveMapScreen({super.key});
 
-  static const _sectors = ['overall', 'education', 'healthcare', 'economy', 'infrastructure'];
+  static const _sectors = [
+    'overall',
+    'education',
+    'healthcare',
+    'economy',
+    'infrastructure',
+  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,7 +38,8 @@ class InteractiveMapScreen extends ConsumerWidget {
         ChipScrollRow(
           labels: [for (final key in _sectors) fmt.tr('map_sector_$key')],
           selectedIndex: _sectors.indexOf(sector),
-          onSelected: (i) => ref.read(mapSectorProvider.notifier).select(_sectors[i]),
+          onSelected: (i) =>
+              ref.read(mapSectorProvider.notifier).select(_sectors[i]),
         ),
         ...asyncSections(
           points,
@@ -39,16 +47,21 @@ class InteractiveMapScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(mapPointsProvider),
           builder: (list) {
             if (list.isEmpty) return const [EmptyView()];
-            final active = list.firstWhere((p) => p.id == selectedId, orElse: () => list.first);
+            final active = list.firstWhere(
+              (p) => p.id == selectedId,
+              orElse: () => list.first,
+            );
             return [
               DecidixMap(
                 points: list,
                 selectedId: active.id,
-                onPointSelected: (p) => ref.read(selectedMapRegionProvider.notifier).select(p.id),
+                onPointSelected: (p) =>
+                    ref.read(selectedMapRegionProvider.notifier).select(p.id),
               ),
               SelectedRegionCard(
                 point: active,
-                onOpenProfile: () => context.push('/overview/regions/${active.id}'),
+                onOpenProfile: () =>
+                    context.push('/overview/regions/${active.id}'),
               ),
             ];
           },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../../../api/models/intelligence.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -32,7 +33,9 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
 
   void _send(String text) {
     if (text.trim().isEmpty) return;
-    ref.read(assistantControllerProvider.notifier).send(
+    ref
+        .read(assistantControllerProvider.notifier)
+        .send(
           text,
           language: Localizations.localeOf(context).languageCode,
           errorText: context.fmt.tr('asst_error'),
@@ -65,7 +68,9 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
 
     final prompts = state.suggestedPrompts.isNotEmpty
         ? state.suggestedPrompts
-        : [for (final i in [1, 2, 3]) fmt.tr('asst_prompt_$i')];
+        : [
+            for (final i in [1, 2, 3]) fmt.tr('asst_prompt_$i'),
+          ];
 
     return Column(
       children: [
@@ -76,7 +81,10 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
             children: [
               const IntelligenceChipBar(selectedIndex: 1),
               const SizedBox(height: 10),
-              PageTitle(eyebrow: fmt.tr('ai_eyebrow'), title: fmt.tr('ai_title_assistant')),
+              PageTitle(
+                eyebrow: fmt.tr('ai_eyebrow'),
+                title: fmt.tr('ai_title_assistant'),
+              ),
               const SizedBox(height: 20),
               _AssistantBubble(text: fmt.tr('asst_greeting')),
               for (final message in state.messages) ...[
@@ -89,7 +97,10 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
                         isError: message.isError,
                       ),
               ],
-              if (state.waiting) ...[const SizedBox(height: 12), const _TypingBubble()],
+              if (state.waiting) ...[
+                const SizedBox(height: 12),
+                const _TypingBubble(),
+              ],
             ],
           ),
         ),
@@ -130,7 +141,11 @@ class _AssistantBubble extends StatelessWidget {
   final ChatReply? reply;
   final bool isError;
 
-  const _AssistantBubble({required this.text, this.reply, this.isError = false});
+  const _AssistantBubble({
+    required this.text,
+    this.reply,
+    this.isError = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +186,10 @@ class _AssistantBubble extends StatelessWidget {
                           child: Row(
                             children: [
                               Expanded(
-                                child: Text(row.name.resolve(locale), style: AppTypography.labelM),
+                                child: Text(
+                                  row.name.resolve(locale),
+                                  style: AppTypography.labelM,
+                                ),
                               ),
                               Text(
                                 '${row.change < 0 ? '▼' : '▲'} ${fmt.points(row.change)}',
@@ -204,7 +222,9 @@ class _AssistantBubble extends StatelessWidget {
                     'name': source.name.resolve(locale),
                     'period': fmt.period(source.period),
                   }),
-                  style: AppTypography.microRegular.copyWith(color: AppColors.ink),
+                  style: AppTypography.microRegular.copyWith(
+                    color: AppColors.ink,
+                  ),
                 ),
               ],
             ],
@@ -237,7 +257,10 @@ class _UserBubble extends StatelessWidget {
               bottomEnd: Radius.circular(6),
             ),
           ),
-          child: Text(text, style: AppTypography.bodyM.copyWith(color: AppColors.white)),
+          child: Text(
+            text,
+            style: AppTypography.bodyM.copyWith(color: AppColors.white),
+          ),
         ),
       ),
     );
@@ -257,7 +280,10 @@ class _TypingBubble extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
           child: Text(
             '•••',
-            style: AppTypography.titleM.copyWith(color: AppColors.ink, letterSpacing: 2),
+            style: AppTypography.titleM.copyWith(
+              color: AppColors.ink,
+              letterSpacing: 2,
+            ),
           ),
         ),
       ),
@@ -284,7 +310,10 @@ class _PromptChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
           border: Border.all(color: AppColors.hairline),
         ),
-        child: Text(label, style: AppTypography.captionMedium.copyWith(color: AppColors.blue)),
+        child: Text(
+          label,
+          style: AppTypography.captionMedium.copyWith(color: AppColors.blue),
+        ),
       ),
     );
   }
@@ -315,7 +344,10 @@ class _InputBar extends StatelessWidget {
             AppAssets.icAiSpark,
             width: 16,
             height: 16,
-            colorFilter: const ColorFilter.mode(AppColors.blue, BlendMode.srcIn),
+            colorFilter: const ColorFilter.mode(
+              AppColors.blue,
+              BlendMode.srcIn,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -356,7 +388,11 @@ class _InputBar extends StatelessWidget {
                       colors: [AppColors.blue, AppColors.cyan],
                     ),
                   ),
-                  child: const Icon(Icons.arrow_upward, color: AppColors.white, size: 18),
+                  child: const Icon(
+                    Icons.arrow_upward,
+                    color: AppColors.white,
+                    size: 18,
+                  ),
                 ),
               ),
             ),

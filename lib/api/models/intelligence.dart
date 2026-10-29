@@ -19,12 +19,12 @@ class ForecastPoint {
   });
 
   factory ForecastPoint.fromJson(JsonMap json) => ForecastPoint(
-        year: json.integer('year'),
-        value: json.number('value'),
-        isForecast: json.string('kind') == 'forecast',
-        lower: json.maybeNumber('lower'),
-        upper: json.maybeNumber('upper'),
-      );
+    year: json.integer('year'),
+    value: json.number('value'),
+    isForecast: json.string('kind') == 'forecast',
+    lower: json.maybeNumber('lower'),
+    upper: json.maybeNumber('upper'),
+  );
 }
 
 class ModelScore {
@@ -35,10 +35,10 @@ class ModelScore {
   const ModelScore({required this.id, required this.name, required this.r2});
 
   factory ModelScore.fromJson(JsonMap json) => ModelScore(
-        id: json.string('id'),
-        name: LocalizedText.read(json, 'name'),
-        r2: json.number('r2'),
-      );
+    id: json.string('id'),
+    name: LocalizedText.read(json, 'name'),
+    r2: json.number('r2'),
+  );
 }
 
 class RegionDelta {
@@ -48,13 +48,17 @@ class RegionDelta {
   /// Index points.
   final double delta;
 
-  const RegionDelta({required this.regionId, required this.name, required this.delta});
+  const RegionDelta({
+    required this.regionId,
+    required this.name,
+    required this.delta,
+  });
 
   factory RegionDelta.fromJson(JsonMap json) => RegionDelta(
-        regionId: json.string('region_id'),
-        name: LocalizedText.read(json, 'name'),
-        delta: json.number('delta'),
-      );
+    regionId: json.string('region_id'),
+    name: LocalizedText.read(json, 'name'),
+    delta: json.number('delta'),
+  );
 }
 
 class Predictions {
@@ -108,11 +112,11 @@ class ChatRow {
   });
 
   factory ChatRow.fromJson(JsonMap json) => ChatRow(
-        regionId: json.string('region_id'),
-        name: LocalizedText.read(json, 'name'),
-        score: json.number('score'),
-        change: json.number('change'),
-      );
+    regionId: json.string('region_id'),
+    name: LocalizedText.read(json, 'name'),
+    score: json.number('score'),
+    change: json.number('change'),
+  );
 }
 
 class ChatSource {
@@ -122,9 +126,9 @@ class ChatSource {
   const ChatSource({required this.name, required this.period});
 
   factory ChatSource.fromJson(JsonMap json) => ChatSource(
-        name: LocalizedText.read(json, 'name'),
-        period: json.string('period'),
-      );
+    name: LocalizedText.read(json, 'name'),
+    period: json.string('period'),
+  );
 }
 
 /// The assistant's answer. [text] is already in the language the app asked for.
@@ -155,7 +159,10 @@ class ChatReply {
           ? null
           : reply.object('table').listOf('rows', ChatRow.fromJson),
       sources: reply.listOf('sources', ChatSource.fromJson),
-      suggestedPrompts: [if (prompts is List) for (final p in prompts) '$p'],
+      suggestedPrompts: [
+        if (prompts is List)
+          for (final p in prompts) '$p',
+      ],
     );
   }
 }
@@ -192,21 +199,21 @@ class Recommendation {
   });
 
   factory Recommendation.fromJson(JsonMap json) => Recommendation(
-        id: json.string('id'),
-        priority: parsePriority(json['priority']),
-        region: RegionRef.fromJson(json.object('region')),
-        domain: parseDomain(json['domain']),
-        title: LocalizedText.read(json, 'title'),
-        summary: LocalizedText.read(json, 'summary'),
-        indexImpact: json.number('index_impact'),
-        estimatedCost: Money.fromJson(json.object('estimated_cost')),
-        confidence: json.number('confidence'),
-        status: parseEnum(
-          RecommendationStatus.values,
-          json['status'],
-          RecommendationStatus.unknown,
-        ),
-      );
+    id: json.string('id'),
+    priority: parsePriority(json['priority']),
+    region: RegionRef.fromJson(json.object('region')),
+    domain: parseDomain(json['domain']),
+    title: LocalizedText.read(json, 'title'),
+    summary: LocalizedText.read(json, 'summary'),
+    indexImpact: json.number('index_impact'),
+    estimatedCost: Money.fromJson(json.object('estimated_cost')),
+    confidence: json.number('confidence'),
+    status: parseEnum(
+      RecommendationStatus.values,
+      json['status'],
+      RecommendationStatus.unknown,
+    ),
+  );
 }
 
 /// Answer to "Add to plan" and "Dismiss".
@@ -217,11 +224,11 @@ class RecommendationResult {
   const RecommendationResult({required this.id, required this.status});
 
   factory RecommendationResult.fromJson(JsonMap json) => RecommendationResult(
-        id: json.string('id'),
-        status: parseEnum(
-          RecommendationStatus.values,
-          json['status'],
-          RecommendationStatus.unknown,
-        ),
-      );
+    id: json.string('id'),
+    status: parseEnum(
+      RecommendationStatus.values,
+      json['status'],
+      RecommendationStatus.unknown,
+    ),
+  );
 }

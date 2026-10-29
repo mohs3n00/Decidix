@@ -5,17 +5,22 @@ typedef JsonMap = Map<String, dynamic>;
 /// Casts [value] to an object or throws a [ParseException] naming [where].
 JsonMap asMap(Object? value, [String where = 'value']) {
   if (value is JsonMap) return value;
-  throw ParseException('Expected an object at $where but got ${_describe(value)}');
+  throw ParseException(
+    'Expected an object at $where but got ${_describe(value)}',
+  );
 }
 
 List<JsonMap> asMapList(Object? value, [String where = 'value']) {
   if (value is! List) {
-    throw ParseException('Expected a list at $where but got ${_describe(value)}');
+    throw ParseException(
+      'Expected a list at $where but got ${_describe(value)}',
+    );
   }
   return [for (var i = 0; i < value.length; i++) asMap(value[i], '$where[$i]')];
 }
 
-String _describe(Object? value) => value == null ? 'null' : '${value.runtimeType}';
+String _describe(Object? value) =>
+    value == null ? 'null' : '${value.runtimeType}';
 
 /// Reads typed fields from a JSON object. A missing or wrong-typed field throws
 /// a [ParseException] that names the field, so a contract break shows up as a
@@ -47,14 +52,18 @@ extension JsonRead on JsonMap {
     final value = this[key];
     if (value == null) return const [];
     if (value is! List) {
-      throw ParseException('Expected a list at "$key" but got ${_describe(value)}');
+      throw ParseException(
+        'Expected a list at "$key" but got ${_describe(value)}',
+      );
     }
     return [
       for (final item in value)
         if (item is num)
           item.toDouble()
         else
-          throw ParseException('Expected numbers in "$key" but got ${_describe(item)}'),
+          throw ParseException(
+            'Expected numbers in "$key" but got ${_describe(item)}',
+          ),
     ];
   }
 }

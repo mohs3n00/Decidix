@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../api/api_providers.dart';
 import '../../../../api/models/overview.dart';
 
@@ -10,8 +11,9 @@ class SelectedTrendRange extends Notifier<String> {
   void select(String range) => state = range;
 }
 
-final selectedTrendRangeProvider =
-    NotifierProvider<SelectedTrendRange, String>(SelectedTrendRange.new);
+final selectedTrendRangeProvider = NotifierProvider<SelectedTrendRange, String>(
+  SelectedTrendRange.new,
+);
 
 /// The dashboard. Changing the range reloads it; the old data stays on screen
 /// until the new data arrives.

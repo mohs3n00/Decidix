@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_radius.dart';
@@ -45,9 +46,13 @@ class TrendIndicator extends StatelessWidget {
             colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
           ),
           const SizedBox(width: 2),
-          Text(
-            formattedText,
-            style: AppTypography.captionStrong.copyWith(color: color),
+          Flexible(
+            child: Text(
+              formattedText,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.captionStrong.copyWith(color: color),
+            ),
           ),
         ],
       ),

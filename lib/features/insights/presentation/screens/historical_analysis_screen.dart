@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../api/models/insights.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -32,7 +33,8 @@ class HistoricalAnalysisScreen extends ConsumerWidget {
         ChipScrollRow(
           labels: [for (final key in _sectors) fmt.tr('map_sector_$key')],
           selectedIndex: _sectors.indexOf(sector),
-          onSelected: (i) => ref.read(historicalSectorProvider.notifier).select(_sectors[i]),
+          onSelected: (i) =>
+              ref.read(historicalSectorProvider.notifier).select(_sectors[i]),
         ),
         ...asyncSections(
           history,
@@ -90,16 +92,21 @@ class _Summary extends StatelessWidget {
   Widget build(BuildContext context) {
     final fmt = context.fmt;
     final up = data.changeSinceStart >= 0;
-    final color = up ? AppColors.success : AppColors.danger;
+    final color = up ? AppColors.successText : AppColors.dangerText;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
+    // Wraps onto a second line on a narrow screen or with large text.
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.end,
+      spacing: 10,
+      runSpacing: 4,
       children: [
         Text(
           fmt.number(data.current),
-          style: AppTypography.adapt(context, AppTypography.numberL.copyWith(fontSize: 34)),
+          style: AppTypography.adapt(
+            context,
+            AppTypography.numberL.copyWith(fontSize: 34),
+          ),
         ),
-        const SizedBox(width: 10),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           margin: const EdgeInsets.only(bottom: 6),
@@ -112,14 +119,11 @@ class _Summary extends StatelessWidget {
             style: AppTypography.captionStrong.copyWith(color: color),
           ),
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Text(
-              fmt.tr('hist_change_since', {'year': data.startYear}),
-              style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
-            ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Text(
+            fmt.tr('hist_change_since', {'year': data.startYear}),
+            style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
           ),
         ),
       ],
@@ -136,7 +140,9 @@ class _MilestoneCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final fmt = context.fmt;
     final locale = Localizations.localeOf(context);
-    final color = milestone.impactValue >= 0 ? AppColors.success : AppColors.danger;
+    final color = milestone.impactValue >= 0
+        ? AppColors.success
+        : AppColors.danger;
 
     return DecidixCard(
       padding: const EdgeInsets.all(14),
@@ -147,7 +153,9 @@ class _MilestoneCard extends StatelessWidget {
           children: [
             Text(
               '${milestone.year}',
-              style: AppTypography.captionStrong.copyWith(color: AppColors.blue),
+              style: AppTypography.captionStrong.copyWith(
+                color: AppColors.blue,
+              ),
             ),
             const SizedBox(height: 2),
             Text(milestone.title.resolve(locale), style: AppTypography.titleS),

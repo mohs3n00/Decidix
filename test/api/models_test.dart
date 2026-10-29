@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:decidix_app/api/models/common.dart';
 import 'package:decidix_app/api/models/decisions.dart';
@@ -8,13 +9,20 @@ import 'package:decidix_app/api/models/overview.dart';
 import 'package:decidix_app/core/errors/app_exception.dart';
 
 Matcher _parseError(String mentioning) => throwsA(
-      isA<ParseException>().having((e) => e.message, 'message', contains(mentioning)),
-    );
+  isA<ParseException>().having(
+    (e) => e.message,
+    'message',
+    contains(mentioning),
+  ),
+);
 
 void main() {
   group('LocalizedText', () {
     test('reads the English and Arabic fields', () {
-      final text = LocalizedText.read({'name': 'Delta', 'arabic_name': 'الدلتا'}, 'name');
+      final text = LocalizedText.read({
+        'name': 'Delta',
+        'arabic_name': 'الدلتا',
+      }, 'name');
       expect(text.resolve(const Locale('en')), 'Delta');
       expect(text.resolve(const Locale('ar')), 'الدلتا');
     });
@@ -27,18 +35,33 @@ void main() {
 
   group('enums', () {
     test('wire names match the Dart names', () {
-      expect(parseEnum(ProjectStatus.values, 'in_progress', ProjectStatus.unknown),
-          ProjectStatus.inProgress);
-      expect(parseEnum(ReportStatus.values, 'under_review', ReportStatus.unknown),
-          ReportStatus.underReview);
-      expect(parseEnum(MetricUnit.values, 'score_100', MetricUnit.unknown), MetricUnit.score100);
-      expect(parseEnum(MetricUnit.values, 'per_mille', MetricUnit.unknown), MetricUnit.perMille);
+      expect(
+        parseEnum(ProjectStatus.values, 'in_progress', ProjectStatus.unknown),
+        ProjectStatus.inProgress,
+      );
+      expect(
+        parseEnum(ReportStatus.values, 'under_review', ReportStatus.unknown),
+        ReportStatus.underReview,
+      );
+      expect(
+        parseEnum(MetricUnit.values, 'score_100', MetricUnit.unknown),
+        MetricUnit.score100,
+      );
+      expect(
+        parseEnum(MetricUnit.values, 'per_mille', MetricUnit.unknown),
+        MetricUnit.perMille,
+      );
     });
 
     test('an unknown value does not crash, it falls back', () {
-      expect(parseEnum(ProjectStatus.values, 'archived', ProjectStatus.unknown),
-          ProjectStatus.unknown);
-      expect(parseEnum(ProjectStatus.values, null, ProjectStatus.unknown), ProjectStatus.unknown);
+      expect(
+        parseEnum(ProjectStatus.values, 'archived', ProjectStatus.unknown),
+        ProjectStatus.unknown,
+      );
+      expect(
+        parseEnum(ProjectStatus.values, null, ProjectStatus.unknown),
+        ProjectStatus.unknown,
+      );
       expect(parsePriority('urgent'), Priority.medium);
       expect(parseDomain('transport'), Domain.unknown);
     });
@@ -56,14 +79,23 @@ void main() {
     });
 
     test('a wrong type names the field and the type', () {
-      expect(() => TrendPoint.fromJson({'year': '2025', 'value': 1}), _parseError('"year"'));
-      expect(() => TrendPoint.fromJson({'year': 2025, 'value': null}), _parseError('"value"'));
+      expect(
+        () => TrendPoint.fromJson({'year': '2025', 'value': 1}),
+        _parseError('"year"'),
+      );
+      expect(
+        () => TrendPoint.fromJson({'year': 2025, 'value': null}),
+        _parseError('"value"'),
+      );
     });
 
-    test('a list where an object is expected is a parse error, not a crash', () {
-      expect(() => asMap([], 'data'), _parseError('data'));
-      expect(() => asMapList({}, 'data'), _parseError('data'));
-    });
+    test(
+      'a list where an object is expected is a parse error, not a crash',
+      () {
+        expect(() => asMap([], 'data'), _parseError('data'));
+        expect(() => asMapList({}, 'data'), _parseError('data'));
+      },
+    );
 
     test('an integer is accepted where the contract says a number', () {
       final money = Money.fromJson({'amount': 18000000, 'currency': 'USD'});
@@ -74,13 +106,13 @@ void main() {
   group('models', () {
     test('metric improvement follows higher_is_better, not the sign', () {
       Metric metric(double change, bool higherIsBetter) => Metric.fromJson({
-            'key': 'k',
-            'label': 'K',
-            'value': 1,
-            'unit': 'percent',
-            'change': change,
-            'higher_is_better': higherIsBetter,
-          });
+        'key': 'k',
+        'label': 'K',
+        'value': 1,
+        'unit': 'percent',
+        'change': change,
+        'higher_is_better': higherIsBetter,
+      });
 
       expect(metric(1.8, true).isImprovement, isTrue); // education up
       expect(metric(-0.4, false).isImprovement, isTrue); // unemployment down
@@ -128,10 +160,20 @@ void main() {
     });
 
     test('forecast points keep the confidence band only for forecasts', () {
-      final past = ForecastPoint.fromJson(
-          {'year': 2025, 'value': 68.4, 'kind': 'actual', 'lower': null, 'upper': null});
-      final future = ForecastPoint.fromJson(
-          {'year': 2026, 'value': 70, 'kind': 'forecast', 'lower': 69, 'upper': 71});
+      final past = ForecastPoint.fromJson({
+        'year': 2025,
+        'value': 68.4,
+        'kind': 'actual',
+        'lower': null,
+        'upper': null,
+      });
+      final future = ForecastPoint.fromJson({
+        'year': 2026,
+        'value': 70,
+        'kind': 'forecast',
+        'lower': 69,
+        'upper': 71,
+      });
       expect(past.isForecast, isFalse);
       expect(past.lower, isNull);
       expect(future.isForecast, isTrue);

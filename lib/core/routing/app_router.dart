@@ -41,45 +41,34 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ShellRoute(
         navigatorKey: shellNavigatorKey,
         builder: (context, state, child) {
-          return AppShell(
-            location: state.uri.path,
-            child: child,
-          );
+          return AppShell(location: state.uri.path, child: child);
         },
         routes: [
           // 1. Overview
           GoRoute(
             path: '/overview/dashboard',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: DashboardScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: DashboardScreen()),
           ),
           GoRoute(
             path: '/overview/map',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: InteractiveMapScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: InteractiveMapScreen()),
           ),
           GoRoute(
             path: '/overview/regions',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: RegionsScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: RegionsScreen()),
           ),
           GoRoute(
             path: '/overview/regions/:id',
             pageBuilder: (context, state) => NoTransitionPage(
-              child: RegionProfileScreen(
-                regionId: state.pathParameters['id']!,
-              ),
+              child: RegionProfileScreen(regionId: state.pathParameters['id']!),
             ),
           ),
 
           // 2. Insights
-          GoRoute(
-            path: '/insights',
-            redirect: (_, _) => '/insights/education',
-          ),
+          GoRoute(path: '/insights', redirect: (_, _) => '/insights/education'),
           GoRoute(
             path: '/insights/education',
             pageBuilder: (context, state) => const NoTransitionPage(
@@ -106,27 +95,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/insights/comparison',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: RegionComparisonScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: RegionComparisonScreen()),
           ),
           GoRoute(
             path: '/insights/history',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: HistoricalAnalysisScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: HistoricalAnalysisScreen()),
           ),
           GoRoute(
             path: '/insights/priority',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: DevelopmentPriorityScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: DevelopmentPriorityScreen()),
           ),
           GoRoute(
             path: '/insights/data-quality',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: DataQualityScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: DataQualityScreen()),
           ),
 
           // 3. Intelligence
@@ -136,21 +121,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/intelligence/predictions',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: PredictionsScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: PredictionsScreen()),
           ),
           GoRoute(
             path: '/intelligence/assistant',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: AssistantScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: AssistantScreen()),
           ),
           GoRoute(
             path: '/intelligence/recommendations',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: RecommendationsScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: RecommendationsScreen()),
           ),
 
           // 4. Decisions
@@ -160,21 +142,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/decisions/simulator',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: SimulatorScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: SimulatorScreen()),
           ),
           GoRoute(
             path: '/decisions/projects',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: DevelopmentProjectsScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: DevelopmentProjectsScreen()),
           ),
           GoRoute(
             path: '/decisions/reports',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: CitizenReportsScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: CitizenReportsScreen()),
           ),
         ],
       ),

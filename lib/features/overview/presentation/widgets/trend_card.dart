@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../api/models/common.dart';
 import '../../../../shared/widgets/charts.dart';
 import '../../../../shared/widgets/decidix_card.dart';
@@ -29,7 +30,9 @@ class TrendCard extends ConsumerWidget {
                 DecidixChip(
                   label: range,
                   selected: range == selected,
-                  onTap: () => ref.read(selectedTrendRangeProvider.notifier).select(range),
+                  onTap: () => ref
+                      .read(selectedTrendRangeProvider.notifier)
+                      .select(range),
                 ),
             ],
           ),

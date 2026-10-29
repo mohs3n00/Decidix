@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+
 import '../../../../api/models/overview.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -39,9 +40,9 @@ class _DecidixMapState extends State<DecidixMap> {
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context);
-    final bounds = LatLngBounds.fromPoints(
-      [for (final p in widget.points) LatLng(p.latitude, p.longitude)],
-    );
+    final bounds = LatLngBounds.fromPoints([
+      for (final p in widget.points) LatLng(p.latitude, p.longitude),
+    ]);
 
     return DecidixCard(
       padding: const EdgeInsets.all(12),
@@ -71,9 +72,13 @@ class _DecidixMapState extends State<DecidixMap> {
                       MarkerLayer(
                         markers: [
                           // The selected bubble is drawn last, on top.
-                          for (final p in widget.points.where((p) => p.id != widget.selectedId))
+                          for (final p in widget.points.where(
+                            (p) => p.id != widget.selectedId,
+                          ))
                             _marker(p, selected: false, locale: locale),
-                          for (final p in widget.points.where((p) => p.id == widget.selectedId))
+                          for (final p in widget.points.where(
+                            (p) => p.id == widget.selectedId,
+                          ))
                             _marker(p, selected: true, locale: locale),
                         ],
                       ),
@@ -85,13 +90,18 @@ class _DecidixMapState extends State<DecidixMap> {
                     end: 0,
                     child: Container(
                       constraints: const BoxConstraints(maxWidth: 260),
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       color: AppColors.white.withValues(alpha: 0.8),
                       child: Text(
                         AppConfig.mapAttribution,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTypography.microRegular.copyWith(color: AppColors.ink),
+                        style: AppTypography.microRegular.copyWith(
+                          color: AppColors.ink,
+                        ),
                       ),
                     ),
                   ),
@@ -125,7 +135,11 @@ class _DecidixMapState extends State<DecidixMap> {
     );
   }
 
-  Marker _marker(MapPoint point, {required bool selected, required Locale locale}) {
+  Marker _marker(
+    MapPoint point, {
+    required bool selected,
+    required Locale locale,
+  }) {
     final size = selected ? 46.0 : 34.0;
     final color = ScoreRing.colorFor(point.priority);
 
@@ -158,7 +172,11 @@ class _DecidixMapState extends State<DecidixMap> {
                   width: selected ? 3 : 2,
                 ),
                 boxShadow: const [
-                  BoxShadow(color: Color(0x33061A3A), blurRadius: 8, offset: Offset(0, 3)),
+                  BoxShadow(
+                    color: Color(0x33061A3A),
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
+                  ),
                 ],
               ),
               child: Text(
@@ -176,7 +194,10 @@ class _DecidixMapState extends State<DecidixMap> {
                 right: -70,
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.navy,
                       borderRadius: AppRadius.pillRadius,
@@ -184,7 +205,9 @@ class _DecidixMapState extends State<DecidixMap> {
                     child: Text(
                       point.name.resolve(locale),
                       maxLines: 1,
-                      style: AppTypography.microStrong.copyWith(color: AppColors.white),
+                      style: AppTypography.microStrong.copyWith(
+                        color: AppColors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -201,7 +224,11 @@ class _ZoomButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _ZoomButton({required this.icon, required this.label, required this.onTap});
+  const _ZoomButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +246,11 @@ class _ZoomButton extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.line),
             boxShadow: const [
-              BoxShadow(color: Color(0x1F061A3A), blurRadius: 6, offset: Offset(0, 2)),
+              BoxShadow(
+                color: Color(0x1F061A3A),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
             ],
           ),
           child: Icon(icon, size: 20, color: AppColors.navy),
@@ -247,7 +278,10 @@ class _Legend extends StatelessWidget {
               gradient: LinearGradient(
                 begin: AlignmentDirectional.centerStart,
                 end: AlignmentDirectional.centerEnd,
-                colors: [AppColors.blue.withValues(alpha: 0.15), AppColors.blue],
+                colors: [
+                  AppColors.blue.withValues(alpha: 0.15),
+                  AppColors.blue,
+                ],
               ),
             ),
           ),

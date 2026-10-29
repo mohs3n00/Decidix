@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'app_colors.dart';
 
 /// The two fonts of the app, bundled in assets/fonts (see pubspec.yaml).
@@ -57,8 +58,7 @@ class AppTypography {
   static TextStyle get numberS => _figma(18, FontWeight.w500);
 
   // Titles
-  static TextStyle get titleM =>
-      _figma(16, FontWeight.w600, lineHeightPx: 22);
+  static TextStyle get titleM => _figma(16, FontWeight.w600, lineHeightPx: 22);
   static TextStyle get titleS => _figma(15, FontWeight.w600);
   static TextStyle get titleSMultiline =>
       _figma(15, FontWeight.w600, lineHeightPx: 21);
@@ -80,18 +80,10 @@ class AppTypography {
   static TextStyle get captionStrong => _figma(12, FontWeight.w600);
 
   // Overlines are upper case in English: apply toUpperCase() to the text.
-  static TextStyle get overlineM => _figma(
-        12,
-        FontWeight.w500,
-        color: AppColors.blue,
-        letterSpacingPct: 14,
-      );
-  static TextStyle get overlineS => _figma(
-        11,
-        FontWeight.w600,
-        color: AppColors.blue,
-        letterSpacingPct: 14,
-      );
+  static TextStyle get overlineM =>
+      _figma(12, FontWeight.w500, color: AppColors.blue, letterSpacingPct: 14);
+  static TextStyle get overlineS =>
+      _figma(11, FontWeight.w600, color: AppColors.blue, letterSpacingPct: 14);
 
   // Micro
   static TextStyle get microRegular => _figma(11, FontWeight.w400);

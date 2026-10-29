@@ -1,5 +1,7 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+
 import '../../../../api/models/overview.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_radius.dart';
@@ -22,16 +24,22 @@ class DevelopmentIndexCard extends StatelessWidget {
     return HeroCard(
       child: Column(
         children: [
-          Row(
+          // The change pill drops under the title when there is no room.
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
             children: [
-              Expanded(
-                child: Text(
-                  fmt.tr('ov_index_title'),
-                  style: AppTypography.bodyS.copyWith(color: AppColors.fadedInk),
-                ),
+              Text(
+                fmt.tr('ov_index_title'),
+                style: AppTypography.bodyS.copyWith(color: AppColors.fadedInk),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.successText.withValues(alpha: 0.10),
                   borderRadius: AppRadius.pillRadius,

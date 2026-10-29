@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../api/models/common.dart';
 import 'charts.dart';
 import 'decidix_card.dart';

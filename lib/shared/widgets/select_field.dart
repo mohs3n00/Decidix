@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_shadows.dart';
@@ -53,8 +54,9 @@ class SelectField extends StatelessWidget {
               SelectFieldStyle.gradient => null,
               SelectFieldStyle.navy => AppColors.navy,
             },
-            gradient:
-                style == SelectFieldStyle.gradient ? AppColors.brandGradient : null,
+            gradient: style == SelectFieldStyle.gradient
+                ? AppColors.brandGradient
+                : null,
             borderRadius: light ? AppRadius.pillRadius : AppRadius.innerRadius,
             border: light ? Border.all(color: AppColors.hairline) : null,
             boxShadow: light ? AppShadows.card : null,
@@ -66,10 +68,11 @@ class SelectField extends StatelessWidget {
                   value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: (light
-                          ? AppTypography.titleS
-                          : AppTypography.labelMStrong)
-                      .copyWith(color: foreground),
+                  style:
+                      (light
+                              ? AppTypography.titleS
+                              : AppTypography.labelMStrong)
+                          .copyWith(color: foreground),
                 ),
               ),
               const SizedBox(width: 8),

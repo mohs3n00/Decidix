@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../api/models/intelligence.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_radius.dart';
@@ -102,10 +103,15 @@ class _RecommendationCard extends StatelessWidget {
                 label: fmt.priority(item.priority),
                 tone: RegionRow.toneFor(item.priority),
               ),
-              const Spacer(),
-              Text(
-                item.region.name.resolve(locale),
-                style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  item.region.name.resolve(locale),
+                  textAlign: TextAlign.end,
+                  style: AppTypography.captionRegular.copyWith(
+                    color: AppColors.ink,
+                  ),
+                ),
               ),
             ],
           ),
@@ -125,31 +131,52 @@ class _RecommendationCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(fmt.tr('rec_index_impact'), style: label),
-                    const SizedBox(height: 2),
-                    Text(
-                      fmt.signed(item.indexImpact),
-                      style: AppTypography.numberS.copyWith(color: AppColors.successText),
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(fmt.tr('rec_index_impact'), style: label),
+                      const SizedBox(height: 2),
+                      Text(
+                        fmt.signed(item.indexImpact),
+                        style: AppTypography.numberS.copyWith(
+                          color: AppColors.successText,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(fmt.tr('rec_est_cost'), style: label),
                       const SizedBox(height: 2),
-                      Text(fmt.money(item.estimatedCost), style: AppTypography.numberS),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: AlignmentDirectional.centerStart,
+                        child: Text(
+                          fmt.money(item.estimatedCost),
+                          style: AppTypography.numberS,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                ScoreRing(score: item.confidence, size: 44, color: AppColors.blue),
-                const SizedBox(width: 6),
-                Text(fmt.tr('rec_conf'), style: label),
+                const SizedBox(width: 8),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ScoreRing(
+                      score: item.confidence,
+                      size: 44,
+                      color: AppColors.blue,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(fmt.tr('rec_conf'), style: label),
+                  ],
+                ),
               ],
             ),
           ),
@@ -157,7 +184,10 @@ class _RecommendationCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: DecidixButton(label: fmt.tr('btn_add_to_plan'), onPressed: onAdd),
+                child: DecidixButton(
+                  label: fmt.tr('btn_add_to_plan'),
+                  onPressed: onAdd,
+                ),
               ),
               const SizedBox(width: 8),
               Semantics(
@@ -175,7 +205,11 @@ class _RecommendationCard extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: AppColors.hairline),
                     ),
-                    child: const Icon(Icons.close_rounded, size: 18, color: AppColors.ink),
+                    child: const Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: AppColors.ink,
+                    ),
                   ),
                 ),
               ),

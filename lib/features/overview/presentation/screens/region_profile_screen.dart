@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../../../api/models/overview.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -61,7 +62,10 @@ class RegionProfileScreen extends ConsumerWidget {
                 AppAssets.icAiSpark,
                 width: 14,
                 height: 14,
-                colorFilter: const ColorFilter.mode(AppColors.blue, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(
+                  AppColors.blue,
+                  BlendMode.srcIn,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -70,7 +74,9 @@ class RegionProfileScreen extends ConsumerWidget {
                     'score': fmt.number(data.dataQualityScore, decimals: 0),
                     'date': fmt.monthYear(data.dataQualityUpdatedAt),
                   }),
-                  style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
+                  style: AppTypography.captionRegular.copyWith(
+                    color: AppColors.ink,
+                  ),
                 ),
               ),
             ],
@@ -117,7 +123,10 @@ class _HistoryCard extends StatelessWidget {
             spacing: 16,
             runSpacing: 6,
             children: [
-              _LegendDot(color: AppColors.blue, label: profile.name.resolve(locale)),
+              _LegendDot(
+                color: AppColors.blue,
+                label: profile.name.resolve(locale),
+              ),
               _LegendDot(
                 color: AppColors.mutedText.withValues(alpha: 0.6),
                 label: context.fmt.tr('profile_legend_national'),
@@ -147,7 +156,10 @@ class _LegendDot extends StatelessWidget {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
-        Text(label, style: AppTypography.captionRegular.copyWith(color: AppColors.ink)),
+        Text(
+          label,
+          style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
+        ),
       ],
     );
   }

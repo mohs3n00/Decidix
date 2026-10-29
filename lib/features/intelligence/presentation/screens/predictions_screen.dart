@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../api/models/intelligence.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -38,7 +39,8 @@ class PredictionsScreen extends ConsumerWidget {
         ChipScrollRow(
           labels: [for (final y in years) '$y'],
           selectedIndex: years.indexOf(year).clamp(0, years.length - 1),
-          onSelected: (i) => ref.read(predictionYearProvider.notifier).select(years[i]),
+          onSelected: (i) =>
+              ref.read(predictionYearProvider.notifier).select(years[i]),
         ),
         ...asyncSections(
           predictions,
@@ -76,14 +78,19 @@ class PredictionsScreen extends ConsumerWidget {
                         child: Row(
                           children: [
                             Expanded(
-                              child: Text(region.name.resolve(locale), style: AppTypography.labelL),
+                              child: Text(
+                                region.name.resolve(locale),
+                                style: AppTypography.labelL,
+                              ),
                             ),
                             Text(
                               fmt.tr('pred_by_year', {
                                 'n': fmt.number(region.delta),
                                 'year': data.targetYear,
                               }),
-                              style: AppTypography.captionStrong.copyWith(color: AppColors.successText),
+                              style: AppTypography.captionStrong.copyWith(
+                                color: AppColors.successText,
+                              ),
                             ),
                           ],
                         ),
@@ -151,10 +158,15 @@ class _ForecastCard extends StatelessWidget {
             children: [
               Text(
                 fmt.number(data.projectedIndex),
-                style: AppTypography.adapt(context, AppTypography.numberL.copyWith(fontSize: 34)),
+                style: AppTypography.adapt(
+                  context,
+                  AppTypography.numberL.copyWith(fontSize: 34),
+                ),
               ),
               StatusBadge(
-                label: fmt.tr('pred_confidence', {'n': fmt.number(data.confidence, decimals: 0)}),
+                label: fmt.tr('pred_confidence', {
+                  'n': fmt.number(data.confidence, decimals: 0),
+                }),
                 tone: BadgeTone.info,
               ),
             ],
@@ -163,7 +175,8 @@ class _ForecastCard extends StatelessWidget {
           LineChartView(series: series, band: band, height: 150),
           const SizedBox(height: 6),
           ChartXLabels([
-            for (final p in data.series) "'${(p.year % 100).toString().padLeft(2, '0')}",
+            for (final p in data.series)
+              "'${(p.year % 100).toString().padLeft(2, '0')}",
           ]),
           const SizedBox(height: 12),
           Text(

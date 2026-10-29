@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../api/models/insights.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -45,11 +46,16 @@ class DataQualityScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(fmt.qualityBand(data.band), style: AppTypography.titleM),
+                      Text(
+                        fmt.qualityBand(data.band),
+                        style: AppTypography.titleM,
+                      ),
                       const SizedBox(height: 4),
                       Text(
                         fmt.tr('dq_confidence'),
-                        style: AppTypography.bodyS.copyWith(color: AppColors.ink),
+                        style: AppTypography.bodyS.copyWith(
+                          color: AppColors.ink,
+                        ),
                       ),
                     ],
                   ),
@@ -59,9 +65,18 @@ class DataQualityScreen extends ConsumerWidget {
           ),
           StatRow(
             tiles: [
-              StatTile(value: fmt.percent(data.completeness), label: fmt.tr('dq_complete')),
-              StatTile(value: fmt.percent(data.timeliness), label: fmt.tr('dq_timely')),
-              StatTile(value: fmt.percent(data.accuracy), label: fmt.tr('dq_accurate')),
+              StatTile(
+                value: fmt.percent(data.completeness),
+                label: fmt.tr('dq_complete'),
+              ),
+              StatTile(
+                value: fmt.percent(data.timeliness),
+                label: fmt.tr('dq_timely'),
+              ),
+              StatTile(
+                value: fmt.percent(data.accuracy),
+                label: fmt.tr('dq_accurate'),
+              ),
             ],
           ),
           Section(
@@ -123,8 +138,8 @@ class _SourceRow extends StatelessWidget {
     final age = overdue
         ? fmt.tr('dq_overdue', {'n': source.ageDays})
         : source.ageDays == 0
-            ? fmt.tr('dq_synced_today')
-            : fmt.tr('dq_synced_days', {'n': source.ageDays});
+        ? fmt.tr('dq_synced_today')
+        : fmt.tr('dq_synced_days', {'n': source.ageDays});
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -140,18 +155,23 @@ class _SourceRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
+            flex: 3,
             child: Text(
               source.name.resolve(locale),
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: AppTypography.labelM,
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            age,
-            style: AppTypography.captionRegular.copyWith(
-              color: overdue ? AppColors.danger : AppColors.ink,
+          Flexible(
+            flex: 2,
+            child: Text(
+              age,
+              textAlign: TextAlign.end,
+              style: AppTypography.captionRegular.copyWith(
+                color: overdue ? AppColors.dangerText : AppColors.ink,
+              ),
             ),
           ),
         ],

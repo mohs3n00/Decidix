@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
 import 'strings/app_strings.dart';
 
 /// The app's own texts in English and Arabic. They live in strings/, one file

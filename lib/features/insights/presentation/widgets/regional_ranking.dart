@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../../api/models/insights.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -66,7 +67,9 @@ class _RegionalRankingState extends State<RegionalRanking> {
                         width: 28,
                         child: Text(
                           '${row.rank}',
-                          style: AppTypography.captionMedium.copyWith(color: AppColors.ink),
+                          style: AppTypography.captionMedium.copyWith(
+                            color: AppColors.ink,
+                          ),
                         ),
                       ),
                       Expanded(
@@ -79,7 +82,9 @@ class _RegionalRankingState extends State<RegionalRanking> {
                       ),
                       Text(
                         fmt.number(row.score, decimals: 0),
-                        style: AppTypography.labelLStrong.copyWith(color: scoreColor(row.score)),
+                        style: AppTypography.labelLStrong.copyWith(
+                          color: scoreColor(row.score),
+                        ),
                       ),
                     ],
                   ),

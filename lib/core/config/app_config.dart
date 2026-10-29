@@ -4,7 +4,10 @@ class AppConfig {
   /// `true` (default) serves the files in assets/mock; `false` calls the real API.
   ///
   /// flutter run --dart-define=USE_MOCK=false --dart-define=API_BASE_URL=https://...
-  static const bool useMock = bool.fromEnvironment('USE_MOCK', defaultValue: true);
+  static const bool useMock = bool.fromEnvironment(
+    'USE_MOCK',
+    defaultValue: true,
+  );
 
   /// Where the map tiles come from. The default is the public OpenStreetMap
   /// server, which is fine for development but not for a launched app. For a

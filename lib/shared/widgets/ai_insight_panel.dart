@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_typography.dart';
@@ -39,7 +40,7 @@ class AiInsightPanel extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -55,12 +56,15 @@ class AiInsightPanel extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        label.toUpperCase(),
-                        style: AppTypography.adapt(
-                          context,
-                          AppTypography.overlineS
-                              .copyWith(color: AppColors.cyan),
+                      Flexible(
+                        child: Text(
+                          label.toUpperCase(),
+                          style: AppTypography.adapt(
+                            context,
+                            AppTypography.overlineS.copyWith(
+                              color: AppColors.cyan,
+                            ),
+                          ),
                         ),
                       ),
                     ],

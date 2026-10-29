@@ -22,6 +22,7 @@ class AppSpacing {
 
   // TODO(phase-4): move screens to [gutter] and remove this 16px padding.
   static const EdgeInsets pagePadding = EdgeInsets.symmetric(horizontal: 16.0);
-  static const EdgeInsets screenPadding =
-      EdgeInsets.symmetric(horizontal: gutter);
+  static const EdgeInsets screenPadding = EdgeInsets.symmetric(
+    horizontal: gutter,
+  );
 }

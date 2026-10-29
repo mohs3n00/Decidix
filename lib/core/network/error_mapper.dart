@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import '../errors/app_exception.dart';
 
 /// Turns a Dio failure into one of the [AppException] types, so no screen has
@@ -38,7 +39,9 @@ AppException _fromResponse(Response<dynamic>? response) {
     };
     return ValidationException(message ?? 'Invalid request', fields);
   }
-  if (status >= 500) return ServerException(message ?? 'Server error occurred', status);
+  if (status >= 500) {
+    return ServerException(message ?? 'Server error occurred', status);
+  }
   return AppException(message ?? 'Request failed', status);
 }
 

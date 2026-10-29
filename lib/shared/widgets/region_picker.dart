@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../api/models/overview.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
@@ -25,14 +26,19 @@ Future<String?> showRegionPicker(
 
       return SafeArea(
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.7),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.7,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-                child: Text(fmt.tr('cmp_pick_region'), style: AppTypography.headingSection),
+                child: Text(
+                  fmt.tr('cmp_pick_region'),
+                  style: AppTypography.headingSection,
+                ),
               ),
               Flexible(
                 child: ListView.builder(
@@ -44,14 +50,24 @@ Future<String?> showRegionPicker(
                     return ListTile(
                       selected: selected,
                       onTap: () => Navigator.of(context).pop(region.id),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                      title: Text(region.name.resolve(locale), style: AppTypography.labelL),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
+                      title: Text(
+                        region.name.resolve(locale),
+                        style: AppTypography.labelL,
+                      ),
                       subtitle: Text(
                         fmt.people(region.population),
-                        style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
+                        style: AppTypography.captionRegular.copyWith(
+                          color: AppColors.ink,
+                        ),
                       ),
                       trailing: selected
-                          ? const Icon(Icons.check_rounded, color: AppColors.blue)
+                          ? const Icon(
+                              Icons.check_rounded,
+                              color: AppColors.blue,
+                            )
                           : Text(
                               fmt.number(region.score, decimals: 0),
                               style: AppTypography.labelMStrong,

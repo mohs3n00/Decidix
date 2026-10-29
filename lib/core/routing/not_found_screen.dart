@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../shared/widgets/decidix_button.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_typography.dart';
@@ -21,7 +22,11 @@ class NotFoundScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.explore_off_outlined, size: 48, color: AppColors.mutedText),
+                const Icon(
+                  Icons.explore_off_outlined,
+                  size: 48,
+                  color: AppColors.mutedText,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   context.tr('nf_title'),

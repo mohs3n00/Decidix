@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
@@ -23,7 +24,10 @@ class DecidixBottomNavigation extends StatelessWidget {
   static const List<DecidixNavItem> items = [
     DecidixNavItem(labelKey: 'nav_overview', iconAsset: AppAssets.icOverview),
     DecidixNavItem(labelKey: 'nav_insights', iconAsset: AppAssets.icInsights),
-    DecidixNavItem(labelKey: 'nav_intelligence', iconAsset: AppAssets.icIntelligence),
+    DecidixNavItem(
+      labelKey: 'nav_intelligence',
+      iconAsset: AppAssets.icIntelligence,
+    ),
     DecidixNavItem(labelKey: 'nav_decisions', iconAsset: AppAssets.icDecisions),
   ];
 
@@ -54,7 +58,9 @@ class DecidixBottomNavigation extends StatelessWidget {
             builder: (context, constraints) {
               final itemWidth = constraints.maxWidth / items.length;
               final isRtl = Directionality.of(context) == TextDirection.rtl;
-              final visualIndex = isRtl ? items.length - 1 - currentIndex : currentIndex;
+              final visualIndex = isRtl
+                  ? items.length - 1 - currentIndex
+                  : currentIndex;
 
               return Stack(
                 children: [
@@ -102,7 +108,11 @@ class _NavTab extends StatelessWidget {
   final bool active;
   final VoidCallback onTap;
 
-  const _NavTab({required this.item, required this.active, required this.onTap});
+  const _NavTab({
+    required this.item,
+    required this.active,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +132,10 @@ class _NavTab extends StatelessWidget {
                   item.iconAsset,
                   width: 24,
                   height: 24,
-                  colorFilter: const ColorFilter.mode(AppColors.blue, BlendMode.srcIn),
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.blue,
+                    BlendMode.srcIn,
+                  ),
                 )
               : Column(
                   mainAxisSize: MainAxisSize.min,
@@ -131,8 +144,10 @@ class _NavTab extends StatelessWidget {
                       item.iconAsset,
                       width: 22,
                       height: 22,
-                      colorFilter:
-                          const ColorFilter.mode(AppColors.fadedInk, BlendMode.srcIn),
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.fadedInk,
+                        BlendMode.srcIn,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(

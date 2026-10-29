@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../../../api/models/decisions.dart';
 import '../../../../api/models/json.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -52,7 +53,10 @@ class CitizenReportsScreen extends ConsumerWidget {
                 Expanded(
                   child: _StatCard(
                     label: fmt.tr('rep_open_week'),
-                    value: fmt.number(reports.value!.data.openThisWeek.value, decimals: 0),
+                    value: fmt.number(
+                      reports.value!.data.openThisWeek.value,
+                      decimals: 0,
+                    ),
                     stat: reports.value!.data.openThisWeek,
                   ),
                 ),
@@ -70,10 +74,14 @@ class CitizenReportsScreen extends ConsumerWidget {
         ChipScrollRow(
           labels: [
             for (final c in _categories)
-              c == null ? fmt.tr('filter_all') : fmt.tr('rep_cat_${wireName(c)}'),
+              c == null
+                  ? fmt.tr('filter_all')
+                  : fmt.tr('rep_cat_${wireName(c)}'),
           ],
           selectedIndex: _categories.indexOf(category),
-          onSelected: (i) => ref.read(reportCategoryFilterProvider.notifier).select(_categories[i]),
+          onSelected: (i) => ref
+              .read(reportCategoryFilterProvider.notifier)
+              .select(_categories[i]),
         ),
         ...asyncSections(
           reports,
@@ -83,7 +91,10 @@ class CitizenReportsScreen extends ConsumerWidget {
             if (paged.data.items.isEmpty) return const [EmptyView()];
             return [
               for (final report in paged.data.items)
-                _ReportCard(report: report, onLike: () => controller.toggleLike(report.id)),
+                _ReportCard(
+                  report: report,
+                  onLike: () => controller.toggleLike(report.id),
+                ),
             ];
           },
         ),
@@ -97,7 +108,11 @@ class _StatCard extends StatelessWidget {
   final String value;
   final ReportStat stat;
 
-  const _StatCard({required this.label, required this.value, required this.stat});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.stat,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +125,10 @@ class _StatCard extends StatelessWidget {
             style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
           ),
           const SizedBox(height: 6),
-          Text(value, style: AppTypography.adapt(context, AppTypography.numberL)),
+          Text(
+            value,
+            style: AppTypography.adapt(context, AppTypography.numberL),
+          ),
           const SizedBox(height: 6),
           TrendIndicator(value: stat.change, inverted: !stat.higherIsBetter),
         ],
@@ -150,14 +168,21 @@ class _ReportCard extends StatelessWidget {
           Row(
             children: [
               if (report.category != ReportCategory.unknown)
-                StatusBadge(
-                  label: fmt.tr('rep_cat_${wireName(report.category)}'),
-                  tone: BadgeTone.info,
+                Flexible(
+                  child: StatusBadge(
+                    label: fmt.tr('rep_cat_${wireName(report.category)}'),
+                    tone: BadgeTone.info,
+                  ),
                 ),
-              const Spacer(),
-              Text(
-                fmt.timeAgo(report.createdAt, DateTime.now().toUtc()),
-                style: AppTypography.microRegular.copyWith(color: AppColors.ink),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  fmt.timeAgo(report.createdAt, DateTime.now().toUtc()),
+                  textAlign: TextAlign.end,
+                  style: AppTypography.microRegular.copyWith(
+                    color: AppColors.ink,
+                  ),
+                ),
               ),
             ],
           ),
@@ -170,14 +195,24 @@ class _ReportCard extends StatelessWidget {
                 AppAssets.icLocation,
                 width: 14,
                 height: 14,
-                colorFilter: const ColorFilter.mode(AppColors.ink, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(
+                  AppColors.ink,
+                  BlendMode.srcIn,
+                ),
               ),
               const SizedBox(width: 6),
-              Text(report.region.name.resolve(locale), style: caption),
+              Flexible(
+                child: Text(report.region.name.resolve(locale), style: caption),
+              ),
             ],
           ),
           const SizedBox(height: 12),
-          Row(
+          // The badges drop to the next line when there is no room for them.
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 6,
             children: [
               _LikeButton(
                 liked: report.likedByMe,
@@ -185,18 +220,21 @@ class _ReportCard extends StatelessWidget {
                 label: fmt.tr('rep_like'),
                 onTap: onLike,
               ),
-              const Spacer(),
-              StatusBadge(
-                label: fmt.priority(report.priority),
-                tone: RegionRow.toneFor(report.priority),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  StatusBadge(
+                    label: fmt.priority(report.priority),
+                    tone: RegionRow.toneFor(report.priority),
+                  ),
+                  if (report.status != ReportStatus.unknown)
+                    StatusBadge(
+                      label: fmt.tr('rep_status_${wireName(report.status)}'),
+                      tone: _statusTone,
+                    ),
+                ],
               ),
-              if (report.status != ReportStatus.unknown) ...[
-                const SizedBox(width: 6),
-                StatusBadge(
-                  label: fmt.tr('rep_status_${wireName(report.status)}'),
-                  tone: _statusTone,
-                ),
-              ],
             ],
           ),
         ],
@@ -220,7 +258,7 @@ class _LikeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = liked ? AppColors.danger : AppColors.ink;
+    final color = liked ? AppColors.dangerText : AppColors.ink;
 
     return Semantics(
       button: true,
@@ -242,7 +280,10 @@ class _LikeButton extends StatelessWidget {
                 color: color,
               ),
               const SizedBox(width: 6),
-              Text('$count', style: AppTypography.captionMedium.copyWith(color: color)),
+              Text(
+                '$count',
+                style: AppTypography.captionMedium.copyWith(color: color),
+              ),
             ],
           ),
         ),

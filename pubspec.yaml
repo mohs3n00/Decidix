@@ -26,6 +26,30 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.8
+
+# Launcher icon and splash screen, generated from the images that
+# test/tool/render_icon_test.dart draws from the logo:
+#   dart run flutter_launcher_icons
+#   dart run flutter_native_splash:create
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icon/app_icon.png
+  adaptive_icon_background: "#061A3A"
+  adaptive_icon_foreground: assets/icon/app_icon_foreground.png
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#061A3A"
+  image: assets/icon/splash_mark.png
+  android_12:
+    color: "#061A3A"
+    image: assets/icon/splash_mark.png
+  android: true
+  ios: true
+  web: false
 
 flutter:
   uses-material-design: true

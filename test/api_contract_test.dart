@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 /// Checks the mock files in assets/mock against docs/api_contract.md.
@@ -46,7 +47,11 @@ Map<String, dynamic> _load(String file) =>
 dynamic _data(String file) => _load(file)['data'];
 
 /// Calls [visit] for every map found anywhere inside [node].
-void _eachMap(Object? node, String path, void Function(String, Map<String, dynamic>) visit) {
+void _eachMap(
+  Object? node,
+  String path,
+  void Function(String, Map<String, dynamic>) visit,
+) {
   if (node is Map<String, dynamic>) {
     visit(path, node);
     node.forEach((key, value) => _eachMap(value, '$path.$key', visit));
@@ -57,7 +62,11 @@ void _eachMap(Object? node, String path, void Function(String, Map<String, dynam
   }
 }
 
-void _eachString(Object? node, String path, void Function(String, String) visit) {
+void _eachString(
+  Object? node,
+  String path,
+  void Function(String, String) visit,
+) {
   if (node is String) {
     visit(path, node);
   } else if (node is Map<String, dynamic>) {
@@ -76,9 +85,17 @@ void main() {
     test('every endpoint has a file with a data envelope', () {
       _endpoints.forEach((endpoint, file) {
         final path = '$_mockRoot/$file';
-        expect(File(path).existsSync(), isTrue, reason: '$endpoint: $path is missing');
+        expect(
+          File(path).existsSync(),
+          isTrue,
+          reason: '$endpoint: $path is missing',
+        );
         final json = _load(file);
-        expect(json.containsKey('data'), isTrue, reason: '$endpoint has no "data"');
+        expect(
+          json.containsKey('data'),
+          isTrue,
+          reason: '$endpoint has no "data"',
+        );
         expect(json['data'], isNotNull, reason: '$endpoint has null "data"');
       });
     });
@@ -99,7 +116,11 @@ void main() {
         'decisions/citizen_reports.json',
       ]) {
         final meta = _load(file)['meta'] as Map<String, dynamic>;
-        expect(meta.keys, containsAll(['page', 'per_page', 'total']), reason: file);
+        expect(
+          meta.keys,
+          containsAll(['page', 'per_page', 'total']),
+          reason: file,
+        );
       }
     });
 
@@ -107,7 +128,11 @@ void main() {
       for (final file in _endpoints.values) {
         _eachMap(_load(file), file, (path, map) {
           for (final key in map.keys) {
-            expect(_snakeCase.hasMatch(key), isTrue, reason: '$path has key "$key"');
+            expect(
+              _snakeCase.hasMatch(key),
+              isTrue,
+              reason: '$path has key "$key"',
+            );
           }
         });
       }
@@ -116,8 +141,11 @@ void main() {
     test('numbers are numbers, not formatted strings', () {
       for (final file in _endpoints.values) {
         _eachString(_load(file), file, (path, value) {
-          expect(_formattedNumber.hasMatch(value), isFalse,
-              reason: '$path is the string "$value"');
+          expect(
+            _formattedNumber.hasMatch(value),
+            isFalse,
+            reason: '$path is the string "$value"',
+          );
         });
       }
     });
@@ -128,10 +156,16 @@ void main() {
           map.forEach((key, value) {
             if (!key.startsWith('arabic_')) return;
             final english = key.substring('arabic_'.length);
-            expect(map[english], isA<String>(),
-                reason: '$path has "$key" but no "$english"');
-            expect(_arabicLetter.hasMatch(value as String), isTrue,
-                reason: '$path.$key has no Arabic letters');
+            expect(
+              map[english],
+              isA<String>(),
+              reason: '$path has "$key" but no "$english"',
+            );
+            expect(
+              _arabicLetter.hasMatch(value as String),
+              isTrue,
+              reason: '$path.$key has no Arabic letters',
+            );
           });
         });
       }
@@ -139,14 +173,23 @@ void main() {
 
     test('percentages stay between 0 and 100', () {
       const percentKeys = {
-        'confidence', 'progress', 'coverage', 'need_score',
-        'completeness', 'timeliness', 'accuracy',
+        'confidence',
+        'progress',
+        'coverage',
+        'need_score',
+        'completeness',
+        'timeliness',
+        'accuracy',
       };
       for (final file in _endpoints.values) {
         _eachMap(_load(file), file, (path, map) {
           for (final key in percentKeys) {
             if (map[key] == null) continue;
-            expect(_n(map[key]), inInclusiveRange(0, 100), reason: '$path.$key');
+            expect(
+              _n(map[key]),
+              inInclusiveRange(0, 100),
+              reason: '$path.$key',
+            );
           }
         });
       }
@@ -158,7 +201,8 @@ void main() {
     late Set<String> regionIds;
 
     setUpAll(() {
-      regions = (_data('overview/regions.json') as List).cast<Map<String, dynamic>>();
+      regions = (_data('overview/regions.json') as List)
+          .cast<Map<String, dynamic>>();
       regionIds = regions.map((r) => r['id'] as String).toSet();
     });
 
@@ -168,7 +212,10 @@ void main() {
       for (var i = 0; i < regions.length; i++) {
         expect(regions[i]['rank'], i + 1);
         if (i > 0) {
-          expect(_n(regions[i]['score']), lessThanOrEqualTo(_n(regions[i - 1]['score'])));
+          expect(
+            _n(regions[i]['score']),
+            lessThanOrEqualTo(_n(regions[i - 1]['score'])),
+          );
         }
       }
     });
@@ -176,16 +223,22 @@ void main() {
     test('dashboard totals match the regions', () {
       final index = (_data('overview/overview.json') as Map)['index'] as Map;
       expect(index['regions_count'], regions.length);
-      expect(index['population'],
-          regions.fold<num>(0, (sum, r) => sum + _n(r['population'])));
-      expect(index['at_risk_count'],
-          regions.where((r) => r['priority'] == 'high').length);
+      expect(
+        index['population'],
+        regions.fold<num>(0, (sum, r) => sum + _n(r['population'])),
+      );
+      expect(
+        index['at_risk_count'],
+        regions.where((r) => r['priority'] == 'high').length,
+      );
     });
 
     test('needs attention are the lowest scoring regions', () {
-      final items = ((_data('overview/overview.json') as Map)['needs_attention'] as List)
-          .cast<Map<String, dynamic>>();
-      final lowest = [...regions]..sort((a, b) => _n(a['score']).compareTo(_n(b['score'])));
+      final items =
+          ((_data('overview/overview.json') as Map)['needs_attention'] as List)
+              .cast<Map<String, dynamic>>();
+      final lowest = [...regions]
+        ..sort((a, b) => _n(a['score']).compareTo(_n(b['score'])));
       for (var i = 0; i < items.length; i++) {
         expect(items[i]['id'], lowest[i]['id']);
         expect(items[i]['score'], lowest[i]['score']);
@@ -193,7 +246,8 @@ void main() {
     });
 
     test('map has one point per region with the same scores', () {
-      final points = (_data('overview/map_points.json') as List).cast<Map<String, dynamic>>();
+      final points = (_data('overview/map_points.json') as List)
+          .cast<Map<String, dynamic>>();
       expect(points.map((p) => p['id']).toSet(), regionIds);
       for (final p in points) {
         final region = regions.firstWhere((r) => r['id'] == p['id']);
@@ -205,10 +259,14 @@ void main() {
     });
 
     test('priority summary counts the regions', () {
-      final summary = (_data('insights/priority.json') as Map)['summary'] as Map;
+      final summary =
+          (_data('insights/priority.json') as Map)['summary'] as Map;
       for (final level in ['high', 'medium', 'low']) {
-        expect(summary[level], regions.where((r) => r['priority'] == level).length,
-            reason: level);
+        expect(
+          summary[level],
+          regions.where((r) => r['priority'] == level).length,
+          reason: level,
+        );
       }
     });
 
@@ -216,7 +274,10 @@ void main() {
       final queue = ((_data('insights/priority.json') as Map)['queue'] as List)
           .cast<Map<String, dynamic>>();
       for (var i = 1; i < queue.length; i++) {
-        expect(_n(queue[i]['need_score']), lessThanOrEqualTo(_n(queue[i - 1]['need_score'])));
+        expect(
+          _n(queue[i]['need_score']),
+          lessThanOrEqualTo(_n(queue[i - 1]['need_score'])),
+        );
       }
     });
 
@@ -239,55 +300,113 @@ void main() {
     });
 
     test('the profile matches its row in the region list', () {
-      final profile = _data('overview/region_delta.json') as Map<String, dynamic>;
+      final profile =
+          _data('overview/region_delta.json') as Map<String, dynamic>;
       final row = regions.firstWhere((r) => r['id'] == profile['id']);
-      for (final key in ['name', 'arabic_name', 'rank', 'score', 'change', 'priority', 'population']) {
+      for (final key in [
+        'name',
+        'arabic_name',
+        'rank',
+        'score',
+        'change',
+        'priority',
+        'population',
+      ]) {
         expect(profile[key], row[key], reason: key);
       }
       expect(profile['rank_total'], regions.length);
       final history = profile['history'] as Map;
-      expect((history['region'] as List).length, (history['national'] as List).length);
-      expect(((history['region'] as List).last as Map)['value'], profile['score']);
+      expect(
+        (history['region'] as List).length,
+        (history['national'] as List).length,
+      );
+      expect(
+        ((history['region'] as List).last as Map)['value'],
+        profile['score'],
+      );
     });
 
-    test('sector screens share one shape with 4 KPIs, 5 bars and 5 + 5 ranks', () {
-      for (final sector in ['education', 'healthcare', 'economy', 'infrastructure']) {
-        final data = _data('insights/$sector.json') as Map<String, dynamic>;
-        expect(data['sector'], sector);
-        expect((data['kpis'] as List).length, 4, reason: sector);
-        expect((data['indicators'] as List).length, 4, reason: sector);
-        expect(((data['breakdown'] as Map)['bars'] as List).length, 5, reason: sector);
-        expect(((data['trend'] as Map)['points'] as List).length, 7, reason: sector);
+    test(
+      'sector screens share one shape with 4 KPIs, 5 bars and 5 + 5 ranks',
+      () {
+        for (final sector in [
+          'education',
+          'healthcare',
+          'economy',
+          'infrastructure',
+        ]) {
+          final data = _data('insights/$sector.json') as Map<String, dynamic>;
+          expect(data['sector'], sector);
+          expect((data['kpis'] as List).length, 4, reason: sector);
+          expect((data['indicators'] as List).length, 4, reason: sector);
+          expect(
+            ((data['breakdown'] as Map)['bars'] as List).length,
+            5,
+            reason: sector,
+          );
+          expect(
+            ((data['trend'] as Map)['points'] as List).length,
+            7,
+            reason: sector,
+          );
 
-        final ranking = data['ranking'] as Map;
-        final top = (ranking['top'] as List).cast<Map<String, dynamic>>();
-        final bottom = (ranking['bottom'] as List).cast<Map<String, dynamic>>();
-        expect(top.length, 5, reason: sector);
-        expect(bottom.length, 5, reason: sector);
-        for (var i = 1; i < 5; i++) {
-          expect(_n(top[i]['score']), lessThanOrEqualTo(_n(top[i - 1]['score'])), reason: '$sector top');
-          expect(_n(bottom[i]['score']), greaterThanOrEqualTo(_n(bottom[i - 1]['score'])), reason: '$sector bottom');
+          final ranking = data['ranking'] as Map;
+          final top = (ranking['top'] as List).cast<Map<String, dynamic>>();
+          final bottom = (ranking['bottom'] as List)
+              .cast<Map<String, dynamic>>();
+          expect(top.length, 5, reason: sector);
+          expect(bottom.length, 5, reason: sector);
+          for (var i = 1; i < 5; i++) {
+            expect(
+              _n(top[i]['score']),
+              lessThanOrEqualTo(_n(top[i - 1]['score'])),
+              reason: '$sector top',
+            );
+            expect(
+              _n(bottom[i]['score']),
+              greaterThanOrEqualTo(_n(bottom[i - 1]['score'])),
+              reason: '$sector bottom',
+            );
+          }
+          // the last trend point is the sector score shown on the dashboard
+          final points = (data['trend'] as Map)['points'] as List;
+          expect(
+            (points.last as Map)['value'],
+            (data['index'] as Map)['score'],
+            reason: sector,
+          );
         }
-        // the last trend point is the sector score shown on the dashboard
-        final points = (data['trend'] as Map)['points'] as List;
-        expect((points.last as Map)['value'], (data['index'] as Map)['score'], reason: sector);
-      }
-    });
+      },
+    );
 
-    test('overall trend is the same on the dashboard and the history screen', () {
-      final dashboard = ((_data('overview/overview.json') as Map)['trend'] as Map)['points'];
-      final history = ((_data('insights/historical.json') as Map)['trend'] as Map)['points'];
-      expect(history, dashboard);
-    });
+    test(
+      'overall trend is the same on the dashboard and the history screen',
+      () {
+        final dashboard =
+            ((_data('overview/overview.json') as Map)['trend']
+                as Map)['points'];
+        final history =
+            ((_data('insights/historical.json') as Map)['trend']
+                as Map)['points'];
+        expect(history, dashboard);
+      },
+    );
 
     test('annual changes add up to the change since 2019', () {
       final data = _data('insights/historical.json') as Map<String, dynamic>;
-      final sum = (data['annual_change'] as List)
-          .fold<num>(0, (total, e) => total + _n((e as Map)['value']));
-      expect(sum, closeTo(_n((data['summary'] as Map)['change_since_start']), 0.001));
+      final sum = (data['annual_change'] as List).fold<num>(
+        0,
+        (total, e) => total + _n((e as Map)['value']),
+      );
+      expect(
+        sum,
+        closeTo(_n((data['summary'] as Map)['change_since_start']), 0.001),
+      );
       final points = ((data['trend'] as Map)['points'] as List).cast<Map>();
-      expect(_n(points.last['value']) - _n(points.first['value']),
-          closeTo(_n((data['summary'] as Map)['change_since_start']), 0.001));
+      expect(
+        _n(points.last['value']) - _n(points.first['value']),
+        closeTo(_n((data['summary'] as Map)['change_since_start']), 0.001),
+      );
     });
 
     test('comparison scores add up', () {
@@ -304,7 +423,8 @@ void main() {
     });
 
     test('prediction series ends at the projected index', () {
-      final data = _data('intelligence/predictions.json') as Map<String, dynamic>;
+      final data =
+          _data('intelligence/predictions.json') as Map<String, dynamic>;
       final series = (data['series'] as List).cast<Map<String, dynamic>>();
       expect(series.last['year'], data['target_year']);
       expect(series.last['value'], data['projected_index']);
@@ -323,16 +443,28 @@ void main() {
     test('simulator gains and amounts add up', () {
       final data = _data('decisions/simulate.json') as Map<String, dynamic>;
       final levers = (data['levers'] as List).cast<Map<String, dynamic>>();
-      expect(levers.map((l) => l['domain']).toSet(),
-          {'education', 'healthcare', 'infrastructure', 'economy'});
-      expect(levers.fold<num>(0, (s, l) => s + _n(l['amount'])),
-          _n((data['total_package'] as Map)['amount']));
-      expect(levers.fold<num>(0, (s, l) => s + _n(l['gain'])),
-          closeTo(_n(data['gain']), 0.05));
-      expect(_n(data['today_score']) + _n(data['gain']),
-          closeTo(_n(data['projected_score']), 0.001));
+      expect(levers.map((l) => l['domain']).toSet(), {
+        'education',
+        'healthcare',
+        'infrastructure',
+        'economy',
+      });
+      expect(
+        levers.fold<num>(0, (s, l) => s + _n(l['amount'])),
+        _n((data['total_package'] as Map)['amount']),
+      );
+      expect(
+        levers.fold<num>(0, (s, l) => s + _n(l['gain'])),
+        closeTo(_n(data['gain']), 0.05),
+      );
+      expect(
+        _n(data['today_score']) + _n(data['gain']),
+        closeTo(_n(data['projected_score']), 0.001),
+      );
       final best = levers.reduce(
-          (a, b) => _n(a['yield_per_million']) >= _n(b['yield_per_million']) ? a : b);
+        (a, b) =>
+            _n(a['yield_per_million']) >= _n(b['yield_per_million']) ? a : b,
+      );
       expect((data['best_lever'] as Map)['domain'], best['domain']);
     });
 
@@ -341,12 +473,21 @@ void main() {
       final items = (data['items'] as List).cast<Map<String, dynamic>>();
       final summary = data['summary'] as Map;
       expect(summary['projects_count'], items.length);
-      expect(summary['delayed_count'], items.where((p) => p['status'] == 'delayed').length);
-      expect(_n((summary['total_budget'] as Map)['amount']),
-          items.fold<num>(0, (s, p) => s + _n((p['budget'] as Map)['amount'])));
+      expect(
+        summary['delayed_count'],
+        items.where((p) => p['status'] == 'delayed').length,
+      );
+      expect(
+        _n((summary['total_budget'] as Map)['amount']),
+        items.fold<num>(0, (s, p) => s + _n((p['budget'] as Map)['amount'])),
+      );
       for (final p in items) {
         final done = p['status'] == 'completed';
-        expect(p['completed_at'] != null, done, reason: '${p['id']} completed_at');
+        expect(
+          p['completed_at'] != null,
+          done,
+          reason: '${p['id']} completed_at',
+        );
         expect(p['due_date'] == null, done, reason: '${p['id']} due_date');
       }
     });
@@ -362,9 +503,11 @@ void main() {
     });
 
     test('citizen report like response is consistent', () {
-      final like = _data('decisions/citizen_report_like.json') as Map<String, dynamic>;
-      final items = ((_data('decisions/citizen_reports.json') as Map)['items'] as List)
-          .cast<Map<String, dynamic>>();
+      final like =
+          _data('decisions/citizen_report_like.json') as Map<String, dynamic>;
+      final items =
+          ((_data('decisions/citizen_reports.json') as Map)['items'] as List)
+              .cast<Map<String, dynamic>>();
       final report = items.firstWhere((r) => r['id'] == like['id']);
       expect(like['likes'], _n(report['likes']) + 1);
       expect(like['liked_by_me'], isTrue);

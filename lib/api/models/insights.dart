@@ -10,10 +10,10 @@ class ChartBar {
   const ChartBar({required this.key, required this.label, required this.value});
 
   factory ChartBar.fromJson(JsonMap json) => ChartBar(
-        key: json.string('key'),
-        label: LocalizedText.read(json, 'label'),
-        value: json.number('value'),
-      );
+    key: json.string('key'),
+    label: LocalizedText.read(json, 'label'),
+    value: json.number('value'),
+  );
 }
 
 class Breakdown {
@@ -21,13 +21,17 @@ class Breakdown {
   final MetricUnit unit;
   final List<ChartBar> bars;
 
-  const Breakdown({required this.title, required this.unit, required this.bars});
+  const Breakdown({
+    required this.title,
+    required this.unit,
+    required this.bars,
+  });
 
   factory Breakdown.fromJson(JsonMap json) => Breakdown(
-        title: LocalizedText.read(json, 'title'),
-        unit: parseEnum(MetricUnit.values, json['unit'], MetricUnit.unknown),
-        bars: json.listOf('bars', ChartBar.fromJson),
-      );
+    title: LocalizedText.read(json, 'title'),
+    unit: parseEnum(MetricUnit.values, json['unit'], MetricUnit.unknown),
+    bars: json.listOf('bars', ChartBar.fromJson),
+  );
 }
 
 /// A "Key indicators" row.
@@ -47,11 +51,11 @@ class Indicator {
   });
 
   factory Indicator.fromJson(JsonMap json) => Indicator(
-        key: json.string('key'),
-        label: LocalizedText.read(json, 'label'),
-        value: json.number('value'),
-        unit: parseEnum(MetricUnit.values, json['unit'], MetricUnit.unknown),
-      );
+    key: json.string('key'),
+    label: LocalizedText.read(json, 'label'),
+    value: json.number('value'),
+    unit: parseEnum(MetricUnit.values, json['unit'], MetricUnit.unknown),
+  );
 }
 
 class RankedRegion {
@@ -68,11 +72,11 @@ class RankedRegion {
   });
 
   factory RankedRegion.fromJson(JsonMap json) => RankedRegion(
-        rank: json.integer('rank'),
-        regionId: json.string('region_id'),
-        name: LocalizedText.read(json, 'name'),
-        score: json.number('score'),
-      );
+    rank: json.integer('rank'),
+    regionId: json.string('region_id'),
+    name: LocalizedText.read(json, 'name'),
+    score: json.number('score'),
+  );
 }
 
 /// One shape for the Education, Healthcare, Economy and Infrastructure screens.
@@ -128,13 +132,17 @@ class ComparedRegion {
   final LocalizedText name;
   final double score;
 
-  const ComparedRegion({required this.id, required this.name, required this.score});
+  const ComparedRegion({
+    required this.id,
+    required this.name,
+    required this.score,
+  });
 
   factory ComparedRegion.fromJson(JsonMap json) => ComparedRegion(
-        id: json.string('id'),
-        name: LocalizedText.read(json, 'name'),
-        score: json.number('score'),
-      );
+    id: json.string('id'),
+    name: LocalizedText.read(json, 'name'),
+    score: json.number('score'),
+  );
 }
 
 class ComparisonMetric {
@@ -151,11 +159,11 @@ class ComparisonMetric {
   });
 
   factory ComparisonMetric.fromJson(JsonMap json) => ComparisonMetric(
-        key: json.string('key'),
-        label: LocalizedText.read(json, 'label'),
-        scoreA: json.number('score_a'),
-        scoreB: json.number('score_b'),
-      );
+    key: json.string('key'),
+    label: LocalizedText.read(json, 'label'),
+    scoreA: json.number('score_a'),
+    scoreB: json.number('score_b'),
+  );
 }
 
 class RegionComparison {
@@ -174,11 +182,11 @@ class RegionComparison {
   });
 
   factory RegionComparison.fromJson(JsonMap json) => RegionComparison(
-        a: ComparedRegion.fromJson(json.object('a')),
-        b: ComparedRegion.fromJson(json.object('b')),
-        metrics: json.listOf('metrics', ComparisonMetric.fromJson),
-        gapAnalysis: LocalizedText.read(json.object('gap_analysis'), 'text'),
-      );
+    a: ComparedRegion.fromJson(json.object('a')),
+    b: ComparedRegion.fromJson(json.object('b')),
+    metrics: json.listOf('metrics', ComparisonMetric.fromJson),
+    gapAnalysis: LocalizedText.read(json.object('gap_analysis'), 'text'),
+  );
 }
 
 class Milestone {
@@ -258,13 +266,13 @@ class PriorityEntry {
   });
 
   factory PriorityEntry.fromJson(JsonMap json) => PriorityEntry(
-        rank: json.integer('rank'),
-        regionId: json.string('region_id'),
-        name: LocalizedText.read(json, 'name'),
-        priority: parsePriority(json['priority']),
-        needScore: json.number('need_score'),
-        weakestDomain: DomainScore.fromJson(json.object('weakest_domain')),
-      );
+    rank: json.integer('rank'),
+    regionId: json.string('region_id'),
+    name: LocalizedText.read(json, 'name'),
+    priority: parsePriority(json['priority']),
+    needScore: json.number('need_score'),
+    weakestDomain: DomainScore.fromJson(json.object('weakest_domain')),
+  );
 }
 
 class PriorityOverview {
@@ -309,10 +317,10 @@ class CoverageEntry {
   });
 
   factory CoverageEntry.fromJson(JsonMap json) => CoverageEntry(
-        regionId: json.string('region_id'),
-        name: LocalizedText.read(json, 'name'),
-        coverage: json.number('coverage'),
-      );
+    regionId: json.string('region_id'),
+    name: LocalizedText.read(json, 'name'),
+    coverage: json.number('coverage'),
+  );
 }
 
 class DataSource {
@@ -331,11 +339,15 @@ class DataSource {
   });
 
   factory DataSource.fromJson(JsonMap json) => DataSource(
-        id: json.string('id'),
-        name: LocalizedText.read(json, 'name'),
-        status: parseEnum(SourceStatus.values, json['status'], SourceStatus.unknown),
-        ageDays: json.integer('age_days'),
-      );
+    id: json.string('id'),
+    name: LocalizedText.read(json, 'name'),
+    status: parseEnum(
+      SourceStatus.values,
+      json['status'],
+      SourceStatus.unknown,
+    ),
+    ageDays: json.integer('age_days'),
+  );
 }
 
 class DataQuality {
@@ -366,7 +378,10 @@ class DataQuality {
       completeness: dimensions.number('completeness'),
       timeliness: dimensions.number('timeliness'),
       accuracy: dimensions.number('accuracy'),
-      lowestCoverage: json.listOf('lowest_coverage_regions', CoverageEntry.fromJson),
+      lowestCoverage: json.listOf(
+        'lowest_coverage_regions',
+        CoverageEntry.fromJson,
+      ),
       sources: json.listOf('sources', DataSource.fromJson),
     );
   }

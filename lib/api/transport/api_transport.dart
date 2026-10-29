@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import '../../core/errors/app_exception.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/error_mapper.dart';
@@ -42,7 +43,11 @@ class DioTransport implements ApiTransport {
     CancelToken? cancelToken,
   }) {
     return _send(
-      () => _client.get<Object?>(path, queryParameters: query, cancelToken: cancelToken),
+      () => _client.get<Object?>(
+        path,
+        queryParameters: query,
+        cancelToken: cancelToken,
+      ),
     );
   }
 
@@ -68,7 +73,9 @@ class DioTransport implements ApiTransport {
 
   ApiEnvelope _unwrap(Object? body) {
     if (body is! JsonMap || !body.containsKey('data')) {
-      throw const ParseException('The response is not a {"data": ...} envelope');
+      throw const ParseException(
+        'The response is not a {"data": ...} envelope',
+      );
     }
     final meta = body['meta'];
     return ApiEnvelope(body['data'], meta is JsonMap ? meta : null);

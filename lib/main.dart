@@ -1,8 +1,10 @@
-import 'package:flutter/foundation.dart' show LicenseEntryWithLineBreaks, LicenseRegistry;
+import 'package:flutter/foundation.dart'
+    show LicenseEntryWithLineBreaks, LicenseRegistry;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'core/config/provider_retry.dart';
 import 'core/localization/app_localizations.dart';
 import 'core/localization/locale_controller.dart';
@@ -17,23 +19,20 @@ void _registerFontLicenses() {
       ('Outfit', 'OFL-Outfit.txt'),
       ('Cairo', 'OFL-Cairo.txt'),
     ]) {
-      yield LicenseEntryWithLineBreaks(
-        [name],
-        await rootBundle.loadString('assets/fonts/$file'),
-      );
+      yield LicenseEntryWithLineBreaks([
+        name,
+      ], await rootBundle.loadString('assets/fonts/$file'));
     }
   });
 }
 
+/// The largest text scale the app follows from the system setting.
+const double maxTextScale = 1.3;
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   _registerFontLicenses();
-  runApp(
-    ProviderScope(
-      retry: noAutomaticRetry,
-      child: const DecidixApp(),
-    ),
-  );
+  runApp(ProviderScope(retry: noAutomaticRetry, child: const DecidixApp()));
 }
 
 class DecidixApp extends ConsumerWidget {
@@ -49,10 +48,7 @@ class DecidixApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.getTheme(locale),
       locale: locale,
-      supportedLocales: const [
-        Locale('en'),
-        Locale('ar'),
-      ],
+      supportedLocales: const [Locale('en'), Locale('ar')],
       localizationsDelegates: const [
         AppLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
@@ -60,6 +56,12 @@ class DecidixApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       routerConfig: router,
+      // The user's text size is followed up to 1.3x; beyond that the layouts
+      // (chips, tab bar, stat tiles) would break.
+      builder: (context, child) => MediaQuery.withClampedTextScaling(
+        maxScaleFactor: maxTextScale,
+        child: child ?? const SizedBox.shrink(),
+      ),
     );
   }
 }
