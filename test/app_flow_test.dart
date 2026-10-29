@@ -5,6 +5,7 @@ import 'package:decidix_app/shared/widgets/state_views.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'helpers/pump_app.dart';
 
 /// Counts the requests and can be made to fail.
@@ -79,6 +80,28 @@ void main() {
   });
 
   group('Navigation', () {
+    testWidgets('an unknown address shows a not-found page with a way home', (tester) async {
+      await pumpApp(tester);
+
+      GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/nowhere');
+      await tester.pumpAndSettle();
+      expect(find.text('Page not found'), findsOneWidget);
+
+      await tester.tap(find.text('Back to overview'));
+      await tester.pumpAndSettle();
+      expect(find.text('National Development'), findsOneWidget);
+    });
+
+    testWidgets('the not-found page is translated', (tester) async {
+      await pumpApp(tester);
+      await tester.tap(find.text('عربي'));
+      await tester.pumpAndSettle();
+
+      GoRouter.of(tester.element(find.byType(Scaffold).first)).go('/nowhere');
+      await tester.pumpAndSettle();
+      expect(find.text('الصفحة غير موجودة'), findsOneWidget);
+    });
+
     testWidgets('the bottom bar switches between the four groups', (tester) async {
       await pumpApp(tester);
       expect(find.text('National Development'), findsOneWidget);

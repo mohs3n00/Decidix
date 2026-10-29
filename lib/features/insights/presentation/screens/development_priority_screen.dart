@@ -51,7 +51,7 @@ class DevelopmentPriorityScreen extends ConsumerWidget {
                   if (i > 0) const SizedBox(height: 10),
                   _QueueCard(
                     entry: entry,
-                    onTap: () => context.go('/overview/regions/${entry.regionId}'),
+                    onTap: () => context.push('/overview/regions/${entry.regionId}'),
                   ),
                 ],
               ],

@@ -80,3 +80,13 @@ Future<void> openTab(WidgetTester tester, String label) async {
   await tester.tap(find.descendant(of: find.byType(Scaffold).first, matching: find.text(label)).last);
   await tester.pumpAndSettle();
 }
+
+/// Scrolls the screen back to its top (a screen keeps its scroll position when
+/// you come back to it).
+Future<void> scrollToTop(WidgetTester tester) async {
+  final page = find
+      .descendant(of: find.byType(ListView).first, matching: find.byType(Scrollable))
+      .first;
+  await tester.drag(page, const Offset(0, 4000));
+  await tester.pumpAndSettle();
+}

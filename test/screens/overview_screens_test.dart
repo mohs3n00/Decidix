@@ -130,7 +130,51 @@ void main() {
 
       await tester.tap(find.bySemanticsLabel('Back'));
       await tester.pumpAndSettle();
+      await scrollToTop(tester);
       expect(find.text('Search regions'), findsOneWidget);
+    });
+  });
+
+  group('Back navigation from a region profile', () {
+    testWidgets('the Android back button returns to the list instead of leaving the app',
+        (tester) async {
+      await pumpApp(tester);
+      await tester.tap(_chip('Regions'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Central Capital'));
+      await tester.pumpAndSettle();
+      expect(find.text('Rank #1 of 12'), findsOneWidget);
+
+      await tester.binding.handlePopRoute(); // the system back button
+      await tester.pumpAndSettle();
+
+      expect(find.text('Search regions'), findsOneWidget);
+      expect(find.text('Rank #1 of 12'), findsNothing);
+    });
+
+    testWidgets('back returns to the screen the profile was opened from', (tester) async {
+      await pumpApp(tester);
+
+      // From the dashboard's "Needs attention" list.
+      await scrollTo(tester, find.text('Frontier'));
+      await tester.tap(find.text('Frontier'));
+      await tester.pumpAndSettle();
+      expect(find.text('Rank #12 of 12'), findsOneWidget);
+      await tester.tap(find.bySemanticsLabel('Back'));
+      await tester.pumpAndSettle();
+      await scrollToTop(tester); // the dashboard is where we left it, down the page
+      expect(find.text('National Development'), findsOneWidget);
+
+      // From the map.
+      await tester.tap(_chip('Map'));
+      await tester.pumpAndSettle();
+      await scrollTo(tester, find.text('Open region profile'));
+      await tester.tap(find.text('Open region profile'));
+      await tester.pumpAndSettle();
+      expect(find.text('Rank #1 of 12'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Interactive Map'), findsOneWidget);
     });
   });
 }

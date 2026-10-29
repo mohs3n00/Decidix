@@ -27,6 +27,7 @@ import '../../features/decisions/presentation/screens/development_projects_scree
 import '../../features/decisions/presentation/screens/citizen_reports_screen.dart';
 
 import 'app_shell.dart';
+import 'not_found_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -35,6 +36,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/overview/dashboard',
+    errorBuilder: (context, state) => const NotFoundScreen(),
     routes: [
       ShellRoute(
         navigatorKey: shellNavigatorKey,

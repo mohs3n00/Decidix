@@ -84,7 +84,7 @@ class _RegionsScreenState extends ConsumerState<RegionsScreen> {
                     if (i > 0) const SizedBox(height: 10),
                     RegionRow(
                       region: region,
-                      onTap: () => context.go('/overview/regions/${region.id}'),
+                      onTap: () => context.push('/overview/regions/${region.id}'),
                     ),
                   ],
                 ],

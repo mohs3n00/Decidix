@@ -48,7 +48,7 @@ class InteractiveMapScreen extends ConsumerWidget {
               ),
               SelectedRegionCard(
                 point: active,
-                onOpenProfile: () => context.go('/overview/regions/${active.id}'),
+                onOpenProfile: () => context.push('/overview/regions/${active.id}'),
               ),
             ];
           },

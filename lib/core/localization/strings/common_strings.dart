@@ -34,6 +34,11 @@ const Map<String, String> commonEn = {
   'error_loading': 'We couldn’t load this data',
   'empty_results': 'Nothing to show here yet',
 
+  // Page not found
+  'nf_title': 'Page not found',
+  'nf_body': 'The page you opened does not exist or has moved.',
+  'nf_button': 'Back to overview',
+
   // Top bar and shell
   'btn_back': 'Back',
   'notifications_empty': 'You have no new notifications.',
@@ -105,6 +110,11 @@ const Map<String, String> commonAr = {
   'loading': 'جارٍ التحميل…',
   'error_loading': 'تعذّر تحميل البيانات',
   'empty_results': 'لا يوجد ما يُعرض بعد',
+
+  // Page not found
+  'nf_title': 'الصفحة غير موجودة',
+  'nf_body': 'الصفحة التي فتحتها غير موجودة أو تم نقلها.',
+  'nf_button': 'العودة إلى نظرة عامة',
 
   // Top bar and shell
   'btn_back': 'رجوع',

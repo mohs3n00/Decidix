@@ -57,7 +57,12 @@ class AppShell extends ConsumerWidget {
           children: [
             DecidixTopBar(
               languageLabel: languageLabel,
-              onBack: _isRegionProfile ? () => context.go('/overview/regions') : null,
+              // The profile is pushed on top of the screen it was opened from
+              // (list, map, priority queue), so back returns there. With no
+              // history (opened from a link) it goes to the regions list.
+              onBack: _isRegionProfile
+                  ? () => context.canPop() ? context.pop() : context.go('/overview/regions')
+                  : null,
               onLanguageTap: () {
                 ref.read(localeNotifierProvider.notifier).toggleLocale();
               },
