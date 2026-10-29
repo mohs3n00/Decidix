@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../api/models/common.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_typography.dart';
 import '../../core/format/formatters.dart';
 import 'charts.dart';
@@ -25,6 +26,7 @@ class MetricCard extends StatelessWidget {
     final good = metric.isImprovement;
 
     return DecidixCard(
+      borderRadius: AppRadius.rowRadius,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

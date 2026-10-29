@@ -104,18 +104,31 @@ class PageTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final style = AppTypography.adapt(context, AppTypography.headingPage);
+    // Two tones: the first word is the strong one, the rest is faded.
+    final space = title.indexOf(' ');
+    final head = space < 0 ? title : title.substring(0, space);
+    final tail = space < 0 ? '' : title.substring(space);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (eyebrow != null)
           Text(
-            eyebrow!.toUpperCase(),
-            style: AppTypography.adapt(context, AppTypography.overlineM),
+            eyebrow!,
+            style: AppTypography.adapt(context, AppTypography.captionRegular)
+                .copyWith(color: AppColors.fadedInk),
           ),
-        if (eyebrow != null) const SizedBox(height: 4),
-        Text(
-          title,
-          style: AppTypography.adapt(context, AppTypography.headingPage),
+        if (eyebrow != null) const SizedBox(height: 6),
+        Text.rich(
+          TextSpan(
+            style: style.copyWith(color: AppColors.navy),
+            children: [
+              TextSpan(text: head),
+              if (tail.isNotEmpty)
+                TextSpan(text: tail, style: TextStyle(color: AppColors.fadedInk)),
+            ],
+          ),
         ),
       ],
     );

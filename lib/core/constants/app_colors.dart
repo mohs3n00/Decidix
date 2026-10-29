@@ -17,6 +17,26 @@ class AppColors {
   /// Text on top of a warning-tinted background (amber badge text).
   static const Color warningText = Color(0xFFA56A00);
 
+  /// Green and red **text** on a light background (4.5:1 on white). The
+  /// brighter [success] and [danger] are for fills, icons and bars.
+  static const Color successText = Color(0xFF0A8F5C);
+  static const Color dangerText = Color(0xFFC9353A);
+
+  /// The faded part of a two-tone headline. Large text only (3:1).
+  static const Color fadedInk = Color(0xFF7D8AA0);
+
+  /// Card outline, lighter than [line].
+  static const Color hairline = Color(0xFFE9EEF5);
+
+  /// Inner wells inside a card (stat tiles, table blocks).
+  static const Color wellTint = Color(0xFFF1F5FA);
+
+  /// The brand tint a hero card fades into.
+  static const Color heroTint = Color(0xFFD9ECFF);
+
+  /// Colour of the stripes that mark the empty or still-to-come part of a bar.
+  static const Color hatch = Color(0x2E061A3A);
+
   /// Empty part of progress bars, rings and sliders.
   static const Color track = Color(0xFFEAF0F8);
 

@@ -13,7 +13,7 @@ void main() {
       await pumpApp(tester);
 
       expect(find.text('National Development'), findsOneWidget);
-      expect(find.text('DECIDIX · 2025 Q4'), findsOneWidget);
+      expect(find.text('Decidix · 2025 Q4'), findsOneWidget);
       expect(find.text('Development Index'), findsOneWidget);
       expect(find.text('68.4'), findsOneWidget);
       expect(find.text('+2.3 vs 2024'), findsOneWidget);

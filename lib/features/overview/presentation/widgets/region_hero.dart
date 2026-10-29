@@ -3,11 +3,11 @@ import '../../../../api/models/common.dart';
 import '../../../../api/models/overview.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_radius.dart';
-import '../../../../core/constants/app_shadows.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/format/formatters.dart';
+import '../../../../shared/widgets/hero_card.dart';
 
-/// The blue hero of a region profile: priority and rank, name, size, and the
+/// The hero of a region profile: priority and rank, name, size, and the
 /// development index with its change.
 class RegionHero extends StatelessWidget {
   final RegionProfile profile;
@@ -18,11 +18,11 @@ class RegionHero extends StatelessWidget {
     switch (profile.priority) {
       case Priority.critical:
       case Priority.high:
-        return AppColors.danger;
+        return AppColors.dangerText;
       case Priority.medium:
         return AppColors.warningText;
       case Priority.low:
-        return AppColors.success;
+        return AppColors.successText;
     }
   }
 
@@ -30,39 +30,31 @@ class RegionHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final fmt = context.fmt;
     final locale = Localizations.localeOf(context);
-    final onBlue = AppColors.white.withValues(alpha: 0.8);
+    final priorityColor = _priorityColor();
+    final good = profile.change >= 0;
+    final changeColor = good ? AppColors.successText : AppColors.dangerText;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.heroRadius,
-        boxShadow: AppShadows.hero,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.blue, AppColors.cyan],
-        ),
-      ),
+    return HeroCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: priorityColor.withValues(alpha: 0.12),
                   borderRadius: AppRadius.pillRadius,
                 ),
                 child: Text(
                   fmt.priority(profile.priority),
-                  style: AppTypography.microStrong.copyWith(color: _priorityColor()),
+                  style: AppTypography.microStrong.copyWith(color: priorityColor),
                 ),
               ),
               const Spacer(),
               Text(
                 fmt.tr('profile_rank', {'rank': profile.rank, 'total': profile.rankTotal}),
-                style: AppTypography.captionRegular.copyWith(color: onBlue),
+                style: AppTypography.captionRegular.copyWith(color: AppColors.fadedInk),
               ),
             ],
           ),
@@ -71,7 +63,7 @@ class RegionHero extends StatelessWidget {
             profile.name.resolve(locale),
             style: AppTypography.adapt(
               context,
-              AppTypography.headingPage.copyWith(fontSize: 32, color: AppColors.white),
+              AppTypography.headingPage.copyWith(fontSize: 32, color: AppColors.navy),
             ),
           ),
           const SizedBox(height: 4),
@@ -80,7 +72,7 @@ class RegionHero extends StatelessWidget {
               'residents': fmt.residents(profile.population),
               'area': fmt.compact(profile.areaKm2),
             }),
-            style: AppTypography.bodyS.copyWith(color: onBlue),
+            style: AppTypography.bodyS.copyWith(color: AppColors.fadedInk),
           ),
           const SizedBox(height: 28),
           Row(
@@ -93,7 +85,7 @@ class RegionHero extends StatelessWidget {
                   AppTypography.headingPage.copyWith(
                     fontSize: 56,
                     height: 1,
-                    color: AppColors.white,
+                    color: AppColors.navy,
                   ),
                 ),
               ),
@@ -103,19 +95,19 @@ class RegionHero extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
                     fmt.tr('profile_development_index'),
-                    style: AppTypography.captionRegular.copyWith(color: onBlue),
+                    style: AppTypography.captionRegular.copyWith(color: AppColors.fadedInk),
                   ),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                 decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: 0.2),
+                  color: changeColor.withValues(alpha: 0.10),
                   borderRadius: AppRadius.pillRadius,
                 ),
                 child: Text(
                   fmt.signed(profile.change, suffix: '%'),
-                  style: AppTypography.captionStrong.copyWith(color: AppColors.white),
+                  style: AppTypography.captionStrong.copyWith(color: changeColor),
                 ),
               ),
             ],

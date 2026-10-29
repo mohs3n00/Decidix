@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_shadows.dart';
 import '../../core/constants/app_typography.dart';
 import '../../core/localization/app_localizations.dart';
@@ -107,8 +108,7 @@ class DecidixTopBar extends StatelessWidget {
 BoxDecoration _pillDecoration(BoxShape shape) => BoxDecoration(
       color: AppColors.white,
       shape: shape,
-      borderRadius: shape == BoxShape.rectangle ? BorderRadius.circular(999) : null,
-      border: Border.all(color: AppColors.line),
+      borderRadius: shape == BoxShape.rectangle ? AppRadius.pillRadius : null,
       boxShadow: AppShadows.pill,
     );
 

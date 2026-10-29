@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_radius.dart';
+import '../../core/constants/app_shadows.dart';
 import '../../core/constants/app_typography.dart';
 
-/// 44px button: navy with white text, or the white outlined version.
+/// 52px pill button: navy with white text, or the white outlined version.
 class DecidixButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -37,13 +39,14 @@ class DecidixButton extends StatelessWidget {
         child: Opacity(
           opacity: enabled ? 1 : 0.5,
           child: Container(
-            height: 44,
+            height: 52,
             width: expand ? double.infinity : null,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             decoration: BoxDecoration(
               color: outlined ? AppColors.white : AppColors.navy,
-              borderRadius: BorderRadius.circular(12),
-              border: outlined ? Border.all(color: AppColors.line) : null,
+              borderRadius: AppRadius.pillRadius,
+              border: outlined ? Border.all(color: AppColors.hairline) : null,
+              boxShadow: outlined ? null : AppShadows.pill,
             ),
             child: Row(
               mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,

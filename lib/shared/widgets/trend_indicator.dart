@@ -22,8 +22,8 @@ class TrendIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final isPositive = value >= 0;
     final isGood = inverted ? !isPositive : isPositive;
-    final color = isGood ? AppColors.success : AppColors.danger;
-    final bgColor = color.withValues(alpha: isGood ? 0.12 : 0.10);
+    final color = isGood ? AppColors.successText : AppColors.dangerText;
+    final bgColor = color.withValues(alpha: 0.10);
     final iconAsset = isPositive ? AppAssets.icTrendUp : AppAssets.icTrendDown;
 
     // No sign: the arrow and the colour already show the direction.

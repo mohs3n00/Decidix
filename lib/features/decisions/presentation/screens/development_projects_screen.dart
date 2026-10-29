@@ -10,6 +10,7 @@ import '../../../../core/format/formatters.dart';
 import '../../../../shared/widgets/chip_scroll_row.dart';
 import '../../../../shared/widgets/decidix_card.dart';
 import '../../../../shared/widgets/decidix_page.dart';
+import '../../../../shared/widgets/hatched_bar.dart';
 import '../../../../shared/widgets/stat_tile.dart';
 import '../../../../shared/widgets/state_views.dart';
 import '../../../../shared/widgets/status_badge.dart';
@@ -143,26 +144,10 @@ class _ProjectCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(3),
-                  child: SizedBox(
-                    height: 6,
-                    child: ColoredBox(
-                      color: AppColors.track,
-                      child: Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        child: FractionallySizedBox(
-                          widthFactor: (project.progress / 100).clamp(0.0, 1.0),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: delayed ? AppColors.danger : null,
-                              gradient: delayed ? null : AppColors.brandGradient,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                child: HatchedBar(
+                  value: project.progress / 100,
+                  height: 8,
+                  color: delayed ? AppColors.danger : null,
                 ),
               ),
               const SizedBox(width: 10),

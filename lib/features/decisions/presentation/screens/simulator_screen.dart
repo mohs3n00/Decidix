@@ -3,13 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../api/models/common.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_radius.dart';
-import '../../../../core/constants/app_shadows.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/format/formatters.dart';
 import '../../../../shared/widgets/ai_insight_panel.dart';
 import '../../../../shared/widgets/decidix_button.dart';
 import '../../../../shared/widgets/decidix_card.dart';
 import '../../../../shared/widgets/decidix_page.dart';
+import '../../../../shared/widgets/hatched_bar.dart';
+import '../../../../shared/widgets/hero_card.dart';
 import '../../../../shared/widgets/region_picker.dart';
 import '../../../../shared/widgets/select_field.dart';
 import '../controllers/decisions_controllers.dart';
@@ -112,19 +113,10 @@ class _ResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final fmt = context.fmt;
     final result = state.result;
-    final onBlue = AppColors.white.withValues(alpha: 0.8);
+    const onHero = AppColors.fadedInk;
+    final gainColor = result.gain < 0 ? AppColors.dangerText : AppColors.successText;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.heroRadius,
-        boxShadow: AppShadows.hero,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.blue, AppColors.cyan],
-        ),
-      ),
+    return HeroCard(
       child: Opacity(
         // The number is from the sliders' last position until the new one arrives.
         opacity: state.busy ? 0.7 : 1,
@@ -136,14 +128,14 @@ class _ResultCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     fmt.tr('sim_today', {'n': fmt.number(result.todayScore)}),
-                    style: AppTypography.captionRegular.copyWith(color: onBlue),
+                    style: AppTypography.captionRegular.copyWith(color: onHero),
                   ),
                 ),
                 Flexible(
                   child: Text(
                     fmt.tr('sim_projected', {'n': result.horizonMonths}),
                     textAlign: TextAlign.end,
-                    style: AppTypography.captionRegular.copyWith(color: onBlue),
+                    style: AppTypography.captionRegular.copyWith(color: onHero),
                   ),
                 ),
               ],
@@ -163,7 +155,7 @@ class _ResultCard extends StatelessWidget {
                         AppTypography.headingPage.copyWith(
                           fontSize: 56,
                           height: 1,
-                          color: AppColors.white,
+                          color: AppColors.navy,
                         ),
                       ),
                     ),
@@ -171,9 +163,9 @@ class _ResultCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                   decoration: BoxDecoration(
-                    color: AppColors.white.withValues(alpha: 0.2),
+                    color: gainColor.withValues(alpha: 0.10),
                     borderRadius: AppRadius.pillRadius,
                   ),
                   child: Text(
@@ -182,33 +174,18 @@ class _ResultCard extends StatelessWidget {
                       'change':
                           '${result.gain < 0 ? '-' : '+'}${result.gain.abs().toStringAsFixed(1)}',
                     }),
-                    style: AppTypography.captionStrong.copyWith(color: AppColors.white),
+                    style: AppTypography.captionStrong.copyWith(color: gainColor),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 14),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(3),
-              child: SizedBox(
-                height: 6,
-                child: ColoredBox(
-                  color: AppColors.white.withValues(alpha: 0.3),
-                  child: Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: FractionallySizedBox(
-                      widthFactor: (result.projectedScore / 100).clamp(0.0, 1.0),
-                      child: const ColoredBox(color: AppColors.white),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            const SizedBox(height: 16),
+            HatchedBar(value: result.projectedScore / 100, height: 12),
             if (state.failed) ...[
               const SizedBox(height: 10),
               Text(
                 fmt.tr('error_loading'),
-                style: AppTypography.captionMedium.copyWith(color: AppColors.white),
+                style: AppTypography.captionMedium.copyWith(color: AppColors.dangerText),
               ),
             ],
           ],

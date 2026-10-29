@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../shared/widgets/brand_backdrop.dart';
 import '../../shared/widgets/decidix_top_bar.dart';
 import '../../shared/widgets/decidix_bottom_navigation.dart';
 import '../constants/app_colors.dart';
@@ -11,11 +13,7 @@ class AppShell extends ConsumerWidget {
   final Widget child;
   final String location;
 
-  const AppShell({
-    super.key,
-    required this.child,
-    required this.location,
-  });
+  const AppShell({super.key, required this.child, required this.location});
 
   int get _currentIndex {
     if (location.startsWith('/insights')) return 1;
@@ -25,7 +23,8 @@ class AppShell extends ConsumerWidget {
   }
 
   /// A region profile (`/overview/regions/delta`) has a back button, not the account.
-  bool get _isRegionProfile => RegExp(r'^/overview/regions/[^/]+$').hasMatch(location);
+  bool get _isRegionProfile =>
+      RegExp(r'^/overview/regions/[^/]+$').hasMatch(location);
 
   void _onNavigationTap(BuildContext context, int index) {
     switch (index) {
@@ -47,51 +46,57 @@ class AppShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentLocale = ref.watch(localeNotifierProvider);
-    final languageLabel = currentLocale.languageCode == 'ar' ? 'English' : 'عربي';
+    final languageLabel = currentLocale.languageCode == 'ar'
+        ? 'English'
+        : 'عربي';
 
     return Scaffold(
       backgroundColor: AppColors.mist,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            DecidixTopBar(
-              languageLabel: languageLabel,
-              // The profile is pushed on top of the screen it was opened from
-              // (list, map, priority queue), so back returns there. With no
-              // history (opened from a link) it goes to the regions list.
-              onBack: _isRegionProfile
-                  ? () => context.canPop() ? context.pop() : context.go('/overview/regions')
-                  : null,
-              onLanguageTap: () {
-                ref.read(localeNotifierProvider.notifier).toggleLocale();
-              },
-              onNotificationTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(context.tr('notifications_empty')),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
-            ),
-            Expanded(
-              child: Stack(
-                children: [
-                  Positioned.fill(child: child),
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: DecidixBottomNavigation(
-                      currentIndex: _currentIndex,
-                      onTap: (index) => _onNavigationTap(context, index),
+      body: BrandBackdrop(
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              DecidixTopBar(
+                languageLabel: languageLabel,
+                // The profile is pushed on top of the screen it was opened from
+                // (list, map, priority queue), so back returns there. With no
+                // history (opened from a link) it goes to the regions list.
+                onBack: _isRegionProfile
+                    ? () => context.canPop()
+                          ? context.pop()
+                          : context.go('/overview/regions')
+                    : null,
+                onLanguageTap: () {
+                  ref.read(localeNotifierProvider.notifier).toggleLocale();
+                },
+                onNotificationTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(context.tr('notifications_empty')),
+                      duration: const Duration(seconds: 2),
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
-            ),
-          ],
+              Expanded(
+                child: Stack(
+                  children: [
+                    Positioned.fill(child: child),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: DecidixBottomNavigation(
+                        currentIndex: _currentIndex,
+                        onTap: (index) => _onNavigationTap(context, index),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

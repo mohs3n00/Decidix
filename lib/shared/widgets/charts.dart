@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
+import 'hatched_bar.dart';
 
 /// One line of a [LineChartView].
 class ChartSeries {
@@ -134,7 +135,7 @@ class _LinePainter extends CustomPainter {
 
     if (showGrid) {
       final grid = Paint()
-        ..color = AppColors.line
+        ..color = AppColors.hairline
         ..strokeWidth = 1;
       for (var k = 0; k < 4; k++) {
         final yy = _inset + k * (h - 2 * _inset) / 3;
@@ -321,21 +322,24 @@ class BarChartView extends StatelessWidget {
                       style: AppTypography.microMedium.copyWith(color: AppColors.ink),
                     ),
                     const SizedBox(height: 4),
-                    Container(
+                    // The highlighted bar is solid, the others are striped.
+                    SizedBox(
                       height: (bar.value / maxValue).clamp(0.0, 1.0) * barAreaHeight,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: i == highlightIndex
-                            ? null
-                            : AppColors.blue.withValues(alpha: 0.14),
-                        gradient: i == highlightIndex
-                            ? const LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [AppColors.cyan, AppColors.blue],
-                              )
-                            : null,
-                      ),
+                      width: double.infinity,
+                      child: i == highlightIndex
+                          ? const DecoratedBox(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.all(Radius.circular(10)),
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [AppColors.cyan, AppColors.blue],
+                                ),
+                              ),
+                            )
+                          : const HatchFill(
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                            ),
                     ),
                     const SizedBox(height: 6),
                     Text(

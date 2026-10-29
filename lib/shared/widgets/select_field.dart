@@ -42,9 +42,9 @@ class SelectField extends StatelessWidget {
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Container(
-          constraints: BoxConstraints(minHeight: light ? 49 : 42),
+          constraints: BoxConstraints(minHeight: light ? 52 : 46),
           padding: EdgeInsets.symmetric(
-            horizontal: light ? 16 : 12,
+            horizontal: light ? 20 : 16,
             vertical: light ? 14 : 10,
           ),
           decoration: BoxDecoration(
@@ -55,10 +55,8 @@ class SelectField extends StatelessWidget {
             },
             gradient:
                 style == SelectFieldStyle.gradient ? AppColors.brandGradient : null,
-            borderRadius: BorderRadius.circular(
-              light ? AppRadius.card : AppRadius.inner + 2,
-            ),
-            border: light ? Border.all(color: AppColors.line) : null,
+            borderRadius: light ? AppRadius.pillRadius : AppRadius.innerRadius,
+            border: light ? Border.all(color: AppColors.hairline) : null,
             boxShadow: light ? AppShadows.card : null,
           ),
           child: Row(

@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../api/models/intelligence.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_radius.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/format/formatters.dart';
 import '../../../../shared/widgets/decidix_card.dart';
@@ -150,15 +151,15 @@ class _AssistantBubble extends StatelessWidget {
               Text(
                 text,
                 style: AppTypography.bodyM.copyWith(
-                  color: isError ? AppColors.danger : AppColors.navy,
+                  color: isError ? AppColors.dangerText : AppColors.navy,
                 ),
               ),
               if (rows != null && rows.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.mist,
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.wellTint,
+                    borderRadius: AppRadius.innerRadius,
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Column(
@@ -175,7 +176,9 @@ class _AssistantBubble extends StatelessWidget {
                               Text(
                                 '${row.change < 0 ? '▼' : '▲'} ${fmt.points(row.change)}',
                                 style: AppTypography.captionRegular.copyWith(
-                                  color: row.change < 0 ? AppColors.danger : AppColors.success,
+                                  color: row.change < 0
+                                      ? AppColors.dangerText
+                                      : AppColors.successText,
                                 ),
                               ),
                               SizedBox(
@@ -279,7 +282,7 @@ class _PromptChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: AppColors.blue.withValues(alpha: 0.25)),
+          border: Border.all(color: AppColors.hairline),
         ),
         child: Text(label, style: AppTypography.captionMedium.copyWith(color: AppColors.blue)),
       ),

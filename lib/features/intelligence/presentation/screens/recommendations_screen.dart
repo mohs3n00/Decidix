@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../api/models/intelligence.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_radius.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/format/formatters.dart';
 import '../../../../shared/widgets/decidix_button.dart';
@@ -119,8 +120,8 @@ class _RecommendationCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.mist,
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.wellTint,
+              borderRadius: AppRadius.innerRadius,
             ),
             child: Row(
               children: [
@@ -131,7 +132,7 @@ class _RecommendationCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       fmt.signed(item.indexImpact),
-                      style: AppTypography.numberS.copyWith(color: AppColors.success),
+                      style: AppTypography.numberS.copyWith(color: AppColors.successText),
                     ),
                   ],
                 ),
@@ -167,12 +168,12 @@ class _RecommendationCard extends StatelessWidget {
                   onTap: onDismiss,
                   behavior: HitTestBehavior.opaque,
                   child: Container(
-                    width: 44,
-                    height: 44,
+                    width: 52,
+                    height: 52,
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.line),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.hairline),
                     ),
                     child: const Icon(Icons.close_rounded, size: 18, color: AppColors.ink),
                   ),

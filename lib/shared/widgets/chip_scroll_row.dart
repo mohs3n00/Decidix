@@ -25,8 +25,8 @@ class ChipScrollRow extends StatefulWidget {
     this.fadeColor = AppColors.mist,
   });
 
-  /// 32px chip with 5px above and below, as in the Figma "Chips" frame.
-  static const double height = 42;
+  /// 36px chip with 5px above and below.
+  static const double height = 46;
 
   @override
   State<ChipScrollRow> createState() => _ChipScrollRowState();

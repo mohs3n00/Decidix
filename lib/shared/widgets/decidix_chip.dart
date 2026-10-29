@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
-import '../../core/constants/app_shadows.dart';
 import '../../core/constants/app_typography.dart';
 
-/// Pill chip from the Figma "Chip" component. Always 32px high: the outline of
-/// the inactive state is drawn inside the box, so both states have one height.
+/// Pill chip. Selected: filled navy with white text. Not selected: white with a
+/// hairline. Both states are one height, the hairline is drawn inside the box.
 class DecidixChip extends StatelessWidget {
   final String label;
   final bool selected;
@@ -18,7 +17,7 @@ class DecidixChip extends StatelessWidget {
     this.onTap,
   });
 
-  static const double height = 32;
+  static const double height = 36;
 
   @override
   Widget build(BuildContext context) {
@@ -36,10 +35,9 @@ class DecidixChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: selected ? AppColors.navy : AppColors.white,
             borderRadius: AppRadius.pillRadius,
-            border: selected ? null : Border.all(color: AppColors.line),
-            boxShadow: selected ? AppShadows.chipActive : null,
+            border: selected ? null : Border.all(color: AppColors.hairline),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 18),
           child: Center(
             widthFactor: 1,
             child: Text(

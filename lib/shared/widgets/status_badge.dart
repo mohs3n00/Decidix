@@ -17,7 +17,7 @@ class StatusBadge extends StatelessWidget {
     final (background, foreground) = switch (tone) {
       BadgeTone.high => (
           AppColors.danger.withValues(alpha: 0.10),
-          AppColors.danger,
+          AppColors.dangerText,
         ),
       BadgeTone.medium => (
           AppColors.warning.withValues(alpha: 0.15),
@@ -25,7 +25,7 @@ class StatusBadge extends StatelessWidget {
         ),
       BadgeTone.low => (
           AppColors.success.withValues(alpha: 0.12),
-          AppColors.success,
+          AppColors.successText,
         ),
       BadgeTone.info => (
           AppColors.blue.withValues(alpha: 0.10),

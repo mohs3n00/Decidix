@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../api/models/insights.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_radius.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/format/formatters.dart';
 import '../../../../shared/widgets/ai_insight_panel.dart';
 import '../../../../shared/widgets/decidix_card.dart';
 import '../../../../shared/widgets/decidix_page.dart';
+import '../../../../shared/widgets/hatched_bar.dart';
 import '../../../../shared/widgets/region_picker.dart';
 import '../../../../shared/widgets/score_ring.dart';
 import '../../../../shared/widgets/select_field.dart';
@@ -160,6 +162,7 @@ class _Bars extends StatelessWidget {
           alignment: first ? AlignmentDirectional.centerEnd : AlignmentDirectional.centerStart,
           child: FractionallySizedBox(
             widthFactor: (score / 100).clamp(0.0, 1.0),
+            heightFactor: 1,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: first ? null : AppColors.navy,
@@ -177,14 +180,20 @@ class _Bars extends StatelessWidget {
       );
     }
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(3),
-      child: SizedBox(
-        height: 6,
-        child: ColoredBox(
-          color: AppColors.track,
-          child: Row(children: [half(scoreA, first: true), half(scoreB, first: false)]),
-        ),
+    return SizedBox(
+      height: 8,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          HatchFill(borderRadius: AppRadius.pillRadius),
+          ClipRRect(
+            borderRadius: AppRadius.pillRadius,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [half(scoreA, first: true), half(scoreB, first: false)],
+            ),
+          ),
+        ],
       ),
     );
   }

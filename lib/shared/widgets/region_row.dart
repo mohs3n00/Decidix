@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../api/models/common.dart';
 import '../../api/models/overview.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_typography.dart';
 import '../../core/format/formatters.dart';
 import 'decidix_card.dart';
@@ -35,7 +36,9 @@ class RegionRow extends StatelessWidget {
 
     return DecidixCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(14),
+      borderRadius: AppRadius.rowRadius,
+      semanticLabel: region.name.resolve(locale),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           ScoreRing(score: region.score, color: ScoreRing.colorFor(region.priority)),

@@ -22,12 +22,12 @@ class SearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: AppRadius.cardRadius,
-        border: Border.all(color: AppColors.line),
+        borderRadius: AppRadius.pillRadius,
+        border: Border.all(color: AppColors.hairline),
         boxShadow: AppShadows.card,
       ),
       child: Row(

@@ -83,7 +83,7 @@ class PredictionsScreen extends ConsumerWidget {
                                 'n': fmt.number(region.delta),
                                 'year': data.targetYear,
                               }),
-                              style: AppTypography.captionStrong.copyWith(color: AppColors.success),
+                              style: AppTypography.captionStrong.copyWith(color: AppColors.successText),
                             ),
                           ],
                         ),
