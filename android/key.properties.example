@@ -1,0 +1,18 @@
+# Copy this file to android/key.properties and fill it in. key.properties and
+# the keystore are ignored by git: never commit them, and keep a backup of the
+# keystore and its passwords somewhere safe (if you lose them you can no
+# longer update the app on Google Play).
+#
+# Create the keystore once (it asks for the passwords and your details):
+#
+#   keytool -genkey -v -keystore decidix-release.jks -keyalg RSA -keysize 2048 \
+#           -validity 10000 -alias decidix
+#
+# Then build the release bundle for Google Play:
+#
+#   flutter build appbundle --release --dart-define-from-file=env/prod.json
+storePassword=the-keystore-password
+keyPassword=the-key-password
+keyAlias=decidix
+# Path of the .jks file, relative to the android/app folder.
+storeFile=../decidix-release.jks

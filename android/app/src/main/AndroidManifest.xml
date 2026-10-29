@@ -1,10 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- The app talks to the API, loads map tiles and downloads fonts. Without
-         this a release build has no network (debug and profile builds add it
-         on their own). -->
+    <!-- The app talks to the API and loads map tiles. Without this a release
+         build has no network (debug and profile builds add it on their own). -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="decidix_app"
+        android:label="Decidix"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

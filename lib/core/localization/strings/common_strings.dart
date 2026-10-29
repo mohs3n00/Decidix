@@ -29,9 +29,26 @@ const Map<String, String> commonEn = {
   'quality_good': 'Good overall',
   'quality_excellent': 'Excellent overall',
 
+  // Bottom navigation
+  'nav_overview': 'Overview',
+  'nav_insights': 'Insights',
+  'nav_intelligence': 'Intelligence',
+  'nav_decisions': 'Decisions',
+
+  // Tabs (the ones above are the shared ones; each group adds its own)
+  'chip_education': 'Education',
+  'chip_healthcare': 'Healthcare',
+  'chip_economy': 'Economy',
+  'chip_infrastructure': 'Infrastructure',
+  'chip_predictions': 'Predictions',
+  'chip_assistant': 'Assistant',
+  'chip_recommendations': 'Recommendations',
+
   // Screen states
   'loading': 'Loading…',
   'error_loading': 'We couldn’t load this data',
+  'error_retry_hint': 'Check your connection and try again.',
+  'btn_retry': 'Retry',
   'empty_results': 'Nothing to show here yet',
 
   // Page not found
@@ -106,9 +123,26 @@ const Map<String, String> commonAr = {
   'quality_good': 'جيدة بشكل عام',
   'quality_excellent': 'ممتازة بشكل عام',
 
+  // Bottom navigation
+  'nav_overview': 'نظرة عامة',
+  'nav_insights': 'القطاعات',
+  'nav_intelligence': 'الذكاء الاصطناعي',
+  'nav_decisions': 'القرارات',
+
+  // Tabs
+  'chip_education': 'التعليم',
+  'chip_healthcare': 'الصحة',
+  'chip_economy': 'الاقتصاد',
+  'chip_infrastructure': 'البنية التحتية',
+  'chip_predictions': 'التنبؤات',
+  'chip_assistant': 'المساعد الذكي',
+  'chip_recommendations': 'التوصيات',
+
   // Screen states
   'loading': 'جارٍ التحميل…',
   'error_loading': 'تعذّر تحميل البيانات',
+  'error_retry_hint': 'تأكد من الاتصال بالإنترنت وحاول مرة أخرى.',
+  'btn_retry': 'إعادة المحاولة',
   'empty_results': 'لا يوجد ما يُعرض بعد',
 
   // Page not found

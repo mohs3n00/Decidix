@@ -1,10 +1,9 @@
 class ApiEndpoints {
   ApiEndpoints._();
 
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://api.decidix.gov.sa/v1',
-  );
+  /// The server address, from `--dart-define=API_BASE_URL=...` (see env/).
+  /// Empty by default: the mock needs none, and a real build must set it.
+  static const String baseUrl = String.fromEnvironment('API_BASE_URL');
 
   // Overview
   static const String overview = '/overview';

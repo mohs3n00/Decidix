@@ -16,10 +16,6 @@ class AppAssets {
   static const String icBack = 'assets/icon/ic_back.svg';
   static const String icNext = 'assets/icon/ic_next.svg';
   static const String icLocation = 'assets/icon/ic_location.svg';
-  static const String icLike = 'assets/icon/ic_like.svg';
-  static const String icCheck = 'assets/icon/ic_check.svg';
-  static const String icClose = 'assets/icon/ic_close.svg';
-  static const String icSend = 'assets/icon/ic_send.svg';
 
   static const String icEducation = 'assets/icon/ic_education.svg';
   static const String icHealthcare = 'assets/icon/ic_healthcare.svg';
@@ -28,6 +24,4 @@ class AppAssets {
 
   static const String icTrendUp = 'assets/icon/ic_trend_up.svg';
   static const String icTrendDown = 'assets/icon/ic_trend_down.svg';
-  static const String icZoomIn = 'assets/icon/ic_zoom_in.svg';
-  static const String icZoomOut = 'assets/icon/ic_zoom_out.svg';
 }
