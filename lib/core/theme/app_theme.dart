@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_radius.dart';
+import '../constants/app_typography.dart' show AppFonts;
 
 class AppTheme {
   AppTheme._();
@@ -10,11 +10,12 @@ class AppTheme {
 
   static ThemeData getTheme(Locale locale) {
     final isArabic = locale.languageCode == 'ar';
-    final textTheme = isArabic
-        ? GoogleFonts.cairoTextTheme()
-        : GoogleFonts.outfitTextTheme();
 
     return ThemeData(
+      // The font of every widget that does not set its own style (snack bars,
+      // the region picker, text fields).
+      fontFamily: isArabic ? AppFonts.arabic : AppFonts.latin,
+      fontFamilyFallback: [isArabic ? AppFonts.latin : AppFonts.arabic],
       useMaterial3: true,
       brightness: Brightness.light,
       primaryColor: AppColors.blue,
@@ -37,7 +38,6 @@ class AppTheme {
         ),
         margin: EdgeInsets.zero,
       ),
-      textTheme: textTheme,
       dividerTheme: const DividerThemeData(
         color: AppColors.line,
         thickness: 1,

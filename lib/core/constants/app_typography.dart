@@ -1,81 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
+
+/// The two fonts of the app, bundled in assets/fonts (see pubspec.yaml).
+class AppFonts {
+  AppFonts._();
+
+  /// Latin letters and digits.
+  static const String latin = 'Outfit';
+
+  /// Arabic letters. Also the backup for any letter Outfit does not have.
+  static const String arabic = 'Cairo';
+}
 
 class AppTypography {
   AppTypography._();
 
-  // ---------------------------------------------------------------------------
-  // Legacy styles. Screens still use these until they are moved to the Figma
-  // ramp below in phase 4.
-  // ---------------------------------------------------------------------------
-
-  static TextStyle get titleLarge => GoogleFonts.outfit(
-        fontSize: 22,
-        fontWeight: FontWeight.w700,
-        color: AppColors.navy,
-        letterSpacing: -0.3,
-      );
-
-  static TextStyle get titleMedium => GoogleFonts.outfit(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: AppColors.navy,
-        letterSpacing: -0.2,
-      );
-
-  static TextStyle get titleSmall => GoogleFonts.outfit(
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
-        color: AppColors.navy,
-      );
-
-  static TextStyle get eyebrow => GoogleFonts.outfit(
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
-        color: AppColors.ink,
-        letterSpacing: 0.8,
-      );
-
-  static TextStyle get body => GoogleFonts.outfit(
-        fontSize: 13,
-        fontWeight: FontWeight.w400,
-        color: AppColors.ink,
-        height: 1.4,
-      );
-
-  static TextStyle get bodyMedium => GoogleFonts.outfit(
-        fontSize: 13,
-        fontWeight: FontWeight.w500,
-        color: AppColors.navy,
-      );
-
-  static TextStyle get caption => GoogleFonts.outfit(
-        fontSize: 11,
-        fontWeight: FontWeight.w500,
-        color: AppColors.ink,
-      );
-
-  static TextStyle get kpiValue => GoogleFonts.outfit(
-        fontSize: 24,
-        fontWeight: FontWeight.w700,
-        color: AppColors.navy,
-        letterSpacing: -0.5,
-      );
-
-  static TextStyle get scoreLarge => GoogleFonts.outfit(
-        fontSize: 36,
-        fontWeight: FontWeight.w800,
-        color: AppColors.navy,
-        letterSpacing: -1.0,
-      );
-
-  // ---------------------------------------------------------------------------
-  // Figma type ramp. Same names and values as the 23 text styles in the file.
-  // Colour defaults to navy; set another one with copyWith where the design
-  // uses it (secondary text is AppColors.ink).
-  // ---------------------------------------------------------------------------
-
+  /// Figma type ramp. Same names and values as the 23 text styles in the file.
+  /// Colour defaults to navy; set another one with copyWith where the design
+  /// uses it (secondary text is AppColors.ink).
   static TextStyle _figma(
     double size,
     FontWeight weight, {
@@ -83,16 +25,17 @@ class AppTypography {
     double? lineHeightPx,
     double letterSpacingPct = 0,
   }) {
-    final base = GoogleFonts.outfit(
+    return TextStyle(
+      fontFamily: AppFonts.latin,
+      // Outfit has no Arabic glyphs; Cairo fills in for them.
+      fontFamilyFallback: const [AppFonts.arabic],
       fontSize: size,
       fontWeight: weight,
+      // The fonts are variable: the weight is an axis, set explicitly.
+      fontVariations: [FontVariation.weight(weight.value.toDouble())],
       color: color,
       height: lineHeightPx == null ? null : lineHeightPx / size,
       letterSpacing: size * letterSpacingPct / 100,
-    );
-    // Outfit has no Arabic glyphs; Cairo fills in for them.
-    return base.copyWith(
-      fontFamilyFallback: [GoogleFonts.cairo(fontWeight: weight).fontFamily!],
     );
   }
 
