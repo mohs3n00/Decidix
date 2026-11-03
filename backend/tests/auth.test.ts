@@ -246,6 +246,8 @@ describe('Decidix Authentication & RBAC Suite', () => {
 
   describe('6. Role-Based Access Control (RBAC)', () => {
     let adminToken: string;
+    let decisionMakerToken: string;
+    let plannerToken: string;
     let analystToken: string;
     let viewerToken: string;
 
@@ -260,6 +262,28 @@ describe('Decidix Authentication & RBAC Suite', () => {
           role: 'admin',
         });
       adminToken = adminRes.body.data.token;
+
+      // Register Decision Maker
+      const dmRes = await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'Decision Maker User',
+          email: `dm_${Date.now()}@decidix.gov`,
+          password: 'Password123!',
+          role: 'decision_maker',
+        });
+      decisionMakerToken = dmRes.body.data.token;
+
+      // Register Planner
+      const plannerRes = await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'Strategic Planner User',
+          email: `planner_${Date.now()}@decidix.gov`,
+          password: 'Password123!',
+          role: 'planner',
+        });
+      plannerToken = plannerRes.body.data.token;
 
       // Register Analyst
       const analystRes = await request(app)
@@ -292,6 +316,24 @@ describe('Decidix Authentication & RBAC Suite', () => {
       expect(res.status).toBe(200);
       expect(res.body.data.users).toBeDefined();
       expect(Array.isArray(res.body.data.users)).toBe(true);
+    });
+
+    it('denies Decision Maker access to /v1/admin/users with 403 ROLE_NOT_AUTHORIZED', async () => {
+      const res = await request(app)
+        .get('/v1/admin/users')
+        .set('Authorization', `Bearer ${decisionMakerToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('ROLE_NOT_AUTHORIZED');
+    });
+
+    it('denies Planner access to /v1/admin/users with 403 ROLE_NOT_AUTHORIZED', async () => {
+      const res = await request(app)
+        .get('/v1/admin/users')
+        .set('Authorization', `Bearer ${plannerToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('ROLE_NOT_AUTHORIZED');
     });
 
     it('denies Analyst access to /v1/admin/users with 403 ROLE_NOT_AUTHORIZED', async () => {
@@ -327,13 +369,27 @@ describe('Decidix Authentication & RBAC Suite', () => {
       expect(res.body.error.code).toBe('PERMISSION_DENIED');
     });
 
-    it('permits Admin or Analyst to accept recommendations', async () => {
-      const res = await request(app)
+    it('permits Admin, Decision Maker, Planner, and Analyst to accept recommendations', async () => {
+      const adminAccept = await request(app)
         .post('/v1/intelligence/recommendations/rec_frontier_mobile_clinics/accept')
         .set('Authorization', `Bearer ${adminToken}`);
+      expect(adminAccept.status).toBe(200);
+      expect(adminAccept.body.data.status).toBe('in_plan');
 
-      expect(res.status).toBe(200);
-      expect(res.body.data.status).toBe('in_plan');
+      const dmAccept = await request(app)
+        .post('/v1/intelligence/recommendations/rec_frontier_mobile_clinics/accept')
+        .set('Authorization', `Bearer ${decisionMakerToken}`);
+      expect(dmAccept.status).toBe(200);
+
+      const plannerAccept = await request(app)
+        .post('/v1/intelligence/recommendations/rec_frontier_mobile_clinics/accept')
+        .set('Authorization', `Bearer ${plannerToken}`);
+      expect(plannerAccept.status).toBe(200);
+
+      const analystAccept = await request(app)
+        .post('/v1/intelligence/recommendations/rec_frontier_mobile_clinics/accept')
+        .set('Authorization', `Bearer ${analystToken}`);
+      expect(analystAccept.status).toBe(200);
     });
   });
 

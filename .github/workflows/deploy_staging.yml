@@ -3,15 +3,15 @@ name: Deploy Staging (Backend Subtree)
 on:
   workflow_dispatch:
     inputs:
+      dry_run:
+        description: 'Dry run: run build, test, and subtree verification without deploying'
+        type: boolean
+        required: true
+        default: true
       reason:
-        description: 'Reason for manual staging deployment'
+        description: 'Reason for staging deployment'
         required: false
         default: 'Manual deployment trigger'
-  push:
-    branches: [main]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/deploy_staging.yml'
 
 concurrency:
   group: deploy-staging
@@ -21,7 +21,6 @@ jobs:
   verify_and_deploy:
     name: Verify & Deploy Backend to Heroku Staging
     runs-on: ubuntu-latest
-    if: github.repository == 'mohs3n00-eng/Decidix'
 
     steps:
       - name: Checkout Code with Full Git History
@@ -32,7 +31,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
 
@@ -48,7 +47,14 @@ jobs:
           NODE_ENV: test
           ZERO_COST_ENFORCEMENT: 'true'
 
+      - name: Verify Backend Subtree Extraction
+        run: |
+          echo "Verifying backend subtree integrity..."
+          SUBTREE_COMMIT=$(git subtree split --prefix backend)
+          echo "Subtree commit generated: $SUBTREE_COMMIT"
+
       - name: Deploy Backend Subtree to Heroku Staging
+        if: ${{ !inputs.dry_run }}
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME || 'decidix-backend-staging' }}
@@ -59,9 +65,16 @@ jobs:
             exit 1
           fi
 
-          # Configure temporary git remote for Heroku deployment
+          echo "Configuring temporary Heroku remote for $HEROKU_APP_NAME..."
           git remote add heroku "https://heroku:${HEROKU_API_KEY}@git.heroku.com/${HEROKU_APP_NAME}.git"
           
-          # Push only the backend subdirectory to Heroku main branch
+          echo "Pushing backend subtree to Heroku main branch..."
           git subtree push --prefix backend heroku main
+          echo "Deployment completed successfully."
 
+      - name: Dry Run Completion Notice
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "✅ Dry run completed successfully!"
+          echo "Backend build, Vitest suite, and git subtree split verified."
+          echo "No deployment was performed because dry_run=true."
