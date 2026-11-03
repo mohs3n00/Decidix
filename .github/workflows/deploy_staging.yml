@@ -46,6 +46,8 @@ jobs:
         env:
           NODE_ENV: test
           ZERO_COST_ENFORCEMENT: 'true'
+          OPENROUTER_API_KEY: 'test-ci-key'
+          JWT_SECRET: 'test-ci-jwt-secret-minimum-32-chars-long'
 
       - name: Verify Backend Subtree Extraction
         run: |

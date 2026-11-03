@@ -114,7 +114,8 @@ export class OpenRouterService {
 
     // 4. Free LLM Gateway Execution
     const activeModel = options.modelOverride || env.OPENROUTER_MODEL;
-    const hasApiKey = Boolean(process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY.trim().length > 0) ||
+    const hasApiKey = Boolean(customMockFetch) ||
+                      Boolean(process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY.trim().length > 0) ||
                       Boolean(env.OPENROUTER_API_KEY && env.OPENROUTER_API_KEY.trim().length > 0);
     const isFree = isZeroCostModel(activeModel);
 
