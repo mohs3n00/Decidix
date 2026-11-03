@@ -333,7 +333,8 @@ The following tables are planned for subsequent production-hardening milestones 
 | **Pre-Provisioning Safety Audit (D1.1)** | **Completed** | Yes | Yes (Single 5-conn Prisma pool, live /v1/health probe, non-destructive rollback) | None |
 | **Two-Point Deployment Gate (D1.2)** | **Completed** | Yes | Yes (pgvector runtime verified, explicit zero-cost model allowlist enforced) | None |
 | **Heroku Staging Deployment (D2)** | **Completed** | Yes | Yes (Live PG 18.4, pgvector 0.8.2, 10/10 endpoints verified, 184 Flutter tests) | None |
-| **Push Notifications & Security (E)** | **Upcoming** | No | No | Firebase FCM integration, production rate limits |
+| **Staging Security, Rate Limiting & E2E (E1)** | **Completed** | Yes | Yes (44 live staging assertions, 134 backend tests, 184 Flutter tests) | None |
+| **FCM Push Notifications (E2)** | **Planned** | No | No | Configure firebase-admin SDK & device token registration |
 
 ---
 
@@ -365,9 +366,20 @@ The following tables are planned for subsequent production-hardening milestones 
 - **Phase D1.2 (Done):** Final Two-Point Deployment Gate. Verified Check 1: pgvector vs JSONB runtime behavior (pgvector enables native database `<=>` queries; without it, PostgreSQL stores no vectors and application safely uses ephemeral in-memory cosine fallback, establishing `pgvector` as a required staging prerequisite). Verified Check 2: Permanent Zero-Cost AI Enforcement (added explicit `VERIFIED_FREE_MODEL_ALLOWLIST` in `env.ts`, distinguished static configuration validation from live OpenRouter pricing verification, verified zero paid API calls, missing key safe fallback, and HTTP 402/429 containment). 126/126 backend Vitest tests, 24/24 Flutter contract suites passing.
 - **Phase D2 (Done):** Heroku Staging Provisioning, Live PostgreSQL Migration & Flutter End-to-End Verification. Provisioned `decidix-backend-staging` in EU region (`heroku-24` stack) and attached `heroku-postgresql:essential-0` (`postgresql-rugged-61997`, PG 18.4). Verified and activated PostgreSQL extensions: `uuid-ossp` (1.1), `pgcrypto` (1.4), and native `vector` (0.8.2). Executed 5 Prisma migrations successfully in Heroku release phase (`0_init`, `add_sessions`, `add_ml_forecasts`, `fix_users_role_check`, `widen_ml_forecast_id`). Seeded authoritative dataset into PostgreSQL and ingested 3 RAG documents with 1536-dimensional native vectors. Deployed backend via Git subtree push (`web.1` Basic dyno up and healthy). Verified all 10 live backend API endpoints with real HTTP requests (health, auth login & token rotation, overview, 12 regions, persisted ML predictions, What-If simulation, grounded RAG via native pgvector cosine search, citizen report like counter persistence). Updated `env/staging.json` with live URL. Verified Flutter client against live staging (24/24 contract tests, 10/10 decisions tests, 184/184 full test suite passed). All costs covered under active GitHub Student Credit ($291.23 remaining); AI spending strictly $0.00.
 
-### Phase E: Push Notifications, Security Hardening & End-to-End Testing (UPCOMING)
-- Configure Firebase Cloud Messaging via official `firebase-admin` SDK.
-- Configure rate limiters and automated daily database backups (`heroku pg:backups:schedule`).
+### Phase E: Staging Security Hardening, Reliability & End-to-End Validation (IN PROGRESS)
+- **Phase E1 (Done):** Staging Security, Reliability & End-to-End Validation.
+  - **Authentication & RBAC Hardening:** Bcrypt (10 salt rounds) verified across user seed and registration. Configurable initial password (`SEED_ADMIN_PASSWORD`). Added secure password change endpoint `POST /v1/auth/change-password` with old password verification and global session revocation. Enforced session ownership in `AuthService.logout` preventing cross-user session tampering. Strict RBAC enforcement: `/v1/admin/*` restricted to `admin` (401/403), policy modifications in `/intelligence/recommendations` deny `viewer` role (403 `PERMISSION_DENIED`), administrative user listings strictly sanitize and omit password hashes. Zero credentials/passwords exposed in responses or logs.
+  - **In-Memory Production Rate Limiting:** Built in-memory rate limiter with TTL cleanup operating without Redis. Added standard headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `Retry-After`). Mounted limiters: auth (10 req/min), AI Assistant (20 req/min, strictly enforcing OpenRouter free quota), citizen reports (30 req/min), simulation (30 req/min), admin (30 req/min), global public API (120 req/min).
+  - **What-If Simulator Live Verification:** Solved smoke test baseline 44 -> projected 44 mystery: macroeconomic model parameters ($K=\$60\text{M}$ USD) require realistic USD investments; passing $70 USD yielded +0.000002, which rounded to +0.0. Live verification across $0, $10M, $120M, and $400M budgets verified strict mathematical concavity, diminishing marginal returns (3.33x budget yielded 2.36x gain), and baseline 44 -> projected 51 (+7.00 gain) for standard $120M Flutter package.
+  - **PostgreSQL Backup & Recovery:** Scheduled automatic daily backups at 02:00 UTC (`heroku pg:backups:schedule`). Captured manual backup `b001` (59.58 KB, 16 tables dumped, 99% compression). Documented non-destructive restore runbook.
+  - **Operational Monitoring:** Verified Basic dyno `web.1` up and stable. Database connection pool safe at 1/20 connections, 9.53 MB / 1 GB storage (0.93%). Verified zero token/password leakage in Heroku router and application logs.
+  - **Live Staging E2E Suite:** Executed dedicated automated live suite (`scripts/test_staging_e2e.js`) with 44/44 assertions passing against live Heroku backend and PostgreSQL.
+  - **Regression Verification:** 134/134 backend tests passing, 24/24 Flutter contract suites passing, 10/10 decisions screen tests passing, 184/184 full Flutter test suite passing. Zero paid AI spending ($0.00).
+
+- **Phase E2 (Upcoming):** Push Notifications & Mobile Field Testing.
+  - Configure Firebase Cloud Messaging via official `firebase-admin` SDK.
+  - Implement device token registration (`POST /v1/notifications/device-token`).
+  - Mobile client staging field testing on physical Android/iOS devices.
 
 ### Phase F: Final Demonstration Readiness & Graduation Defense (THROUGH JULY 2027)
 - Pre-defense database snapshot and offsite dump archive.
@@ -377,15 +389,15 @@ The following tables are planned for subsequent production-hardening milestones 
 
 ## 11. Current Position & Next Task
 
-- **Current Milestone:** Phase D2 (Heroku Staging Provisioning, Live PostgreSQL Migration & Flutter End-to-End Verification) Completed. Decidix is now officially live on staging with a verified PostgreSQL database, native pgvector RAG, zero-cost AI assistant, and Flutter integration.
+- **Current Milestone:** Phase E1 (Staging Security, Reliability & End-to-End Validation) Completed. Staging backend is hardened, rate-limited, backed up, and validated against live PostgreSQL with 44 live E2E assertions and zero test regressions.
 - **Live Infrastructure Reference:**
   - App: `decidix-backend-staging` (Region: `eu`, Stack: `heroku-24`)
   - Web URL: `https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/`
   - Database: `heroku-postgresql:essential-0` (PG 18.4, pgvector 0.8.2 active)
   - Compute: 1 x Basic web dyno ($7.00/mo covered by GitHub Student Credit, $291.23 balance remaining)
   - Zero-Cost AI Policy: Enforced and compliant ($0.00 spent)
-- **Exact Next Task (Phase E):**
+  - Scheduled Backups: Daily at 02:00 UTC; manual backup `b001` verified
+- **Exact Next Task (Phase E2):**
   1. Configure Firebase Cloud Messaging (FCM) credentials via `firebase-admin` SDK.
   2. Implement device token registration (`POST /v1/notifications/device-token`).
-  3. Schedule automated daily PostgreSQL backups (`heroku pg:backups:schedule DATABASE_URL --at '02:00 UTC'`).
-  4. Configure production rate limiting on public routes.
+  3. Mobile client staging field testing on physical Android/iOS devices.
