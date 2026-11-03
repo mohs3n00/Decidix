@@ -1,0 +1,66 @@
+name: Deploy Staging (Backend Subtree)
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual staging deployment'
+        required: false
+        default: 'Manual deployment trigger'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy_staging.yml'
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  verify_and_deploy:
+    name: Verify & Deploy Backend to Heroku Staging
+    runs-on: ubuntu-latest
+    if: github.repository == 'mohs3n00-eng/Decidix'
+
+    steps:
+      - name: Checkout Code with Full Git History
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Backend Dependencies
+        run: npm --prefix backend ci
+
+      - name: Compile Backend & Generate Prisma Client
+        run: npm --prefix backend run build
+
+      - name: Execute Backend Tests (Pre-Deployment Gate)
+        run: npm --prefix backend test
+        env:
+          NODE_ENV: test
+          ZERO_COST_ENFORCEMENT: 'true'
+
+      - name: Deploy Backend Subtree to Heroku Staging
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME || 'decidix-backend-staging' }}
+          HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL || 'mohsn9165@gmail.com' }}
+        run: |
+          if [ -z "$HEROKU_API_KEY" ]; then
+            echo "::error::HEROKU_API_KEY secret is not configured in GitHub repository settings. Skipping deployment."
+            exit 1
+          fi
+
+          # Configure temporary git remote for Heroku deployment
+          git remote add heroku "https://heroku:${HEROKU_API_KEY}@git.heroku.com/${HEROKU_APP_NAME}.git"
+          
+          # Push only the backend subdirectory to Heroku main branch
+          git subtree push --prefix backend heroku main
