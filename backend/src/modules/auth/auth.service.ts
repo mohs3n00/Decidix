@@ -220,12 +220,17 @@ export class AuthService {
 
   /**
    * Logs out: revokes specific session by refresh token or revokes all sessions for a user.
+   * Enforces session ownership if caller is authenticated.
    */
   static async logout(rawRefreshToken?: string, userId?: string): Promise<{ message: string }> {
     if (rawRefreshToken) {
       const tokenHash = this.hashToken(rawRefreshToken.trim());
       const session = await AuthRepository.findSessionByTokenHash(tokenHash);
       if (session) {
+        // Enforce session ownership: authenticated caller cannot revoke another user's session
+        if (userId && session.userId !== userId) {
+          throw AppError.forbidden('Cannot revoke a session belonging to another user', 'SESSION_FORBIDDEN');
+        }
         await AuthRepository.revokeSession(session.id);
       }
     } else if (userId) {
@@ -233,6 +238,38 @@ export class AuthService {
     }
 
     return { message: 'Logged out successfully' };
+  }
+
+  /**
+   * Changes password for an authenticated user, re-hashes with bcrypt (10 rounds),
+   * and revokes all user sessions to enforce security.
+   */
+  static async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<{ message: string }> {
+    const user = await AuthRepository.findById(userId);
+    if (!user) {
+      throw AppError.unauthorized('User profile not found', 'USER_NOT_FOUND');
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isMatch) {
+      throw AppError.unauthorized('Current password is incorrect', 'INVALID_CREDENTIALS');
+    }
+
+    if (newPassword.length < 8) {
+      throw AppError.validation('New password must be at least 8 characters long');
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await AuthRepository.updatePassword(userId, newHash);
+
+    // Revoke all existing sessions to enforce re-login with new password
+    await AuthRepository.revokeAllUserSessions(userId);
+
+    return { message: 'Password updated successfully. All active sessions have been revoked.' };
   }
 
   /**

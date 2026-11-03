@@ -25,7 +25,8 @@ export async function runSeed(): Promise<void> {
 
     await prisma.$transaction(async (tx) => {
       // 1. Seed default administrative and analyst users
-      const passwordHash = await bcrypt.hash('DecidixAdmin2026!', 10);
+      const initialPassword = process.env.SEED_ADMIN_PASSWORD || 'DecidixAdmin2026!';
+      const passwordHash = await bcrypt.hash(initialPassword, 10);
       const seedUsers = [
         { id: 'usr_admin', email: 'admin@decidix.gov', name: 'System Administrator', arabicName: 'مدير النظام', role: 'admin', department: 'National Digital Operations' },
         { id: 'usr_analyst', email: 'analyst@decidix.gov', name: 'Lead Policy Analyst', arabicName: 'كبير محللي السياسات', role: 'analyst', department: 'Regional Development Council' },

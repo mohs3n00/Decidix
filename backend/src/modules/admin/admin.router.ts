@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
+import { adminRateLimiter } from '../../middleware/rate_limit.js';
 import { sendSuccess } from '../../utils/response.js';
 import { AuthRepository } from '../../repositories/auth.repository.js';
 import { AuthService } from '../auth/auth.service.js';
@@ -12,6 +13,7 @@ export const adminRouter = Router();
  */
 adminRouter.get(
   '/admin/users',
+  adminRateLimiter,
   requireAuth,
   requireRole('admin'),
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -30,6 +32,7 @@ adminRouter.get(
  */
 adminRouter.post(
   '/admin/users/:id/revoke-sessions',
+  adminRateLimiter,
   requireAuth,
   requireRole('admin'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {

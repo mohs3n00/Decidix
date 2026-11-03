@@ -4,6 +4,7 @@ import { SEED_RECOMMENDATIONS } from '../../database/seed_data.js';
 import { sendSuccess, AppError } from '../../utils/response.js';
 import { validateRequest } from '../../middleware/validator.js';
 import { optionalAuth } from '../../middleware/auth.js';
+import { assistantRateLimiter } from '../../middleware/rate_limit.js';
 import { RagService } from '../../integrations/rag.js';
 import { OpenRouterService } from '../../integrations/openrouter.js';
 import { ForecastRepository } from '../../repositories/forecast.repository.js';
@@ -50,6 +51,7 @@ const chatBodySchema = z.object({
 
 intelligenceRouter.post(
   '/intelligence/assistant/chat',
+  assistantRateLimiter,
   optionalAuth,
   validateRequest({ body: chatBodySchema }),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -94,26 +96,44 @@ intelligenceRouter.get('/intelligence/recommendations', (req: Request, res: Resp
 });
 
 // POST /v1/intelligence/recommendations/:id/accept
-intelligenceRouter.post('/intelligence/recommendations/:id/accept', (req: Request, res: Response, next: NextFunction): void => {
-  const { id } = req.params;
-  const exists = SEED_RECOMMENDATIONS.some((r) => r.id === id);
-  if (!exists) {
-    return next(AppError.notFound(`Recommendation '${id}' not found`));
-  }
+intelligenceRouter.post(
+  '/intelligence/recommendations/:id/accept',
+  optionalAuth,
+  (req: Request, res: Response, next: NextFunction): void => {
+    if (req.user && req.user.role === 'viewer') {
+      return next(
+        AppError.forbidden("User role 'viewer' lacks permission 'projects:manage' for this action.", 'PERMISSION_DENIED')
+      );
+    }
+    const { id } = req.params;
+    const exists = SEED_RECOMMENDATIONS.some((r) => r.id === id);
+    if (!exists) {
+      return next(AppError.notFound(`Recommendation '${id}' not found`));
+    }
 
-  recommendationStates.set(id, 'in_plan');
-  sendSuccess(res, { id, status: 'in_plan' });
-});
+    recommendationStates.set(id, 'in_plan');
+    sendSuccess(res, { id, status: 'in_plan' });
+  }
+);
 
 // POST /v1/intelligence/recommendations/:id/dismiss
-intelligenceRouter.post('/intelligence/recommendations/:id/dismiss', (req: Request, res: Response, next: NextFunction): void => {
-  const { id } = req.params;
-  const exists = SEED_RECOMMENDATIONS.some((r) => r.id === id);
-  if (!exists) {
-    return next(AppError.notFound(`Recommendation '${id}' not found`));
-  }
+intelligenceRouter.post(
+  '/intelligence/recommendations/:id/dismiss',
+  optionalAuth,
+  (req: Request, res: Response, next: NextFunction): void => {
+    if (req.user && req.user.role === 'viewer') {
+      return next(
+        AppError.forbidden("User role 'viewer' lacks permission 'projects:manage' for this action.", 'PERMISSION_DENIED')
+      );
+    }
+    const { id } = req.params;
+    const exists = SEED_RECOMMENDATIONS.some((r) => r.id === id);
+    if (!exists) {
+      return next(AppError.notFound(`Recommendation '${id}' not found`));
+    }
 
-  recommendationStates.set(id, 'dismissed');
-  sendSuccess(res, { id, status: 'dismissed' });
-});
+    recommendationStates.set(id, 'dismissed');
+    sendSuccess(res, { id, status: 'dismissed' });
+  }
+);
 

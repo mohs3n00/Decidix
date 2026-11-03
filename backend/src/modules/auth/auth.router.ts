@@ -29,6 +29,11 @@ const logoutSchema = z.object({
   refresh_token: z.string().optional(),
 });
 
+const changePasswordSchema = z.object({
+  current_password: z.string().min(1, 'Current password is required'),
+  new_password: z.string().min(8, 'New password must be at least 8 characters long'),
+});
+
 /**
  * POST /v1/auth/register
  * Registers a new user and returns user info with access token and refresh token.
@@ -134,6 +139,26 @@ authRouter.post(
     try {
       const { refresh_token } = req.body;
       const result = await AuthService.logout(refresh_token, req.user?.id);
+      sendSuccess(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /v1/auth/change-password
+ * Securely updates current user password and revokes all active sessions.
+ */
+authRouter.post(
+  '/change-password',
+  authRateLimiter,
+  requireAuth,
+  validateRequest({ body: changePasswordSchema }),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { current_password, new_password } = req.body;
+      const result = await AuthService.changePassword(req.user!.id, current_password, new_password);
       sendSuccess(res, result);
     } catch (error) {
       next(error);

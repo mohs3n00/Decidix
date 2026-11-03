@@ -3,7 +3,9 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import { createApp } from '../src/app.js';
 import { env } from '../src/config/env.js';
-import { Express } from 'express';
+import express, { Express } from 'express';
+import { createRateLimiter } from '../src/middleware/rate_limit.js';
+import { errorHandler } from '../src/middleware/error_handler.js';
 
 describe('Decidix Authentication & RBAC Suite', () => {
   let app: Express;
@@ -314,6 +316,193 @@ describe('Decidix Authentication & RBAC Suite', () => {
       const res = await request(app).get('/v1/admin/users');
       expect(res.status).toBe(401);
       expect(res.body.error.code).toBe('TOKEN_REQUIRED');
+    });
+
+    it('denies Viewer role from accepting policy recommendations with 403 PERMISSION_DENIED', async () => {
+      const res = await request(app)
+        .post('/v1/intelligence/recommendations/rec_frontier_mobile_clinics/accept')
+        .set('Authorization', `Bearer ${viewerToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('PERMISSION_DENIED');
+    });
+
+    it('permits Admin or Analyst to accept recommendations', async () => {
+      const res = await request(app)
+        .post('/v1/intelligence/recommendations/rec_frontier_mobile_clinics/accept')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.status).toBe('in_plan');
+    });
+  });
+
+  describe('7. Session Ownership Enforcement', () => {
+    let userAToken: string;
+    let userARefreshToken: string;
+    let userBToken: string;
+    let userBRefreshToken: string;
+
+    beforeAll(async () => {
+      const userA = await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'User A',
+          email: `usera_${Date.now()}@decidix.gov`,
+          password: 'Password123!',
+          role: 'analyst',
+        });
+      userAToken = userA.body.data.token;
+      userARefreshToken = userA.body.data.refresh_token;
+
+      const userB = await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'User B',
+          email: `userb_${Date.now()}@decidix.gov`,
+          password: 'Password123!',
+          role: 'analyst',
+        });
+      userBToken = userB.body.data.token;
+      userBRefreshToken = userB.body.data.refresh_token;
+    });
+
+    it('prevents User B from revoking User A session with 403 SESSION_FORBIDDEN', async () => {
+      const res = await request(app)
+        .post('/v1/auth/logout')
+        .set('Authorization', `Bearer ${userBToken}`)
+        .send({ refresh_token: userARefreshToken });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('SESSION_FORBIDDEN');
+    });
+
+    it('allows User A to revoke their own session', async () => {
+      const res = await request(app)
+        .post('/v1/auth/logout')
+        .set('Authorization', `Bearer ${userAToken}`)
+        .send({ refresh_token: userARefreshToken });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.message).toBe('Logged out successfully');
+    });
+  });
+
+  describe('8. Password Change & Session Invalidation Flow', () => {
+    const email = `pwd_change_${Date.now()}@decidix.gov`;
+    const oldPassword = 'OldPassword123!';
+    const newPassword = 'NewSecretPassword2026!';
+    let token: string;
+    let refreshToken: string;
+
+    beforeAll(async () => {
+      const reg = await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'Password Changer',
+          email,
+          password: oldPassword,
+          role: 'planner',
+        });
+      token = reg.body.data.token;
+      refreshToken = reg.body.data.refresh_token;
+    });
+
+    it('rejects password change if current password is incorrect', async () => {
+      const res = await request(app)
+        .post('/v1/auth/change-password')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          current_password: 'WrongPassword!',
+          new_password: newPassword,
+        });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error.code).toBe('INVALID_CREDENTIALS');
+    });
+
+    it('rejects new password if shorter than 8 characters', async () => {
+      const res = await request(app)
+        .post('/v1/auth/change-password')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          current_password: oldPassword,
+          new_password: 'short',
+        });
+
+      expect(res.status).toBe(422);
+    });
+
+    it('successfully changes password and invalidates active sessions', async () => {
+      const res = await request(app)
+        .post('/v1/auth/change-password')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          current_password: oldPassword,
+          new_password: newPassword,
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.message).toContain('Password updated successfully');
+
+      // Old refresh token must now be revoked
+      const refreshRes = await request(app)
+        .post('/v1/auth/refresh')
+        .send({ refresh_token: refreshToken });
+      expect(refreshRes.status).toBe(401);
+
+      // Old password cannot log in
+      const oldLogin = await request(app)
+        .post('/v1/auth/login')
+        .send({ email, password: oldPassword });
+      expect(oldLogin.status).toBe(401);
+
+      // New password logs in successfully
+      const newLogin = await request(app)
+        .post('/v1/auth/login')
+        .send({ email, password: newPassword });
+      expect(newLogin.status).toBe(200);
+      expect(newLogin.body.data.token).toBeDefined();
+    });
+  });
+
+  describe('9. In-Memory Rate Limiting Behavioral Verification', () => {
+    it('sets standard rate limiting headers and returns 429 when maxRequests is exceeded', async () => {
+      const testApp = express();
+      const testLimiter = createRateLimiter({
+        windowMs: 60000,
+        maxRequests: 3,
+        message: 'Test rate limit reached',
+        skipInTest: false,
+      });
+
+      testApp.get('/test-limit', testLimiter, (_req, res) => {
+        res.json({ success: true });
+      });
+      testApp.use(errorHandler);
+
+      // Request 1: OK
+      const res1 = await request(testApp).get('/test-limit');
+      expect(res1.status).toBe(200);
+      expect(res1.headers['x-ratelimit-limit']).toBe('3');
+      expect(res1.headers['x-ratelimit-remaining']).toBe('2');
+      expect(res1.headers['x-ratelimit-reset']).toBeDefined();
+
+      // Request 2: OK
+      const res2 = await request(testApp).get('/test-limit');
+      expect(res2.status).toBe(200);
+      expect(res2.headers['x-ratelimit-remaining']).toBe('1');
+
+      // Request 3: OK
+      const res3 = await request(testApp).get('/test-limit');
+      expect(res3.status).toBe(200);
+      expect(res3.headers['x-ratelimit-remaining']).toBe('0');
+
+      // Request 4: Blocked with 429 TOO_MANY_REQUESTS
+      const res4 = await request(testApp).get('/test-limit');
+      expect(res4.status).toBe(429);
+      expect(res4.body.error.code).toBe('TOO_MANY_REQUESTS');
+      expect(res4.headers['retry-after']).toBeDefined();
     });
   });
 });

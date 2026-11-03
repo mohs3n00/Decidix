@@ -459,5 +459,29 @@ export class AuthRepository {
       }));
     }
   }
+
+  /**
+   * Updates a user's password hash in storage.
+   */
+  static async updatePassword(userId: string, newPasswordHash: string): Promise<void> {
+    const isDbReady = await testPrismaConnection();
+
+    for (const u of localUsers.values()) {
+      if (u.id === userId) {
+        u.password_hash = newPasswordHash;
+      }
+    }
+
+    if (isDbReady) {
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { passwordHash: newPasswordHash },
+        });
+      } catch (err) {
+        if (env.NODE_ENV === 'production') throw err;
+      }
+    }
+  }
 }
 

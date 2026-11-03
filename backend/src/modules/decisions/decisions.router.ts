@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { sendSuccess } from '../../utils/response.js';
 import { validateRequest } from '../../middleware/validator.js';
 import { optionalAuth } from '../../middleware/auth.js';
+import { simulationRateLimiter, reportsRateLimiter } from '../../middleware/rate_limit.js';
 import { DecisionsRepository } from '../../repositories/decisions.repository.js';
 
 export const decisionsRouter = Router();
@@ -20,6 +21,7 @@ const simulateBodySchema = z.object({
 
 decisionsRouter.post(
   '/decisions/simulate',
+  simulationRateLimiter,
   validateRequest({ body: simulateBodySchema }),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -108,6 +110,7 @@ decisionsRouter.get(
 // POST /v1/decisions/citizen-reports/:id/like
 decisionsRouter.post(
   '/decisions/citizen-reports/:id/like',
+  reportsRateLimiter,
   optionalAuth,
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

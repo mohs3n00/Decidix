@@ -3,6 +3,7 @@ import cors from 'cors';
 import { env, isZeroCostModel } from './config/env.js';
 import { requestLogger } from './middleware/request_logger.js';
 import { errorHandler } from './middleware/error_handler.js';
+import { publicApiRateLimiter } from './middleware/rate_limit.js';
 import { testPrismaConnection } from './database/prisma.js';
 import { authRouter } from './modules/auth/auth.router.js';
 import { overviewRouter } from './modules/overview/overview.router.js';
@@ -31,6 +32,7 @@ export function createApp(): Express {
 
   // API v1 Router Registration
   const v1 = express.Router();
+  v1.use(publicApiRateLimiter);
 
   // Subsystem health check (live DB query, ML status, zero-cost policy compliance)
   v1.get('/health', async (_req: Request, res: Response) => {
