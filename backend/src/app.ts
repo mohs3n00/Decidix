@@ -16,6 +16,20 @@ import { notificationsRouter } from './modules/notifications/notifications.route
 export function createApp(): Express {
   const app = express();
 
+  // Configure reverse proxy trust for Heroku Router
+  app.set('trust proxy', 1);
+
+  // Standard OWASP security headers
+  app.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '0');
+    if (env.NODE_ENV === 'production') {
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    }
+    next();
+  });
+
   // Basic security and request processing
   app.use(cors({ origin: env.CORS_ORIGIN }));
   app.use(express.json());
