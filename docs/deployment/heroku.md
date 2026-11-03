@@ -221,3 +221,39 @@ heroku run "node dist/database/seed.js" -a decidix-backend-staging
    ```bash
    heroku apps:destroy decidix-backend-staging --confirm decidix-backend-staging
    ```
+
+
+---
+
+## 13. GitHub Actions CI/CD Deployment Integration
+
+### 13.1 Architecture & Subtree Strategy
+Decidix is structured as a monorepo containing the Flutter client, Node.js backend, and Python ML pipelines. To keep the Heroku slug minimal, avoid slug-size bloat, and prevent non-backend files from deploying to production dynos, deployments utilize Git subtree extraction:
+
+- **Workflow File:** [`.github/workflows/deploy_staging.yml`](file:///e:/decidix_app/.github/workflows/deploy_staging.yml)
+- **Deployment Branch:** `main` (only triggers automatically when changes occur within `backend/**`)
+- **Manual Trigger:** Supports `workflow_dispatch` with dry-run option (`dry_run=true`)
+- **Deployment Mechanism:** Extracts the `backend` prefix into a detached commit tree and pushes to `https://git.heroku.com/decidix-backend-staging.git`
+
+```bash
+git subtree push --prefix backend heroku main
+```
+
+### 13.2 Required GitHub Repository Secrets
+Before the automated CI/CD pipeline can push to Heroku, configure the following secrets in the GitHub repository (`Settings -> Secrets and variables -> Actions`):
+
+| Secret Name | Description | Source |
+| --- | --- | --- |
+| `HEROKU_API_KEY` | Heroku CLI authorization token | Generated via `heroku authorizations:create` |
+| `HEROKU_APP_NAME` | Target Heroku application name (`decidix-backend-staging`) | Existing provisioned application |
+| `HEROKU_EMAIL` | Account email associated with Heroku API key | Authenticated Heroku account email |
+
+### 13.3 Release-Phase Migration Safety Gate
+Automatic database migrations run in Heroku's isolated `release` dyno prior to routing traffic to the updated dyno:
+1. Heroku provisions a temporary dyno executing `npx prisma migrate deploy` (specified in [`backend/Procfile`](file:///e:/decidix_app/backend/Procfile)).
+2. If migrations fail, the deployment is aborted immediately. The existing `web.1` dyno continues serving live traffic without downtime.
+3. If migrations succeed, Heroku restarts `web.1` with the new code release.
+
+> [!WARNING]
+> **Zero Disruption Guarantee:**
+> Do NOT trigger automatic deployments without explicit user approval. All schema migrations must be strictly additive and backward-compatible.

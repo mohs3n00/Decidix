@@ -416,6 +416,26 @@ The following tables are planned for subsequent production-hardening milestones 
     - 0 issues in `flutter analyze`.
     - Zero paid AI spending ($0.00).
 
+- **Phase E3 (Done):** GitHub Repository Setup, Team Collaboration & Heroku CI/CD Integration.
+  - **Private GitHub Repository:** Created private repository mohs3n00-eng/Decidix via GitHub CLI. Preserved complete commit history with zero force-pushes or history loss. Fast-forward merged chore/flutter-closeout into main and created develop integration branch.
+  - **Milestone & Issue Architecture:** Created all 8 lifecycle milestones on GitHub:
+    1. Foundation & Architecture
+    2. Database & Backend
+    3. AI & Machine Learning
+    4. Decision Intelligence
+    5. Staging & Deployment
+    6. Security & Reliability
+    7. Firebase Notifications
+    8. Final Testing & Graduation Defense
+    Populated 21 structured issues with standardized labels (ackend, lutter, database, i-ml, security, devops, documentation, 	esting, completed, locked). Closed 15 completed phase issues with explicit verification references; kept 6 future phase issues open.
+  - **Team Collaboration Governance:** Authored [CONTRIBUTING.md](file:///e:/decidix_app/CONTRIBUTING.md) and team operating manual in [docs/team/github_collaboration.md](file:///e:/decidix_app/docs/team/github_collaboration.md). Defined branch protection rules, conventional commits standard (eat:, ix:, docs:, ci:), and multi-tier PR review requirements.
+  - **PR & Issue Templates:** Created [.github/pull_request_template.md](file:///e:/decidix_app/.github/pull_request_template.md) with Zero-Cost AI policy checklist, and structured issue templates in [.github/ISSUE_TEMPLATE/](file:///e:/decidix_app/.github/ISSUE_TEMPLATE/) for bug reports, feature requests, and blank issue redirects.
+  - **GitHub Actions CI/CD Pipeline:**
+    - lutter_ci.yml: Automated analysis (lutter analyze), unit/widget tests (lutter test), and API contract conformance tests.
+    - ackend_ci.yml: Node.js 20 build and complete Vitest suite execution on PRs and pushes to main and develop.
+    - deploy_staging.yml: Heroku staging deployment pipeline for ackend subtree with manual trigger (workflow_dispatch), dry-run validation, and release-phase migration safety.
+  - **Heroku Deployment Runbook Extension:** Added Section 13 to [docs/deployment/heroku.md](file:///e:/decidix_app/docs/deployment/heroku.md) documenting GitHub secret prerequisites (HEROKU_API_KEY, HEROKU_APP_NAME, HEROKU_EMAIL), subtree extraction mechanics, and release-phase migration guards.
+
 ### Phase F: Final Demonstration Readiness & Graduation Defense (THROUGH JULY 2027)
 - Pre-defense database snapshot and offsite dump archive.
 - Rehearsals of bilingual presentation workflows and final university thesis defense.
@@ -424,7 +444,7 @@ The following tables are planned for subsequent production-hardening milestones 
 
 ## 11. Current Position & Next Task
 
-- **Current Milestone:** Phase E2.1 (FCM Security Hardening & Live Validation Readiness) Completed. All security guardrails, batching limits, auth lifecycle gating, and test suites are 100% verified locally.
+- **Current Milestone:** Phase E3 (GitHub Repository Setup, Team Collaboration & Heroku CI/CD Integration) Completed locally. All security guardrails, batching limits, auth lifecycle gating, and test suites are 100% verified locally.
 - **Live Infrastructure Reference:**
   - App: `decidix-backend-staging` (Region: `eu`, Stack: `heroku-24`)
   - Web URL: `https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/`
