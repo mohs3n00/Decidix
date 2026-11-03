@@ -73,7 +73,7 @@ env/
 .pytest_cache/
 ml/.venv/
 ml/models/artifacts/*.pkl
-ml/models/artifacts/*.joblib
+!ml/models/artifacts/*.joblib
 
 
 # Firebase & Service Account Credentials
