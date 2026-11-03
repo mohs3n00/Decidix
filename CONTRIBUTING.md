@@ -73,3 +73,4 @@ Every Pull Request must pass the automated GitHub Actions CI pipeline:
 - Flutter: `flutter analyze` (0 issues) and `flutter test` (100% pass).
 - Backend: TypeScript build (0 errors) and Vitest suite (100% pass).
 - At least one peer review approval before merging.
+

@@ -34,3 +34,4 @@ Fixes / Closes #(issue_number)
   - Backend: `npm --prefix backend test`
   - Backend build: `npm --prefix backend run build`
 - [ ] `docs/PROJECT_MASTER_STATUS.md` and/or `docs/api_contract.md` are updated if contracts changed.
+

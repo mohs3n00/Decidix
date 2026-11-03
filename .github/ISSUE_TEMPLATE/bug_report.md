@@ -33,3 +33,4 @@ If applicable, add screenshots or terminal logs to help explain your problem.
 - Device / OS: [e.g. Android 14, iOS 17, Windows 11]
 - App Version: [e.g. 1.0.0]
 - Staging URL / Localhost:
+

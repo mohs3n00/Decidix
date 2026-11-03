@@ -103,3 +103,4 @@ The Heroku staging app (`decidix-backend-staging`) is connected to the `main` br
 2. **Permanent Zero-Cost AI Policy:**
    - All AI integrations must use verified free models (`meta-llama/llama-3.3-70b-instruct:free`, `openrouter/free`).
    - No paid models, paid embedding APIs, or paid third-party add-ons are allowed without explicit owner authorization.
+
