@@ -331,8 +331,9 @@ The following tables are planned for subsequent production-hardening milestones 
 | **What-If Sensitivity & Validation (C4.3)** | **Completed** | Yes | Yes (36 simulation tests, 125 total backend) | None |
 | **Deployment Readiness & Live DB Prep (D1)** | **Completed** | Yes | Yes (126 Vitest tests, 24 contract suites, 184 Flutter tests) | None |
 | **Pre-Provisioning Safety Audit (D1.1)** | **Completed** | Yes | Yes (Single 5-conn Prisma pool, live /v1/health probe, non-destructive rollback) | None |
-| **Two-Point Deployment Gate (D1.2)** | **Completed** | Yes | Yes (pgvector runtime verified, explicit zero-cost model allowlist enforced) | None (100% ready for D2) |
-| **Heroku Staging Deployment (D2)** | **Pending** | No | No | Provision app, attach Postgres, run migrations (Phase D2) |
+| **Two-Point Deployment Gate (D1.2)** | **Completed** | Yes | Yes (pgvector runtime verified, explicit zero-cost model allowlist enforced) | None |
+| **Heroku Staging Deployment (D2)** | **Completed** | Yes | Yes (Live PG 18.4, pgvector 0.8.2, 10/10 endpoints verified, 184 Flutter tests) | None |
+| **Push Notifications & Security (E)** | **Upcoming** | No | No | Firebase FCM integration, production rate limits |
 
 ---
 
@@ -358,11 +359,11 @@ The following tables are planned for subsequent production-hardening milestones 
 - **Phase C4.2 (Done):** What-If Simulation Engine Implementation. Implemented transparent, concave diminishing marginal returns model ($Gain(d,A,r) = \beta(r) \cdot \alpha(d) \cdot K(d) \cdot \ln(1 + A/K(d))$) in [`SimulatorService`](file:///e:/decidix_app/backend/src/services/simulator.service.ts). Implemented regional deficit adjustment factor ($\beta(r) = 1 + 0.5 \cdot ((100 - Score_r)/100)$), analytical marginal yields ($\frac{\partial Gain}{\partial A}$), dynamic best-lever ranking with localized English/Arabic explanatory notes, and transparency metadata (`simulation_type: 'illustrative'`, `is_empirical: false`, coefficient disclosure, academic disclaimer). Preserved 100% Flutter API contract compatibility. 20/20 simulation tests passing (109/109 total backend Vitest tests passing).
 - **Phase C4.3 (Done):** What-If Simulation Sensitivity Analysis & Mathematical Validation. Rigorously verified dimensional consistency, analytical yields, linear scaling under parameter variations ($\alpha \pm 50\%$), saturation properties ($K \pm 50\%$), regional baseline scaling ($\beta = 1.00 \to 1.50$), and allocation steps ($0 \to \$100\text{M}$). Resolved score ceiling consistency: when $today\_score + raw\_gain \ge 100.0$, effective gain is capped to $100.0 - today\_score$, projected score clamped to $100.0$, and lever gains are proportionally scaled so that $today\_score + gain == projected\_score$ and $\sum lever.gain == gain$ identically. Implemented deterministic tie-breaking priority (`healthcare` > `infrastructure` > `education` > `economy`). Hardened defensive input validation against `NaN`, `Infinity`, negative values, and missing fields. 36/36 simulation tests passing (125/125 total backend Vitest tests passing).
 
-### Phase D: Heroku Staging Deployment & Live Flutter Integration (IN PROGRESS)
+### Phase D: Heroku Staging Deployment & Live Flutter Integration (COMPLETED)
 - **Phase D1 (Done):** Deployment Readiness & Live Database Integration Preparation. Audited Heroku runtime, fixed `Procfile` release command (`npx prisma migrate deploy`), integrated `prisma generate` into `npm run build`, capped `dbPool` connections to 10 for Heroku Essential-0 limits, implemented `disconnectPool` on graceful shutdown, implemented `/v1/health` subsystem health probe, verified zero filesystem reliance, validated Prisma schema against PostgreSQL conventions, prepared comprehensive 12-step staging deployment runbook in `docs/deployment/heroku.md`, audited environment variable tiers in `docs/deployment/environment_variables.md`, verified Flutter staging configuration (`env/staging.json`, Dio 15s timeouts, JWT header propagation). Strictly zero infrastructure provisioned, zero costs incurred. 126/126 backend Vitest tests, 24/24 Flutter contract suites, 184/184 Flutter unit/widget tests passing.
 - **Phase D1.1 (Done):** Final Pre-Provisioning Safety Audit. Eliminated runtime dual connection pools by removing legacy `dbPool` from API server lifecycle; Prisma Client now serves as single managed pool with hard ceiling `connection_limit=5` and `pool_timeout=10` (staying strictly under Essential-0's 20-connection ceiling). Configured automated SSL negotiation with self-signed certificate acceptance (`sslmode=no-verify`) for Heroku PostgreSQL. Updated `/v1/health` to execute live database ping (`SELECT 1`), return HTTP 503 if disconnected in production, report independent ML status, and verify zero-cost AI model compliance without leaking credentials. Added conditional casting of `rag_documents.embedding` to native `vector(1536)` in `0_init/migration.sql` with safe JSONB fallback. Replaced destructive `heroku pg:reset` in runbook recovery with non-destructive release rollback and snapshot restore. Documented Essential-0 `pgvector` extension permission as an unresolved provisioning check for Step 5. 126/126 backend Vitest tests, 24/24 Flutter contract suites, 184/184 Flutter unit/widget tests passing.
 - **Phase D1.2 (Done):** Final Two-Point Deployment Gate. Verified Check 1: pgvector vs JSONB runtime behavior (pgvector enables native database `<=>` queries; without it, PostgreSQL stores no vectors and application safely uses ephemeral in-memory cosine fallback, establishing `pgvector` as a required staging prerequisite). Verified Check 2: Permanent Zero-Cost AI Enforcement (added explicit `VERIFIED_FREE_MODEL_ALLOWLIST` in `env.ts`, distinguished static configuration validation from live OpenRouter pricing verification, verified zero paid API calls, missing key safe fallback, and HTTP 402/429 containment). 126/126 backend Vitest tests, 24/24 Flutter contract suites passing.
-- **Phase D2 (Upcoming):** Heroku Staging Provisioning, Live PostgreSQL Migration & Flutter End-to-End Verification.
+- **Phase D2 (Done):** Heroku Staging Provisioning, Live PostgreSQL Migration & Flutter End-to-End Verification. Provisioned `decidix-backend-staging` in EU region (`heroku-24` stack) and attached `heroku-postgresql:essential-0` (`postgresql-rugged-61997`, PG 18.4). Verified and activated PostgreSQL extensions: `uuid-ossp` (1.1), `pgcrypto` (1.4), and native `vector` (0.8.2). Executed 5 Prisma migrations successfully in Heroku release phase (`0_init`, `add_sessions`, `add_ml_forecasts`, `fix_users_role_check`, `widen_ml_forecast_id`). Seeded authoritative dataset into PostgreSQL and ingested 3 RAG documents with 1536-dimensional native vectors. Deployed backend via Git subtree push (`web.1` Basic dyno up and healthy). Verified all 10 live backend API endpoints with real HTTP requests (health, auth login & token rotation, overview, 12 regions, persisted ML predictions, What-If simulation, grounded RAG via native pgvector cosine search, citizen report like counter persistence). Updated `env/staging.json` with live URL. Verified Flutter client against live staging (24/24 contract tests, 10/10 decisions tests, 184/184 full test suite passed). All costs covered under active GitHub Student Credit ($291.23 remaining); AI spending strictly $0.00.
 
 ### Phase E: Push Notifications, Security Hardening & End-to-End Testing (UPCOMING)
 - Configure Firebase Cloud Messaging via official `firebase-admin` SDK.
@@ -376,11 +377,15 @@ The following tables are planned for subsequent production-hardening milestones 
 
 ## 11. Current Position & Next Task
 
-- **Current Milestone:** Phase D1.2 (Final Two-Point Deployment Gate) Completed. 126/126 backend Vitest tests passing, 24/24 Flutter contract tests passing, 184/184 Flutter unit/widget tests passing. Strictly zero infrastructure provisioned and zero costs incurred.
-- **Pending Infrastructure (Phase D2):** Actual creation of Heroku app `decidix-backend-staging` and provisioning of Heroku Postgres `essential-0` require explicit owner confirmation. No paid services, paid models, paid embedding APIs, or paid fallbacks are permitted without explicit project owner approval.
-- **Exact Next Task (Phase D2):**
-  1. Receive explicit owner confirmation to provision staging resources.
-  2. Execute Step 1–5 of the staging runbook (`heroku create`, attach `essential-0` Postgres, configure env vars, enable extensions).
-  3. Deploy backend via Git subtree push and run automated Prisma migrations in Heroku release phase.
-  4. Seed authoritative data on live PostgreSQL instance.
-  5. Run live end-to-end smoke tests from Flutter client against staging backend.
+- **Current Milestone:** Phase D2 (Heroku Staging Provisioning, Live PostgreSQL Migration & Flutter End-to-End Verification) Completed. Decidix is now officially live on staging with a verified PostgreSQL database, native pgvector RAG, zero-cost AI assistant, and Flutter integration.
+- **Live Infrastructure Reference:**
+  - App: `decidix-backend-staging` (Region: `eu`, Stack: `heroku-24`)
+  - Web URL: `https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/`
+  - Database: `heroku-postgresql:essential-0` (PG 18.4, pgvector 0.8.2 active)
+  - Compute: 1 x Basic web dyno ($7.00/mo covered by GitHub Student Credit, $291.23 balance remaining)
+  - Zero-Cost AI Policy: Enforced and compliant ($0.00 spent)
+- **Exact Next Task (Phase E):**
+  1. Configure Firebase Cloud Messaging (FCM) credentials via `firebase-admin` SDK.
+  2. Implement device token registration (`POST /v1/notifications/device-token`).
+  3. Schedule automated daily PostgreSQL backups (`heroku pg:backups:schedule DATABASE_URL --at '02:00 UTC'`).
+  4. Configure production rate limiting on public routes.

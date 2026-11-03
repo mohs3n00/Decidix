@@ -1,27 +1,32 @@
 # Decidix Backend — Heroku Staging Deployment Runbook
 
-**Document Version:** 3.0.0 (Phase D1 Approved Staging Runbook)  
-**Target Application:** `decidix-backend-staging`  
+**Document Version:** 4.0.0 (Phase D2 Live Staging Deployed & Verified)  
+**Live Application:** `decidix-backend-staging`  
+**Web URL:** `https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/`  
+**Live API Base:** `https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1`  
 **Target Region:** `eu` (Europe Common Runtime)  
-**Runtime Stack:** `heroku-24` (Ubuntu 24.04 LTS / Node.js 20.x ESM)  
-**Database Plan:** `heroku-postgresql:essential-0` ($5.00/mo covered under GitHub Student Pack)  
-**Compute Plan:** `basic` ($7.00/mo) or `eco` ($5.00/mo covered under GitHub Student Pack)  
-**Permanent Zero-Cost Policy:** Strictly ZERO external API spending. Free OpenRouter chat models only, offline deterministic embeddings, zero paid credits.  
+**Runtime Stack:** `heroku-24` (Ubuntu 24.04 LTS / Node.js 24.x LTS)  
+**Database Plan:** `heroku-postgresql:essential-0` (`postgresql-rugged-61997`, PG 18.4)  
+**Extensions Active:** `uuid-ossp` (1.1), `pgcrypto` (1.4), `vector` (0.8.2)  
+**Compute Plan:** `web: 1 x Basic` ($7.00/mo covered under GitHub Student Credit, $291.23 remaining)  
+**Permanent Zero-Cost Policy:** Strictly ZERO external AI API spending ($0.00 spent).  
 
 ---
 
 ## 1. Prerequisites Checklist
 
-Before executing any provisioning commands, ensure:
-- [x] Heroku CLI installed and authenticated (`heroku auth:whoami` returns `mohsn9165@gmail.com`).
-- [x] Student credits confirmed active ($13.00/mo allowance) at `https://dashboard.heroku.com/account/billing`.
-- [x] Local verification clean:
-  - `npm --prefix backend run build`: Clean (code 0).
-  - `npm --prefix backend test`: 126/126 Vitest tests passing.
-  - `npx prisma validate --schema backend/prisma/schema.prisma`: Valid.
-  - `flutter test test/api_contract_test.dart`: 24/24 contract test suites passing.
-  - `flutter test`: 184/184 unit/widget tests passing.
-- [ ] Explicit project owner authorization to provision staging resources.
+- [x] Heroku CLI installed and authenticated (`mohsn9165@gmail.com`).
+- [x] GitHub Student Pack credit active ($291.23 remaining through June 2028).
+- [x] Application provisioned: `decidix-backend-staging` in `eu` region.
+- [x] Database attached: `heroku-postgresql:essential-0` (PG 18.4, 20 max connections).
+- [x] Required PostgreSQL extensions enabled (`uuid-ossp`, `pgcrypto`, `vector` 0.8.2).
+- [x] Automated Prisma migrations applied in release phase (5 migrations).
+- [x] Authoritative seed script and RAG vector population verified (12 regions, 11 forecasts, 3 RAG docs with native vectors).
+- [x] Production environment variables configured with zero-cost AI policy enforcement.
+- [x] Backend deployed via Git subtree push (`web.1` up and healthy).
+- [x] All 10 live backend staging endpoints verified (auth, predictions, simulations, grounded RAG, DB writes).
+- [x] Flutter client integrated (`env/staging.json` updated with live staging URL).
+- [x] Flutter test suites passing (24/24 contract, 10/10 decisions, 184/184 full suite).
 
 ---
 
