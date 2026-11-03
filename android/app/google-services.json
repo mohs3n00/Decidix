@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "50086376748",
+    "project_id": "decidix",
+    "storage_bucket": "decidix.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:50086376748:android:d59317b1bbbc9cd52a6889",
+        "android_client_info": {
+          "package_name": "com.decidixteam.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrDOeBxGHVO1ZrLPfjU9JAljd9z_LfPCk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

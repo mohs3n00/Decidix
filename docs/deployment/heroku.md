@@ -26,7 +26,7 @@
 - [x] Backend deployed via Git subtree push (`web.1` up and healthy).
 - [x] All 10 live backend staging endpoints verified (auth, predictions, simulations, grounded RAG, DB writes).
 - [x] Flutter client integrated (`env/staging.json` updated with live staging URL).
-- [x] Flutter test suites passing (24/24 contract, 10/10 decisions, 184/184 full suite).
+- [x] Flutter test suites passing (24/24 contract, 10/10 decisions, 14/14 notifications, 198/198 full suite).
 
 ---
 

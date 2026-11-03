@@ -2,6 +2,9 @@
     <!-- The app talks to the API and loads map tiles. Without this a release
          build has no network (debug and profile builds add it on their own). -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Required on Android 13+ (API 33+) for posting push notifications -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
     <application
         android:label="Decidix"
         android:name="${applicationName}"
@@ -28,6 +31,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <!-- Default FCM notification channel -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="decidix_alerts" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

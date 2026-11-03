@@ -168,6 +168,9 @@ Screen numbers match the Figma file. **Mock file** is under `assets/mock/`.
 | User Logout | `POST /v1/auth/logout` | Revoke session and refresh token |
 | Admin User List | `GET /v1/admin/users` | List system users (requires `admin` role) |
 | Admin Session Revocation | `POST /v1/admin/users/{id}/revoke-sessions` | Revoke all sessions for a user (requires `admin` role) |
+| Device Token Registration | `POST /v1/notifications/device-token` | Register or update device push token (`token`, `platform`, `device_model`) |
+| Device Token Deactivation | `DELETE /v1/notifications/device-token` | Deactivate device push token on logout (`token`) |
+| Send Test Push | `POST /v1/notifications/send-test` | Dispatch test push notification to user (`user_id`, `title`, `body`) (requires `admin` role) |
 
 - **Simulate** request body (amounts in USD, one entry per domain):
   ```json
@@ -242,4 +245,4 @@ Status: **decided**, **default** (assumed, nobody objected) or **open**.
 | 5 | Assistant: streaming or one response? | default | One response |
 | 6 | "Add to plan" | **decided** | Only sets `status: "in_plan"`; the card leaves the suggestions. There is no "My plan" screen in v1: it is not in the design. If it is added later the backend needs `GET /intelligence/recommendations?status=in_plan` and a way to take an item out of the plan |
 | 7 | Offline data | default | No. Every request goes to the server |
-| 8 | Notifications (the bell) | default | Not in this contract. The red dot is hidden until there is an endpoint with an unread count |
+| 8 | Push Notifications & FCM | **decided** | Device tokens registered via `POST /v1/notifications/device-token` and cleared via `DELETE /v1/notifications/device-token`. Push dispatch handled via official Firebase Cloud Messaging. |

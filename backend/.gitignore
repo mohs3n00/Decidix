@@ -4,3 +4,11 @@ dist/
 .env.*
 *.log
 
+
+# Firebase & Service Account Credentials
+*firebase-adminsdk*.json
+*service-account*.json
+*client_secret*.json
+*oauth*.json
+*.pem
+*.key

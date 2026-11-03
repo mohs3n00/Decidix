@@ -26,6 +26,7 @@ model User {
   reports      CitizenReport[]
   auditLogs    AuditLog[]
   sessions     Session[]
+  deviceTokens DeviceToken[]
 
   @@map("users")
 }
@@ -47,6 +48,26 @@ model Session {
   @@index([refreshTokenHash], map: "idx_sessions_refresh_token_hash")
   @@index([expiresAt], map: "idx_sessions_expires_at")
   @@map("sessions")
+}
+
+// 1c. Device Tokens for Push Notifications (FCM)
+model DeviceToken {
+  id          String   @id @default(uuid()) @db.VarChar(64)
+  userId      String   @map("user_id") @db.VarChar(64)
+  token       String   @unique @db.VarChar(512)
+  platform    String   @db.VarChar(32) // "android" | "ios"
+  deviceModel String?  @map("device_model") @db.VarChar(128)
+  isActive    Boolean  @default(true) @map("is_active")
+  lastSeenAt  DateTime @default(now()) @map("last_seen_at") @db.Timestamptz
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_device_tokens_user_id")
+  @@index([token], map: "idx_device_tokens_token")
+  @@index([isActive], map: "idx_device_tokens_is_active")
+  @@map("device_tokens")
 }
 
 // 2. Regions Catalog

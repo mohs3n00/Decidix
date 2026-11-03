@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyDrDOeBxGHVO1ZrLPfjU9JAljd9z_LfPCk</string>
+	<key>GCM_SENDER_ID</key>
+	<string>50086376748</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.decidixteam.app</string>
+	<key>PROJECT_ID</key>
+	<string>decidix</string>
+	<key>STORAGE_BUCKET</key>
+	<string>decidix.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false/>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false/>
+	<key>IS_APPINVITE_ENABLED</key>
+	<false/>
+	<key>IS_GCM_ENABLED</key>
+	<true/>
+	<key>IS_SIGNIN_ENABLED</key>
+	<false/>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:50086376748:ios:d59317b1bbbc9cd52a6889</string>
+</dict>
+</plist>
+

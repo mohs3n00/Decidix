@@ -76,3 +76,16 @@ ml/.venv/
 ml/models/artifacts/*.pkl
 ml/models/artifacts/*.joblib
 
+
+# Firebase & Service Account Credentials
+*firebase-adminsdk*.json
+*service-account*.json
+google-services*.json
+!android/app/google-services.json
+GoogleService-Info*.plist
+!ios/Runner/GoogleService-Info.plist.example
+*.p8
+*.keystore
+*.jks
+*client_secret*.json
+*oauth*.json

@@ -1,0 +1,34 @@
+{
+  "version": "1.0.0",
+  "last_trained": "2026-11-02T19:16:19.470713Z",
+  "models": {
+    "gradient_boosting": {
+      "model_name": "gradient_boosting",
+      "r2_score": 0.979,
+      "mae": 0.031,
+      "rmse": 0.086,
+      "status": "APPROVED",
+      "artifact_path": "ml/models/artifacts/gradient_boosting.joblib",
+      "evaluated_at": "2026-11-02T19:16:19.049124Z"
+    },
+    "random_forest": {
+      "model_name": "random_forest",
+      "r2_score": 0.966,
+      "mae": 0.041,
+      "rmse": 0.11,
+      "status": "APPROVED",
+      "artifact_path": "ml/models/artifacts/random_forest.joblib",
+      "evaluated_at": "2026-11-02T19:16:19.211178Z"
+    },
+    "temporal_ensemble": {
+      "model_name": "temporal_ensemble",
+      "r2_score": 0.975,
+      "mae": 0.035,
+      "rmse": 0.094,
+      "status": "APPROVED",
+      "artifact_path": "ml/models/artifacts/temporal_ensemble.joblib",
+      "evaluated_at": "2026-11-02T19:16:19.442707Z"
+    }
+  },
+  "selected_production_model": "temporal_ensemble"
+}

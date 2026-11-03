@@ -334,7 +334,8 @@ The following tables are planned for subsequent production-hardening milestones 
 | **Two-Point Deployment Gate (D1.2)** | **Completed** | Yes | Yes (pgvector runtime verified, explicit zero-cost model allowlist enforced) | None |
 | **Heroku Staging Deployment (D2)** | **Completed** | Yes | Yes (Live PG 18.4, pgvector 0.8.2, 10/10 endpoints verified, 184 Flutter tests) | None |
 | **Staging Security, Rate Limiting & E2E (E1)** | **Completed** | Yes | Yes (44 live staging assertions, 134 backend tests, 184 Flutter tests) | None |
-| **FCM Push Notifications (E2)** | **Planned** | No | No | Configure firebase-admin SDK & device token registration |
+| **FCM Push Notifications (E2)** | **Completed** | Yes | Yes (15 notification backend tests, 9 Flutter notification tests, 149 backend / 193 Flutter total) | Mobile field testing on physical devices |
+| **FCM Security Hardening & Gate (E2.1)** | **Completed** | Yes | Yes (21 notification backend tests, 14 Flutter notification tests, 155 backend / 198 Flutter total) | Live staging deployment & physical device verification |
 
 ---
 
@@ -376,10 +377,44 @@ The following tables are planned for subsequent production-hardening milestones 
   - **Live Staging E2E Suite:** Executed dedicated automated live suite (`scripts/test_staging_e2e.js`) with 44/44 assertions passing against live Heroku backend and PostgreSQL.
   - **Regression Verification:** 134/134 backend tests passing, 24/24 Flutter contract suites passing, 10/10 decisions screen tests passing, 184/184 full Flutter test suite passing. Zero paid AI spending ($0.00).
 
-- **Phase E2 (Upcoming):** Push Notifications & Mobile Field Testing.
-  - Configure Firebase Cloud Messaging via official `firebase-admin` SDK.
-  - Implement device token registration (`POST /v1/notifications/device-token`).
-  - Mobile client staging field testing on physical Android/iOS devices.
+- **Phase E2 (Done):** Firebase Cloud Messaging & Device Notifications.
+  - **Firebase Admin SDK Backend Integration:** Integrated official `firebase-admin` (v13+) in [`backend/src/integrations/firebase.ts`](file:///e:/decidix_app/backend/src/integrations/firebase.ts) utilizing modular ESM subpath imports (`firebase-admin/app`, `firebase-admin/messaging`). Supports credential loading via `FIREBASE_SERVICE_ACCOUNT` (single-line JSON string) or `FIREBASE_SERVICE_ACCOUNT_PATH` (file path). Implemented graceful offline fallback when credentials are not configured, preventing startup crashes.
+  - **Database Persistence & Migrations:** Created `DeviceToken` model in `schema.prisma` mapped to PostgreSQL table `device_tokens` with relations to `User` and cascade deletion. Generated migration `20261103120000_add_device_tokens`.
+  - **Repository Layer:** Implemented typed [`DeviceTokenRepository`](file:///e:/decidix_app/backend/src/repositories/device_token.repository.ts) with `upsertToken`, `findByToken`, `findActiveTokensByUser`, `deactivateToken`, `deactivateTokens` (batch cleanup on unregistered/invalid tokens), and resilient in-memory fallback.
+  - **API Endpoints & Security:** Created [`notifications.router.ts`](file:///e:/decidix_app/backend/src/modules/notifications/notifications.router.ts):
+    - `POST /v1/notifications/device-token`: Register or rotate device token (requires auth, rate-limited at 30 req/min, Zod validated).
+    - `DELETE /v1/notifications/device-token`: Deactivate device token with strict token ownership verification preventing cross-user revocation (`403 TOKEN_OWNERSHIP_DENIED`).
+    - `POST /v1/notifications/send-test`: Test push notification dispatch (restricted to `admin` role).
+  - **Dead Token Pruning:** `FirebaseService.sendToUserDevices` automatically catches `messaging/invalid-registration-token` and `messaging/registration-token-not-registered`, delegating cleanup to `DeviceTokenRepository.deactivateTokens`.
+  - **Mobile Client Integration (Flutter):**
+    - Configured Android build: package name `com.decidixteam.app` across `build.gradle.kts`, `AndroidManifest.xml`, and Kotlin `MainActivity.kt`. Applied Google Services Gradle plugin 4.4.2 and placed client config at `android/app/google-services.json`. Added `POST_NOTIFICATIONS` permission and `decidix_alerts` notification channel.
+    - Added FlutterFire dependencies (`firebase_core: ^5.1.0`, `firebase_messaging: ^17.0.1`) and generated `lib/firebase_options.dart`.
+    - Implemented [`NotificationService`](file:///e:/decidix_app/lib/core/notifications/notification_service.dart) with top-level background handler (`@pragma('vm:entry-point')`), modern `messaging.onRegistered` listener + `register()` call, permission request, foreground presentation options, notification tap routing, and clean graceful degradation in test environments.
+    - Implemented [`NotificationsApi`](file:///e:/decidix_app/lib/api/repositories/notifications_api.dart) with `registerDeviceToken` and `unregisterDeviceToken`, mounted in `MockTransport` and `DioTransport`.
+    - Initialized `NotificationService` in `main.dart` after the first frame.
+  - **iOS Readiness & Documentation:**
+    - Created `ios/Runner/GoogleService-Info.plist.example`.
+    - Authored comprehensive APNs setup guide in [`docs/deployment/ios_push_notifications.md`](file:///e:/decidix_app/docs/deployment/ios_push_notifications.md) covering Apple Developer portal APNs `.p8` key creation, Firebase console upload, Xcode Push Notifications & Remote Notifications capabilities, and physical device testing rules.
+  - **Verification & Test Coverage:**
+    - 15/15 dedicated notification backend tests passed (`backend/tests/notifications.test.ts`).
+    - 149/149 total backend tests passed (`npm --prefix backend test`).
+    - 9/9 Flutter notification tests passed (`test/notifications_test.dart`).
+    - 193/193 total Flutter tests passed (`flutter test`).
+    - 0 analysis issues (`flutter analyze`).
+    - Zero paid AI spending ($0.00).
+
+- **Phase E2.1 (Done):** FCM Security Hardening & Live Validation Readiness.
+  - **Auth-Gated Token Lifecycle in Flutter:** Hardened [`NotificationService`](file:///e:/decidix_app/lib/core/notifications/notification_service.dart) to buffer FCM tokens when generated before authentication and suppress network requests until a valid session exists (`authTokenReader`). Implemented explicit lifecycle hooks `onUserAuthenticated()` (immediately syncs buffered token upon sign-in/startup session restore) and `onUserLoggedOut()` (deactivates token on backend while retaining local cache for subsequent login).
+  - **Account Switching & Token Decoupling:** Reassignment verified when switching accounts on the same device. `upsertToken` transfers ownership to the newly authenticated user and reactivates the token. The previous user is cleanly decoupled; cross-user deactivations are strictly rejected with `403 TOKEN_OWNERSHIP_DENIED`.
+  - **Multicast Batch Limit Hardening:** Added `sendMulticast` and `chunkArray` in [`FirebaseService`](file:///e:/decidix_app/backend/src/integrations/firebase.ts) strictly capping FCM requests to $\le 500$ tokens per batch (`FCM_MULTICAST_LIMIT = 500`). Handles de-duplication, empty list guards, and automatic invalid token batch pruning via `DeviceTokenRepository.deactivateTokens()`.
+  - **Route & Deep-Link Normalization:** Added `resolveRoute` in `NotificationService` mapping notification payload targets (e.g. `'dashboard'`, `'reports'`, `'simulator'`) to canonical GoRouter paths, preventing 404 navigation errors on background or terminated notification taps.
+  - **Credential Security & Git Hardening:** Audited git tracked files (`0` secret files tracked). Hardened `.gitignore` and `backend/.gitignore` with explicit patterns for `*.p8`, `*.keystore`, `*.jks`, `*client_secret*.json`, `*oauth*.json`, `*.pem`, and `*.key`. Verified project ID consistency across Android `google-services.json` (`decidix`, `50086376748`), `firebase_options.dart`, and backend service account. Identified user-provided OAuth client credentials (`65907540591`) as separate Google Sign-In credentials, completely decoupled from FCM service account keys.
+  - **Regression Verification:**
+    - 155/155 backend Vitest tests passed (`npm --prefix backend test`).
+    - 0 errors in backend TypeScript build (`npm --prefix backend run build`).
+    - 198/198 Flutter tests passed (`flutter test`).
+    - 0 issues in `flutter analyze`.
+    - Zero paid AI spending ($0.00).
 
 ### Phase F: Final Demonstration Readiness & Graduation Defense (THROUGH JULY 2027)
 - Pre-defense database snapshot and offsite dump archive.
@@ -389,7 +424,7 @@ The following tables are planned for subsequent production-hardening milestones 
 
 ## 11. Current Position & Next Task
 
-- **Current Milestone:** Phase E1 (Staging Security, Reliability & End-to-End Validation) Completed. Staging backend is hardened, rate-limited, backed up, and validated against live PostgreSQL with 44 live E2E assertions and zero test regressions.
+- **Current Milestone:** Phase E2.1 (FCM Security Hardening & Live Validation Readiness) Completed. All security guardrails, batching limits, auth lifecycle gating, and test suites are 100% verified locally.
 - **Live Infrastructure Reference:**
   - App: `decidix-backend-staging` (Region: `eu`, Stack: `heroku-24`)
   - Web URL: `https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/`
@@ -397,7 +432,7 @@ The following tables are planned for subsequent production-hardening milestones 
   - Compute: 1 x Basic web dyno ($7.00/mo covered by GitHub Student Credit, $291.23 balance remaining)
   - Zero-Cost AI Policy: Enforced and compliant ($0.00 spent)
   - Scheduled Backups: Daily at 02:00 UTC; manual backup `b001` verified
-- **Exact Next Task (Phase E2):**
-  1. Configure Firebase Cloud Messaging (FCM) credentials via `firebase-admin` SDK.
-  2. Implement device token registration (`POST /v1/notifications/device-token`).
-  3. Mobile client staging field testing on physical Android/iOS devices.
+- **Exact Next Task (Staging Push Deployment & Mobile Field Testing):**
+  1. Authorize staging deployment and configure `FIREBASE_SERVICE_ACCOUNT` on Heroku staging dyno.
+  2. Deploy backend subtree to Heroku (`git subtree push --prefix backend heroku main`), triggering automatic release migration `20261103120000_add_device_tokens`.
+  3. Perform manual physical Android device testing (install APK, log in, register token, dispatch test notification via `POST /v1/notifications/send-test`).

@@ -330,6 +330,8 @@ class MockTransport implements ApiTransport {
         return _chat(body);
       case '/decisions/simulate':
         return _simulate(body);
+      case '/notifications/device-token':
+        return const ApiEnvelope({'message': 'Device token registered successfully'});
     }
 
     final recommendation = _recommendationPath.firstMatch(route);
@@ -343,6 +345,25 @@ class MockTransport implements ApiTransport {
     if (like != null) return _toggleLike(like[1]!);
 
     throw NotFoundException('There is no mock for POST $route');
+  }
+
+  // ------------------------------------------------------------- DELETE
+
+  @override
+  Future<ApiEnvelope> delete(
+    String path, {
+    Object? body,
+    CancelToken? cancelToken,
+  }) async {
+    await _wait();
+    final route = Uri.parse(path).path;
+
+    switch (route) {
+      case '/notifications/device-token':
+        return const ApiEnvelope({'message': 'Device token deactivated successfully'});
+    }
+
+    throw NotFoundException('There is no mock for DELETE $route');
   }
 
   Future<ApiEnvelope> _chat(Object? body) async {

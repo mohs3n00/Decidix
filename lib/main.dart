@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/config/provider_retry.dart';
 import 'core/localization/app_localizations.dart';
 import 'core/localization/locale_controller.dart';
+import 'core/notifications/notification_service.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 
@@ -35,11 +36,29 @@ void main() {
   runApp(ProviderScope(retry: noAutomaticRetry, child: const DecidixApp()));
 }
 
-class DecidixApp extends ConsumerWidget {
+class DecidixApp extends ConsumerStatefulWidget {
   const DecidixApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DecidixApp> createState() => _DecidixAppState();
+}
+
+class _DecidixAppState extends ConsumerState<DecidixApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final router = ref.read(appRouterProvider);
+      ref.read(notificationServiceProvider).initialize(
+        onNavigate: (route) {
+          router.go(route);
+        },
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
     final locale = ref.watch(localeNotifierProvider);
 

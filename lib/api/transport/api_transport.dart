@@ -29,6 +29,12 @@ abstract class ApiTransport {
     Object? body,
     CancelToken? cancelToken,
   });
+
+  Future<ApiEnvelope> delete(
+    String path, {
+    Object? body,
+    CancelToken? cancelToken,
+  });
 }
 
 class DioTransport implements ApiTransport {
@@ -59,6 +65,17 @@ class DioTransport implements ApiTransport {
   }) {
     return _send(
       () => _client.post<Object?>(path, data: body, cancelToken: cancelToken),
+    );
+  }
+
+  @override
+  Future<ApiEnvelope> delete(
+    String path, {
+    Object? body,
+    CancelToken? cancelToken,
+  }) {
+    return _send(
+      () => _client.delete<Object?>(path, data: body, cancelToken: cancelToken),
     );
   }
 

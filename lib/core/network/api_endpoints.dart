@@ -37,4 +37,7 @@ class ApiEndpoints {
   static const String citizenReports = '/decisions/citizen-reports';
   static String citizenReportLike(String id) =>
       '/decisions/citizen-reports/$id/like';
+
+  // Notifications
+  static const String deviceToken = '/notifications/device-token';
 }

@@ -5,6 +5,7 @@ plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.google.gms.google-services")
 }
 
 // The release signing key. android/key.properties is not in git (see
@@ -16,7 +17,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "org.decidix.app"
+    namespace = "com.decidixteam.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -26,7 +27,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "org.decidix.app"
+        applicationId = "com.decidixteam.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         // Both come from `version:` in pubspec.yaml (1.0.0+1 is name 1.0.0, code 1).

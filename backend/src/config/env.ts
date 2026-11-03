@@ -64,6 +64,11 @@ const envSchema = z.object({
   ZERO_COST_ENFORCEMENT: z.string().default('true').transform((val) => val === 'true'),
   RAG_SIMILARITY_THRESHOLD: z.string().default('0.65').transform((val) => parseFloat(val)),
   ML_SERVICE_URL: z.string().default('http://localhost:8000'),
+  FIREBASE_SERVICE_ACCOUNT: z.string().optional(),
+  FIREBASE_SERVICE_ACCOUNT_PATH: z.string().optional(),
+  FIREBASE_PROJECT_ID: z.string().optional(),
+  FIREBASE_CLIENT_EMAIL: z.string().optional(),
+  FIREBASE_PRIVATE_KEY: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

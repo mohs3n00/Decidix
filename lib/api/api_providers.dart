@@ -6,6 +6,7 @@ import '../core/network/api_endpoints.dart';
 import 'repositories/decisions_api.dart';
 import 'repositories/insights_api.dart';
 import 'repositories/intelligence_api.dart';
+import 'repositories/notifications_api.dart';
 import 'repositories/overview_api.dart';
 import 'transport/api_transport.dart';
 import 'transport/mock_transport.dart';
@@ -54,4 +55,8 @@ final intelligenceApiProvider = Provider<IntelligenceApi>(
 
 final decisionsApiProvider = Provider<DecisionsApi>(
   (ref) => DecisionsApi(ref.watch(apiTransportProvider)),
+);
+
+final notificationsApiProvider = Provider<NotificationsApi>(
+  (ref) => NotificationsApi(ref.watch(apiTransportProvider)),
 );
