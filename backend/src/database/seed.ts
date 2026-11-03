@@ -24,22 +24,48 @@ export async function runSeed(): Promise<void> {
     logger.info('Starting Prisma database seed transaction with authoritative records...');
 
     await prisma.$transaction(async (tx) => {
-      // 1. Seed default administrative and analyst users
-      const initialPassword = process.env.SEED_ADMIN_PASSWORD || 'DecidixAdmin2026!';
-      const passwordHash = await bcrypt.hash(initialPassword, 10);
+      // 1. Seed default administrative, planning, analyst, and viewer users
       const seedUsers = [
         { id: 'usr_admin', email: 'admin@decidix.gov', name: 'System Administrator', arabicName: 'مدير النظام', role: 'admin', department: 'National Digital Operations' },
         { id: 'usr_analyst', email: 'analyst@decidix.gov', name: 'Lead Policy Analyst', arabicName: 'كبير محللي السياسات', role: 'analyst', department: 'Regional Development Council' },
         { id: 'usr_decision_maker', email: 'decision_maker@decidix.gov', name: 'Executive Decision Maker', arabicName: 'متخذ القرار التنفيذي', role: 'decision_maker', department: 'Cabinet Secretariat' },
         { id: 'usr_planner', email: 'planner@decidix.gov', name: 'Strategic Planner', arabicName: 'مخطط استراتيجي', role: 'planner', department: 'Ministry of Economy & Planning' },
+        { id: 'usr_viewer', email: 'viewer@decidix.gov', name: 'Policy Observer', arabicName: 'مراقب السياسات العامة', role: 'viewer', department: 'Civil Society & Transparency' },
       ];
 
+      // Check which seed accounts already exist in the database
+      const existingUsers = await tx.user.findMany({
+        where: { id: { in: seedUsers.map((u) => u.id) } },
+        select: { id: true },
+      });
+      const existingUserIds = new Set(existingUsers.map((u) => u.id));
+      const missingUsers = seedUsers.filter((u) => !existingUserIds.has(u.id));
+
+      let passwordHash: string | null = null;
+      if (missingUsers.length > 0) {
+        const rawPassword = process.env.SEED_ADMIN_PASSWORD?.trim();
+        if (!rawPassword || rawPassword.length < 8) {
+          throw new Error(
+            'SEED_ADMIN_PASSWORD environment variable is required to create initial administrative accounts (minimum 8 characters). ' +
+            'Please supply SEED_ADMIN_PASSWORD securely via environment variables.'
+          );
+        }
+        passwordHash = await bcrypt.hash(rawPassword, 10);
+      }
+
       for (const u of seedUsers) {
-        await tx.user.upsert({
-          where: { id: u.id },
-          update: { name: u.name, arabicName: u.arabicName, role: u.role, department: u.department },
-          create: { ...u, passwordHash, isActive: true },
-        });
+        if (existingUserIds.has(u.id)) {
+          // Idempotent update: preserve existing password hash, never reset passwords on re-seed
+          await tx.user.update({
+            where: { id: u.id },
+            data: { name: u.name, arabicName: u.arabicName, role: u.role, department: u.department },
+          });
+        } else {
+          // Initial creation requires verified password hash
+          await tx.user.create({
+            data: { ...u, passwordHash: passwordHash!, isActive: true },
+          });
+        }
       }
 
       // 2. Seed 12 Regions
