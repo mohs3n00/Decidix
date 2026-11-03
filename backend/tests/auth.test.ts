@@ -1,0 +1,320 @@
+import { describe, it, expect, beforeAll } from 'vitest';
+import request from 'supertest';
+import jwt from 'jsonwebtoken';
+import { createApp } from '../src/app.js';
+import { env } from '../src/config/env.js';
+import { Express } from 'express';
+
+describe('Decidix Authentication & RBAC Suite', () => {
+  let app: Express;
+
+  beforeAll(() => {
+    app = createApp();
+  });
+
+  describe('1. User Registration Flow', () => {
+    const testEmail = `auth_test_${Date.now()}@decidix.gov`;
+
+    it('successfully registers a new user with access and refresh tokens', async () => {
+      const res = await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'Security Analyst',
+          arabic_name: 'محلل أمني',
+          email: testEmail,
+          password: 'Password123!',
+          role: 'analyst',
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data).toBeDefined();
+      expect(res.body.data.user.email).toBe(testEmail);
+      expect(res.body.data.user.role).toBe('analyst');
+      expect(res.body.data.token).toBeDefined();
+      expect(res.body.data.refresh_token).toBeDefined();
+      // Ensure password hash is NEVER leaked in response
+      expect(res.body.data.user.password_hash).toBeUndefined();
+      expect(res.body.data.user.passwordHash).toBeUndefined();
+    });
+
+    it('rejects duplicate email registration with 400 EMAIL_ALREADY_EXISTS', async () => {
+      const res = await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'Duplicate Analyst',
+          email: testEmail,
+          password: 'Password123!',
+          role: 'analyst',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.code).toBe('EMAIL_ALREADY_EXISTS');
+    });
+
+    it('validates password length (> 8 chars) returning 422 VALIDATION_ERROR', async () => {
+      const res = await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'Short Password User',
+          email: `short_${Date.now()}@decidix.gov`,
+          password: 'short',
+        });
+
+      expect(res.status).toBe(422);
+      expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    });
+  });
+
+  describe('2. User Login Flow', () => {
+    const userEmail = `login_${Date.now()}@decidix.gov`;
+    const password = 'StrongPassword2026!';
+
+    beforeAll(async () => {
+      await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'Login Test User',
+          email: userEmail,
+          password,
+          role: 'decision_maker',
+        });
+    });
+
+    it('successfully authenticates with valid credentials', async () => {
+      const res = await request(app)
+        .post('/v1/auth/login')
+        .send({ email: userEmail, password });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.user.email).toBe(userEmail);
+      expect(res.body.data.user.role).toBe('decision_maker');
+      expect(res.body.data.token).toBeDefined();
+      expect(res.body.data.refresh_token).toBeDefined();
+    });
+
+    it('rejects invalid password with 401 INVALID_CREDENTIALS', async () => {
+      const res = await request(app)
+        .post('/v1/auth/login')
+        .send({ email: userEmail, password: 'WrongPassword!' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error.code).toBe('INVALID_CREDENTIALS');
+    });
+
+    it('rejects non-existent email with 401 INVALID_CREDENTIALS', async () => {
+      const res = await request(app)
+        .post('/v1/auth/login')
+        .send({ email: 'ghost_user@decidix.gov', password });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error.code).toBe('INVALID_CREDENTIALS');
+    });
+  });
+
+  describe('3. Token Refresh & Reuse Detection', () => {
+    let initialRefreshToken: string;
+    let rotatedRefreshToken: string;
+    let initialAccessToken: string;
+
+    beforeAll(async () => {
+      const reg = await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'Rotation Tester',
+          email: `rotate_${Date.now()}@decidix.gov`,
+          password: 'Password123!',
+          role: 'analyst',
+        });
+      initialRefreshToken = reg.body.data.refresh_token;
+      initialAccessToken = reg.body.data.token;
+    });
+
+    it('successfully rotates refresh token and yields new access token', async () => {
+      const res = await request(app)
+        .post('/v1/auth/refresh')
+        .send({ refresh_token: initialRefreshToken });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.token).toBeDefined();
+      expect(res.body.data.refresh_token).toBeDefined();
+      expect(res.body.data.refresh_token).not.toBe(initialRefreshToken);
+
+      rotatedRefreshToken = res.body.data.refresh_token;
+
+      // Ensure new access token works for authenticated requests
+      const meRes = await request(app)
+        .get('/v1/auth/me')
+        .set('Authorization', `Bearer ${res.body.data.token}`);
+      expect(meRes.status).toBe(200);
+    });
+
+    it('detects refresh token reuse and revokes all sessions with 401 TOKEN_REUSE_DETECTED', async () => {
+      // Attempt to reuse the already rotated initialRefreshToken
+      const reuseRes = await request(app)
+        .post('/v1/auth/refresh')
+        .send({ refresh_token: initialRefreshToken });
+
+      expect(reuseRes.status).toBe(401);
+      expect(reuseRes.body.error.code).toBe('TOKEN_REUSE_DETECTED');
+
+      // Verify that previously issued rotated token was also revoked in the breach response
+      const subsequentRes = await request(app)
+        .post('/v1/auth/refresh')
+        .send({ refresh_token: rotatedRefreshToken });
+
+      expect(subsequentRes.status).toBe(401);
+      expect(subsequentRes.body.error.code).toBe('TOKEN_REUSE_DETECTED');
+    });
+
+    it('rejects unknown refresh token with 401 INVALID_REFRESH_TOKEN', async () => {
+      const res = await request(app)
+        .post('/v1/auth/refresh')
+        .send({ refresh_token: 'fake_non_existent_token_string' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error.code).toBe('INVALID_REFRESH_TOKEN');
+    });
+  });
+
+  describe('4. Token Expiration & Tampering', () => {
+    it('rejects unauthenticated requests to protected endpoints with 401 TOKEN_REQUIRED', async () => {
+      const res = await request(app).get('/v1/auth/me');
+      expect(res.status).toBe(401);
+      expect(res.body.error.code).toBe('TOKEN_REQUIRED');
+    });
+
+    it('rejects tampered or malformed tokens with 401 INVALID_TOKEN', async () => {
+      const res = await request(app)
+        .get('/v1/auth/me')
+        .set('Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.tampered.signature');
+      expect(res.status).toBe(401);
+      expect(res.body.error.code).toBe('INVALID_TOKEN');
+    });
+
+    it('rejects expired access token with 401 SESSION_EXPIRED', async () => {
+      const expiredToken = jwt.sign(
+        { id: 'usr_test', email: 'test@decidix.gov', role: 'analyst', name: 'Expired User' },
+        env.JWT_SECRET,
+        { expiresIn: '-1s' }
+      );
+
+      const res = await request(app)
+        .get('/v1/auth/me')
+        .set('Authorization', `Bearer ${expiredToken}`);
+
+      expect(res.status).toBe(401);
+      expect(res.body.error.code).toBe('SESSION_EXPIRED');
+    });
+  });
+
+  describe('5. User Logout & Session Invalidation', () => {
+    let logoutRefreshToken: string;
+    let logoutAccessToken: string;
+
+    beforeAll(async () => {
+      const reg = await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'Logout Tester',
+          email: `logout_${Date.now()}@decidix.gov`,
+          password: 'Password123!',
+          role: 'viewer',
+        });
+      logoutRefreshToken = reg.body.data.refresh_token;
+      logoutAccessToken = reg.body.data.token;
+    });
+
+    it('successfully revokes session on logout', async () => {
+      const res = await request(app)
+        .post('/v1/auth/logout')
+        .set('Authorization', `Bearer ${logoutAccessToken}`)
+        .send({ refresh_token: logoutRefreshToken });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.message).toBe('Logged out successfully');
+
+      // Attempting to refresh with the revoked token must fail with reuse/revocation
+      const refreshRes = await request(app)
+        .post('/v1/auth/refresh')
+        .send({ refresh_token: logoutRefreshToken });
+
+      expect(refreshRes.status).toBe(401);
+    });
+  });
+
+  describe('6. Role-Based Access Control (RBAC)', () => {
+    let adminToken: string;
+    let analystToken: string;
+    let viewerToken: string;
+
+    beforeAll(async () => {
+      // Register Admin
+      const adminRes = await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'Admin User',
+          email: `admin_${Date.now()}@decidix.gov`,
+          password: 'Password123!',
+          role: 'admin',
+        });
+      adminToken = adminRes.body.data.token;
+
+      // Register Analyst
+      const analystRes = await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'Analyst User',
+          email: `analyst_${Date.now()}@decidix.gov`,
+          password: 'Password123!',
+          role: 'analyst',
+        });
+      analystToken = analystRes.body.data.token;
+
+      // Register Viewer
+      const viewerRes = await request(app)
+        .post('/v1/auth/register')
+        .send({
+          name: 'Viewer User',
+          email: `viewer_${Date.now()}@decidix.gov`,
+          password: 'Password123!',
+          role: 'viewer',
+        });
+      viewerToken = viewerRes.body.data.token;
+    });
+
+    it('permits Admin to access /v1/admin/users', async () => {
+      const res = await request(app)
+        .get('/v1/admin/users')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.users).toBeDefined();
+      expect(Array.isArray(res.body.data.users)).toBe(true);
+    });
+
+    it('denies Analyst access to /v1/admin/users with 403 ROLE_NOT_AUTHORIZED', async () => {
+      const res = await request(app)
+        .get('/v1/admin/users')
+        .set('Authorization', `Bearer ${analystToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('ROLE_NOT_AUTHORIZED');
+    });
+
+    it('denies Viewer access to /v1/admin/users with 403 ROLE_NOT_AUTHORIZED', async () => {
+      const res = await request(app)
+        .get('/v1/admin/users')
+        .set('Authorization', `Bearer ${viewerToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('ROLE_NOT_AUTHORIZED');
+    });
+
+    it('denies unauthenticated access to /v1/admin/users with 401 TOKEN_REQUIRED', async () => {
+      const res = await request(app).get('/v1/admin/users');
+      expect(res.status).toBe(401);
+      expect(res.body.error.code).toBe('TOKEN_REQUIRED');
+    });
+  });
+});
+

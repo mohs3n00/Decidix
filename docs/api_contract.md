@@ -26,7 +26,7 @@ The examples use the data shown in the Figma design (12 fictional regions, USD).
 | Years | Integers: `2025`. Reporting period as string: `"2025-Q4"` |
 | Ids | Lowercase slugs: `"central_capital"`, `"frontier"` |
 | Enums | Lowercase snake_case strings. **The app treats an unknown value as a safe default and must not crash**, so adding a value is not a breaking change |
-| Auth | `Authorization: Bearer <token>`. Sign-in will use **Clerk**, added later: the token is a Clerk session JWT, so the server must verify it against Clerk's keys (JWKS) and map the Clerk user to its own user. Until then requests carry no token |
+| Auth | `Authorization: Bearer <token>`. Sign-in uses **backend-managed JWT** (standard `HS256` signed by backend) with refresh token rotation. The client sends the Bearer token in the header. Requests on public endpoints require no token |
 
 ### Language
 
@@ -155,6 +155,20 @@ Screen numbers match the Figma file. **Mock file** is under `assets/mock/`.
 | 18 | Citizen Reports | `GET /decisions/citizen-reports?category=all\|roads\|health\|schools\|water&status=&page=` | `decisions/citizen_reports.json` |
 | 18 | Like | `POST /decisions/citizen-reports/{id}/like` (toggles) | `decisions/citizen_report_like.json` |
 
+### System & Authentication
+
+| Screen / Feature | Request | Purpose |
+|---|---|---|
+| Health Check | `GET /health` | Service uptime and dyno readiness probe |
+| Detailed Health | `GET /v1/health` | Subsystem status (DB, ML engine, version) |
+| User Registration | `POST /v1/auth/register` | Register new user (`name`, `email`, `password`, `role`) returning access & refresh tokens |
+| User Login | `POST /v1/auth/login` | Session login returning access token, refresh token, and user profile |
+| Token Refresh | `POST /v1/auth/refresh` | Rotate expired access token using refresh token (with reuse detection) |
+| User Profile | `GET /v1/auth/me` | Current authenticated user profile and roles (requires `Authorization: Bearer <token>`) |
+| User Logout | `POST /v1/auth/logout` | Revoke session and refresh token |
+| Admin User List | `GET /v1/admin/users` | List system users (requires `admin` role) |
+| Admin Session Revocation | `POST /v1/admin/users/{id}/revoke-sessions` | Revoke all sessions for a user (requires `admin` role) |
+
 - **Simulate** request body (amounts in USD, one entry per domain):
   ```json
   { "region_id": "frontier",
@@ -222,7 +236,7 @@ Status: **decided**, **default** (assumed, nobody objected) or **open**.
 | # | Question | Status | Decision |
 |---|---|---|---|
 | 1 | Which country and data set? | **open** | A real country (not named yet), so region names, currency and coordinates change. The mock keeps the Figma data until the backend can send a real sample response |
-| 2 | Sign-in | **decided, later** | Sign-in comes later, with **Clerk**. The app is ready for it: the token is read asynchronously before each request. The account avatar does nothing until then |
+| 2 | Sign-in | **decided** | Backend-managed JWT with refresh tokens and PostgreSQL user management (Clerk and Appwrite eliminated). The app is pre-wired with `AuthInterceptor` to inject `Authorization: Bearer <token>` automatically |
 | 3 | Language in responses | default | Stored content as `x` + `arabic_x` pairs; assistant replies follow `language` |
 | 4 | Map | **decided** | A ready Flutter map library showing the points the backend sends (`latitude` / `longitude`): `flutter_map`. The tile source is a setting (`MAP_TILE_URL`), so a Google-like style from MapTiler or Mapbox is a key, not a code change. OpenStreetMap's public server is for development only |
 | 5 | Assistant: streaming or one response? | default | One response |

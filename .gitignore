@@ -50,3 +50,29 @@ app.*.map.json
 # Gradle build output of the Android project
 /android/build/
 /android/.kotlin/
+
+# Node.js backend
+node_modules/
+backend/dist/
+backend/node_modules/
+backend/.env
+backend/.env.local
+*.env
+*.env.*.local
+
+# Python / ML
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+!env/
+!env/*.json
+!env/README.md
+.pytest_cache/
+ml/.venv/
+ml/models/artifacts/*.pkl
+ml/models/artifacts/*.joblib
+

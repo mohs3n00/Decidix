@@ -1,0 +1,329 @@
+// Decidix Prisma Schema
+// Canonical schema mapped 1:1 to existing PostgreSQL authoritative structure
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. Users and Access Control
+model User {
+  id           String          @id @db.VarChar(64)
+  email        String          @unique @db.VarChar(255)
+  passwordHash String          @map("password_hash") @db.VarChar(255)
+  name         String          @db.VarChar(255)
+  arabicName   String?         @map("arabic_name") @db.VarChar(255)
+  role         String          @default("viewer") @db.VarChar(32)
+  department   String?         @db.VarChar(100)
+  isActive     Boolean         @default(true) @map("is_active")
+  createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  reports      CitizenReport[]
+  auditLogs    AuditLog[]
+  sessions     Session[]
+
+  @@map("users")
+}
+
+// 1b. Sessions and Refresh Tokens
+model Session {
+  id               String    @id @default(uuid()) @db.VarChar(64)
+  userId           String    @map("user_id") @db.VarChar(64)
+  refreshTokenHash String    @map("refresh_token_hash") @db.VarChar(255)
+  expiresAt        DateTime  @map("expires_at") @db.Timestamptz
+  revokedAt        DateTime? @map("revoked_at") @db.Timestamptz
+  userAgent        String?   @map("user_agent") @db.VarChar(500)
+  ipAddress        String?   @map("ip_address") @db.VarChar(64)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_sessions_user_id")
+  @@index([refreshTokenHash], map: "idx_sessions_refresh_token_hash")
+  @@index([expiresAt], map: "idx_sessions_expires_at")
+  @@map("sessions")
+}
+
+// 2. Regions Catalog
+model Region {
+  id              String               @id @db.VarChar(64) // Slug e.g. "central_capital", "frontier"
+  name            String               @db.VarChar(100)
+  arabicName      String               @map("arabic_name") @db.VarChar(100)
+  rank            Int
+  score           Decimal              @db.Decimal(5, 1)
+  change          Decimal              @default(0.0) @db.Decimal(5, 1)
+  priority        String               @db.VarChar(32)
+  population      Int
+  latitude        Decimal              @db.Decimal(9, 6)
+  longitude       Decimal              @db.Decimal(9, 6)
+  boundaryGeojson Json?                @map("boundary_geojson")
+  createdAt       DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  metrics         RegionalMetric[]
+  projects        DevelopmentProject[]
+  reports         CitizenReport[]
+  recommendations AiRecommendation[]
+  ragDocuments    RagDocument[]
+  forecasts       MlForecast[]
+
+  @@index([rank], map: "idx_regions_rank")
+  @@index([priority], map: "idx_regions_priority")
+  @@index([score], map: "idx_regions_score")
+  @@map("regions")
+}
+
+// 3. Indicator Catalog
+model Indicator {
+  key               String           @id @db.VarChar(64)
+  label             String           @db.VarChar(100)
+  arabicLabel       String           @map("arabic_label") @db.VarChar(100)
+  domain            String           @db.VarChar(32)
+  unit              String           @db.VarChar(32)
+  higherIsBetter    Boolean          @default(true) @map("higher_is_better")
+  description       String?          @db.Text
+  arabicDescription String?          @map("arabic_description") @db.Text
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz
+
+  metrics           RegionalMetric[]
+
+  @@index([domain], map: "idx_indicators_domain")
+  @@map("indicators")
+}
+
+// 4. National Development Index History
+model NationalIndexHistory {
+  id                  Int      @id @default(autoincrement())
+  period              String   @db.VarChar(32)
+  year                Int
+  score               Decimal  @db.Decimal(5, 1)
+  maxScore            Decimal  @default(100.0) @map("max_score") @db.Decimal(5, 1)
+  change              Decimal  @default(0.0) @db.Decimal(5, 1)
+  comparedWith        String   @default("previous period") @map("compared_with") @db.VarChar(64)
+  band                String   @db.VarChar(32)
+  population          Int
+  regionsCount        Int      @default(12) @map("regions_count")
+  atRiskCount         Int      @default(0) @map("at_risk_count")
+  aiInsightText       String   @map("ai_insight_text") @db.Text
+  aiInsightArabicText String   @map("ai_insight_arabic_text") @db.Text
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([year(sort: Desc)], map: "idx_national_index_year")
+  @@map("national_index_history")
+}
+
+// 5. Regional Metrics & Sparklines
+model RegionalMetric {
+  id           Int       @id @default(autoincrement())
+  regionId     String    @map("region_id") @db.VarChar(64)
+  indicatorKey String    @map("indicator_key") @db.VarChar(64)
+  year         Int
+  value        Decimal   @db.Decimal(10, 2)
+  change       Decimal   @default(0.0) @db.Decimal(5, 2)
+  sparkline    Json?
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  region       Region    @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  indicator    Indicator @relation(fields: [indicatorKey], references: [key], onDelete: Cascade)
+
+  @@unique([regionId, indicatorKey, year], map: "uq_region_indicator_year")
+  @@index([regionId, indicatorKey], map: "idx_regional_metrics_reg_ind")
+  @@map("regional_metrics")
+}
+
+// 6. Sector Breakdowns
+model SectorBreakdown {
+  id          Int     @id @default(autoincrement())
+  sector      String  @db.VarChar(32)
+  key         String  @db.VarChar(64)
+  label       String  @db.VarChar(100)
+  arabicLabel String  @map("arabic_label") @db.VarChar(100)
+  value       Decimal @db.Decimal(10, 2)
+  unit        String  @db.VarChar(32)
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  @@map("sector_breakdowns")
+}
+
+// 7. Development Projects Portfolio
+model DevelopmentProject {
+  id             String    @id @db.VarChar(64)
+  title          String    @db.VarChar(255)
+  arabicTitle    String    @map("arabic_title") @db.VarChar(255)
+  regionId       String    @map("region_id") @db.VarChar(64)
+  status         String    @db.VarChar(32)
+  progress       Int
+  budgetAmount   Decimal   @map("budget_amount") @db.Decimal(15, 2)
+  budgetCurrency String    @default("USD") @map("budget_currency") @db.VarChar(8)
+  dueDate        DateTime? @map("due_date") @db.Date
+  completedAt    DateTime? @map("completed_at") @db.Date
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  region         Region    @relation(fields: [regionId], references: [id], onUpdate: NoAction, onDelete: Restrict)
+
+  @@index([status], map: "idx_projects_status")
+  @@index([regionId], map: "idx_projects_region")
+  @@map("development_projects")
+}
+
+// 8. Citizen Reports
+model CitizenReport {
+  id                String              @id @db.VarChar(64)
+  title             String              @db.VarChar(255)
+  arabicTitle       String              @map("arabic_title") @db.VarChar(255)
+  description       String?             @db.Text
+  arabicDescription String?             @map("arabic_description") @db.Text
+  category          String              @db.VarChar(32)
+  status            String              @db.VarChar(32)
+  regionId          String              @map("region_id") @db.VarChar(64)
+  likesCount        Int                 @default(0) @map("likes_count")
+  authorId          String?             @map("author_id") @db.VarChar(64)
+  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  region            Region              @relation(fields: [regionId], references: [id], onUpdate: NoAction, onDelete: Restrict)
+  author            User?               @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  likes             CitizenReportLike[]
+
+  @@index([category], map: "idx_reports_category")
+  @@index([status], map: "idx_reports_status")
+  @@index([regionId], map: "idx_reports_region")
+  @@map("citizen_reports")
+}
+
+// 9. Citizen Report Likes
+model CitizenReportLike {
+  reportId  String        @map("report_id") @db.VarChar(64)
+  userId    String        @map("user_id") @db.VarChar(64)
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  report    CitizenReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@id([reportId, userId])
+  @@map("citizen_report_likes")
+}
+
+// 10. AI Recommendations
+model AiRecommendation {
+  id                    String   @id @db.VarChar(64)
+  priority              String   @db.VarChar(32)
+  regionId              String   @map("region_id") @db.VarChar(64)
+  domain                String   @db.VarChar(32)
+  title                 String   @db.VarChar(255)
+  arabicTitle           String   @map("arabic_title") @db.VarChar(255)
+  summary               String   @db.Text
+  arabicSummary         String   @map("arabic_summary") @db.Text
+  indexImpact           Decimal  @map("index_impact") @db.Decimal(4, 1)
+  estimatedCostAmount   Decimal  @map("estimated_cost_amount") @db.Decimal(15, 2)
+  estimatedCostCurrency String   @default("USD") @map("estimated_cost_currency") @db.VarChar(8)
+  confidence            Int
+  status                String   @default("suggested") @db.VarChar(32)
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  region                Region   @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@index([status], map: "idx_recommendations_status")
+  @@index([regionId], map: "idx_recommendations_region")
+  @@map("ai_recommendations")
+}
+
+// 11. Dataset Metadata & Provenance
+model DatasetMetadata {
+  id                 String   @id @db.VarChar(64)
+  name               String   @db.VarChar(255)
+  arabicName         String   @map("arabic_name") @db.VarChar(255)
+  originalSource     String   @map("original_source") @db.VarChar(255)
+  sourceUrl          String?  @map("source_url") @db.Text
+  license            String   @db.VarChar(100)
+  geographicCoverage String   @default("National (12 Regions)") @map("geographic_coverage") @db.VarChar(100)
+  timeCoverage       String   @map("time_coverage") @db.VarChar(100)
+  updateFrequency    String   @map("update_frequency") @db.VarChar(50)
+  recordCount        Int      @default(0) @map("record_count")
+  completenessPct    Decimal  @default(100.0) @map("completeness_pct") @db.Decimal(5, 1)
+  timelinessPct      Decimal  @default(100.0) @map("timeliness_pct") @db.Decimal(5, 1)
+  accuracyPct        Decimal  @default(100.0) @map("accuracy_pct") @db.Decimal(5, 1)
+  ageDays            Int      @default(0) @map("age_days")
+  status             String   @default("synced") @db.VarChar(32)
+  lastSyncedAt       DateTime @default(now()) @map("last_synced_at") @db.Timestamptz
+
+  @@map("dataset_metadata")
+}
+
+// 12. Audit Logs
+model AuditLog {
+  id         BigInt   @id @default(autoincrement())
+  userId     String?  @map("user_id") @db.VarChar(64)
+  action     String   @db.VarChar(64)
+  entityType String   @map("entity_type") @db.VarChar(64)
+  entityId   String?  @map("entity_id") @db.VarChar(64)
+  details    Json?
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([action], map: "idx_audit_logs_action")
+  @@index([createdAt(sort: Desc)], map: "idx_audit_logs_created_at")
+  @@map("audit_logs")
+}
+
+// 13. RAG Knowledge Documents
+model RagDocument {
+  id            String                       @id @db.VarChar(64)
+  title         String                       @db.VarChar(255)
+  arabicTitle   String                       @map("arabic_title") @db.VarChar(255)
+  content       String                       @db.Text
+  arabicContent String                       @map("arabic_content") @db.Text
+  source        String                       @db.VarChar(255)
+  sourceUrl     String?                      @map("source_url") @db.Text
+  category      String                       @db.VarChar(64)
+  regionId      String?                      @map("region_id") @db.VarChar(64)
+  accessScope   String                       @default("public") @map("access_scope") @db.VarChar(32)
+  metadata      Json?
+  embedding     Unsupported("vector(1536)")? // Native pgvector on Heroku Postgres
+  createdAt     DateTime                     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime                     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  region        Region?                      @relation(fields: [regionId], references: [id], onDelete: SetNull)
+
+  @@index([category], map: "idx_rag_documents_category")
+  @@index([regionId], map: "idx_rag_documents_region")
+  @@index([accessScope], map: "idx_rag_documents_access")
+  @@map("rag_documents")
+}
+
+// 14. ML Forecasts & Predictions
+model MlForecast {
+  id               String    @id @db.VarChar(128)
+  regionId         String?   @map("region_id") @db.VarChar(64)
+  indicatorId      String    @default("development_index") @map("indicator_id") @db.VarChar(64)
+  forecastYear     Int       @map("forecast_year")
+  predictedValue   Decimal   @map("predicted_value") @db.Decimal(5, 1)
+  lowerBound       Decimal?  @map("lower_bound") @db.Decimal(5, 1)
+  upperBound       Decimal?  @map("upper_bound") @db.Decimal(5, 1)
+  confidenceLevel  Decimal?  @default(0.95) @map("confidence_level") @db.Decimal(3, 2)
+  modelName        String    @default("temporal_ensemble") @map("model_name") @db.VarChar(64)
+  modelVersion     String    @default("1.0.0") @map("model_version") @db.VarChar(32)
+  forecastSource   String    @default("official_planning") @map("forecast_source") @db.VarChar(64)
+  forecastMethod   String    @default("temporal_ensemble") @map("forecast_method") @db.VarChar(64)
+  validationStatus String    @default("validated") @map("validation_status") @db.VarChar(32)
+  isCalibrated     Boolean   @default(true) @map("is_calibrated")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  region           Region?   @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@unique([regionId, indicatorId, forecastYear, modelVersion, validationStatus], map: "uq_ml_forecasts")
+  @@index([forecastYear], map: "idx_ml_forecasts_year")
+  @@index([regionId], map: "idx_ml_forecasts_region")
+  @@index([validationStatus], map: "idx_ml_forecasts_status")
+  @@index([indicatorId], map: "idx_ml_forecasts_indicator")
+  @@map("ml_forecasts")
+}
+
