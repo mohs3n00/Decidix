@@ -108,9 +108,5 @@ GoogleService-Info*.plist
 /docs/audits/
 /docs/deployment/
 
-# Ambiguous Markdown Files (Held untracked pending explicit user authorization)
-/docs/api_contract.md
-/docs/design_system.md
-/backend/README.md
-/env/README.md
+# Excluded Template / Boilerplate Markdown Files
 /ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md
