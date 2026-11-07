@@ -1,14 +1,22 @@
 # Decidix Execution Checkpoint Report — Target Status & Blocker Resolution
 
-**Timestamp:** 2026-11-07T21:15:00+02:00  
-**Target Environment:** Deployed Heroku Backend (`https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1`), Heroku Postgres RDS, Cloudflare R2, OpenRouter AI, Android Emulator (`Pixel_7a`).  
+**Timestamp:** 2026-11-07T23:30:00+02:00  
+**Git Commit:** `4bc6305`  
+**Web Production/Staging Endpoint:** [`https://decidix-web-staging.20912023100049.workers.dev`](https://decidix-web-staging.20912023100049.workers.dev)  
+**Backend Staging Target:** Deployed Heroku Backend (`https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1`, Release `v37`), Heroku Postgres RDS, Cloudflare R2 (`decidcix`), OpenRouter AI (`:free`), Android Emulator (`Pixel_7a`).  
 **Zero-Cost Policy & Secrets Status:** Enforced and fully compliant. No secrets, credentials, or raw tokens tracked or exposed.
 
 ---
 
 ## 1. Executive Summary & Current State
 
-1. **Zero-Regions Discrepancy Resolved (PASS):**
+1. **Official Decidix Web Application Deployed to Cloudflare Staging (PASS):**
+   - Implemented 25 screens matching Figma UX artboards in `frontend/` using React 18, TypeScript, Tailwind CSS, Recharts, and React Router v6.
+   - Preserves Decidix design system tokens (`#061A3A`, `#21EAF4`, `#2563EB`, `#F5F7FA`), variable fonts (`Cairo` and `Outfit`), and authentic SVG icons from the Flutter mobile app.
+   - Deployed to Cloudflare Staging: `https://decidix-web-staging.20912023100049.workers.dev`.
+   - 13/13 Live E2E tests passing against the live Heroku Staging backend.
+
+2. **Zero-Regions Discrepancy Resolved (PASS):**
    - Live database investigation proved that subsequent dataset uploads were overwriting `datasetVersionId` on the shared `Region` and `Indicator` records (`cairo`, `alexandria`, `giza`), leaving the active dataset version with 0 matching regions.
    - Fixed by implementing dynamic region/indicator re-association in `DatasetService.activate(id)` and defensive fallback querying via `{ metrics: { some: { datasetVersionId: active.id } } }` in both `EvidenceService` and `OverviewRepository`.
    - Verified live on Heroku Staging: AI assistant now correctly returns 5 regions (Cairo, Alexandria, Giza, Aswan, Port Said) with 100% database citation accuracy.
