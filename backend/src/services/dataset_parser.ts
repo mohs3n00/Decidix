@@ -382,6 +382,8 @@ export class DatasetParserService {
     if (canonicalMapping && validRows.length > 0) {
       canonicalStructure = this.buildCanonicalFromMappedRows(validRows, canonicalMapping, meta);
       appliedTransformations.push('Transformed flat observations into canonical Decidix envelope.');
+    } else {
+      processingErrors.push('Could not detect required regional and value columns for canonical ingestion.');
     }
 
     const qualityReport: DataQualityReport = {
@@ -401,7 +403,7 @@ export class DatasetParserService {
       appliedTransformations,
       validationWarnings,
       processingErrors,
-      status: validRows.length > 0 ? 'READY' : 'FAILED',
+      status: (canonicalStructure && validRows.length > 0) ? 'READY' : 'FAILED',
     };
 
     return {
@@ -480,15 +482,44 @@ export class DatasetParserService {
       };
     });
 
-    // Build Indicators list
-    const indicators = Array.from(indicatorMap.values()).map((ind) => ({
-      key: ind.key,
-      label: ind.label,
-      arabic_label: ind.label,
-      domain: 'economy',
-      unit: '%',
-      higher_is_better: true,
-    }));
+    // Build Indicators list with validated unit and domain check constraints
+    const indicators = Array.from(indicatorMap.values()).map((ind) => {
+      let unit = 'percent';
+      let domain = 'economy';
+      const k = ind.key.toLowerCase();
+      if (k.includes('expectancy') || k.includes('age') || k.includes('year')) {
+        unit = 'years';
+      } else if (k.includes('doctor') || k.includes('bed') || k.includes('physician') || k.includes('thousand')) {
+        unit = 'per_thousand';
+      } else if (k.includes('mille') || k.includes('mortality')) {
+        unit = 'per_mille';
+      } else if (k.includes('teacher') || k.includes('pupil')) {
+        unit = 'pupils_per_teacher';
+      } else if (k.includes('usd') || k.includes('gdp') || k.includes('income') || k.includes('cost')) {
+        unit = 'usd';
+      } else if (k.includes('score') || k.includes('index')) {
+        unit = 'score_100';
+      }
+
+      if (k.includes('health') || k.includes('doctor') || k.includes('bed') || k.includes('mortality') || k.includes('clinic') || k.includes('life')) {
+        domain = 'healthcare';
+      } else if (k.includes('education') || k.includes('school') || k.includes('literacy') || k.includes('teacher') || k.includes('pupil')) {
+        domain = 'education';
+      } else if (k.includes('infra') || k.includes('water') || k.includes('road') || k.includes('broadband') || k.includes('sanitation') || k.includes('electric')) {
+        domain = 'infrastructure';
+      } else {
+        domain = 'economy';
+      }
+
+      return {
+        key: ind.key,
+        label: ind.label,
+        arabic_label: ind.label,
+        domain,
+        unit,
+        higher_is_better: true,
+      };
+    });
 
     // Build National Index History
     const national_index_history = Array.from(yearlyValues.entries())

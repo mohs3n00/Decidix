@@ -434,10 +434,25 @@ export class DatasetService {
 
       if (canonical) {
         validateCanonicalDataset(canonical);
-      } else if (records.length === 0) {
-        throw AppError.validation('Dataset contains no valid records.', { records: 'NO_VALID_RECORDS' });
+      } else {
+        throw AppError.validation(
+          'Dataset structure could not be mapped to required Decidix dimensions (region, indicator, year, value).',
+          { mapping: 'CANONICAL_MAPPING_FAILED' }
+        );
       }
     } catch (error) {
+      if (report) {
+        await prisma.datasetRecord.deleteMany({ where: { datasetVersionId: id } }).catch(() => {});
+        await prisma.datasetRecord.create({
+          data: {
+            id: `${id}:report`,
+            datasetVersionId: id,
+            recordIndex: 0,
+            payload: { __quality_report: report } as Prisma.InputJsonValue,
+            isRetrievable: false,
+          },
+        }).catch(() => {});
+      }
       const message =
         error instanceof AppError
           ? `${error.code}: ${error.message}`
