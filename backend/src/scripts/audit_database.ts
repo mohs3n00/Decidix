@@ -1,10 +1,14 @@
 import { prisma } from '../database/prisma.js';
 
+function safeJson(obj: unknown) {
+  return JSON.stringify(obj, (_, v) => (typeof v === 'bigint' ? v.toString() : v), 2);
+}
+
 async function main() {
   const activeVersion = await prisma.datasetVersion.findFirst({
     where: { isActive: true },
   });
-  console.log('ACTIVE VERSION:', JSON.stringify(activeVersion, null, 2));
+  console.log('ACTIVE VERSION:', safeJson(activeVersion));
 
   const allVersions = await prisma.datasetVersion.findMany({
     select: {
@@ -20,7 +24,7 @@ async function main() {
     orderBy: { uploadedAt: 'desc' },
     take: 10,
   });
-  console.log('LATEST 10 VERSIONS:', JSON.stringify(allVersions, null, 2));
+  console.log('LATEST 10 VERSIONS:', safeJson(allVersions));
 
   const regions = await prisma.region.findMany({
     select: {
@@ -32,7 +36,7 @@ async function main() {
       datasetVersionId: true,
     },
   });
-  console.log('ALL REGIONS IN DATABASE (' + regions.length + '):', JSON.stringify(regions, null, 2));
+  console.log('ALL REGIONS IN DATABASE (' + regions.length + '):', safeJson(regions));
 
   const history = await prisma.nationalIndexHistory.findMany({
     select: {
@@ -44,19 +48,19 @@ async function main() {
     },
     orderBy: { year: 'desc' },
   });
-  console.log('NATIONAL INDEX HISTORY (' + history.length + '):', JSON.stringify(history, null, 2));
+  console.log('NATIONAL INDEX HISTORY (' + history.length + '):', safeJson(history));
 
   const metricsDistinctVersions = await prisma.regionalMetric.groupBy({
     by: ['datasetVersionId'],
     _count: { id: true },
   });
-  console.log('REGIONAL METRICS BY VERSION:', JSON.stringify(metricsDistinctVersions, null, 2));
+  console.log('REGIONAL METRICS BY VERSION:', safeJson(metricsDistinctVersions));
 
   const metricsDistinctRegions = await prisma.regionalMetric.groupBy({
     by: ['regionId'],
     _count: { id: true },
   });
-  console.log('REGIONAL METRICS BY REGION:', JSON.stringify(metricsDistinctRegions, null, 2));
+  console.log('REGIONAL METRICS BY REGION:', safeJson(metricsDistinctRegions));
 }
 
 main().catch(console.error).finally(() => prisma.$disconnect());
