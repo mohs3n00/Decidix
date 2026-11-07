@@ -1,9 +1,10 @@
 # Decidix Execution Checkpoint Report — Target Status & Blocker Resolution
 
-**Timestamp:** 2026-11-07T23:30:00+02:00  
-**Git Commit:** `4bc6305`  
+**Timestamp:** 2026-11-07T23:55:00+02:00  
+**Git Commit:** `6d3e769`  
 **Web Production/Staging Endpoint:** [`https://decidix-web-staging.20912023100049.workers.dev`](https://decidix-web-staging.20912023100049.workers.dev)  
-**Backend Staging Target:** Deployed Heroku Backend (`https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1`, Release `v37`), Heroku Postgres RDS, Cloudflare R2 (`decidcix`), OpenRouter AI (`:free`), Android Emulator (`Pixel_7a`).  
+**Target Custom Domain:** `web.decidixapp.tech` *(Status: BLOCKED — Zone Pending Registrar Nameserver Delegation)*  
+**Backend Staging Target:** Deployed Heroku Backend (`https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1`, Release `v37`), AWS RDS PostgreSQL Cluster, Cloudflare R2 (`decidcix`), OpenRouter AI (`:free`), Android Emulator (`Pixel_7a`).  
 **Zero-Cost Policy & Secrets Status:** Enforced and fully compliant. No secrets, credentials, or raw tokens tracked or exposed.
 
 ---
@@ -11,10 +12,24 @@
 ## 1. Executive Summary & Current State
 
 1. **Official Decidix Web Application Deployed to Cloudflare Staging (PASS):**
-   - Implemented 25 screens matching Figma UX artboards in `frontend/` using React 18, TypeScript, Tailwind CSS, Recharts, and React Router v6.
+   - Implemented 26 views (22 core screens, 3 admin screens, 1 security modal) matching Figma UX artboards in `frontend/` using React 18, TypeScript, Tailwind CSS, Recharts, and React Router v6.
    - Preserves Decidix design system tokens (`#061A3A`, `#21EAF4`, `#2563EB`, `#F5F7FA`), variable fonts (`Cairo` and `Outfit`), and authentic SVG icons from the Flutter mobile app.
-   - Deployed to Cloudflare Staging: `https://decidix-web-staging.20912023100049.workers.dev`.
-   - 13/13 Live E2E tests passing against the live Heroku Staging backend.
+   - Deployed to Cloudflare Staging: `https://decidix-web-staging.20912023100049.workers.dev` (Version ID: `def08bd3-e058-42e2-b906-2e550bed6c77`).
+   - 13/13 Live client-side API integration tests passing against the live Heroku Staging backend.
+
+2. **Cloudflare Custom Domain & DNS Audit (BLOCKED ON REGISTRAR NAMESERVERS):**
+   - Cloudflare Zone `decidixapp.tech` (Zone ID: `307b4b355238b49d83edb777700abca0`) is in status **`pending`**.
+   - Cloudflare assigned nameservers: **`dante.ns.cloudflare.com`** and **`millie.ns.cloudflare.com`**.
+   - Registrar (Name.com) is currently delegating to: `ns1bqx.name.com`, `ns2btz.name.com`, `ns3flt.name.com`, `ns4hmp.name.com`.
+   - In accordance with strict instructions, custom domain attachment is withheld until the zone is activated at Name.com.
+   - All existing live DNS records (DMARC, Resend DKIM, Resend SPF & MX) were verified and must be mirrored in Cloudflare as DNS Only prior to nameserver delegation.
+
+3. **Cloudflare R2 Physical Object Persistence Verified (PASS):**
+   - Verified real bucket name: `decidcix`.
+   - Uploaded unique 939-byte test dataset `dataset_r2_audit_1794088332677.csv` via `/v1/datasets/upload-direct`.
+   - Object physically retrieved from remote Cloudflare R2 using `wrangler r2 object get "decidcix/..." --file "..." --remote`.
+   - Verified physical byte count matches uploaded file (939 bytes) with 100% byte-for-byte content integrity.
+   - Metadata and observations verified in PostgreSQL database.
 
 2. **Zero-Regions Discrepancy Resolved (PASS):**
    - Live database investigation proved that subsequent dataset uploads were overwriting `datasetVersionId` on the shared `Region` and `Indicator` records (`cairo`, `alexandria`, `giza`), leaving the active dataset version with 0 matching regions.
