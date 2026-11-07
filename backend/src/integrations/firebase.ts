@@ -120,6 +120,20 @@ export class FirebaseService {
         return false;
       }
 
+      // Normalize snake_case keys and escape sequences in PEM private key
+      const rawKey = (credential as any).private_key || credential.privateKey;
+      if (typeof rawKey === 'string') {
+        const fixedKey = rawKey.replace(/\\n/g, '\n');
+        (credential as any).private_key = fixedKey;
+        credential.privateKey = fixedKey;
+      }
+      if ((credential as any).project_id && !credential.projectId) {
+        credential.projectId = (credential as any).project_id;
+      }
+      if ((credential as any).client_email && !credential.clientEmail) {
+        credential.clientEmail = (credential as any).client_email;
+      }
+
       this.app = initializeApp({
         credential: cert(credential),
         projectId: credential.projectId || 'decidix',
