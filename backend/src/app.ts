@@ -1,5 +1,13 @@
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
+
+// Polyfill BigInt serialization for Prisma BigInt fields
+if (typeof BigInt !== 'undefined' && !(BigInt.prototype as any).toJSON) {
+  (BigInt.prototype as any).toJSON = function () {
+    const n = Number(this);
+    return Number.isSafeInteger(n) ? n : this.toString();
+  };
+}
 import { env, isZeroCostModel } from './config/env.js';
 import { requestLogger } from './middleware/request_logger.js';
 import { errorHandler } from './middleware/error_handler.js';
