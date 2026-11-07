@@ -33,7 +33,33 @@ export function createApp(): Express {
   });
 
   // Basic security and request processing
-  app.use(cors({ origin: env.CORS_ORIGIN }));
+  const explicitOrigins = (env.CORS_ORIGIN || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+
+  app.use(
+    cors({
+      origin: (requestOrigin, callback) => {
+        // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+        if (!requestOrigin) return callback(null, true);
+
+        const isAllowed =
+          explicitOrigins.includes(requestOrigin) ||
+          explicitOrigins.includes('*') ||
+          requestOrigin.endsWith('.decidixapp.tech') ||
+          requestOrigin.endsWith('.workers.dev') ||
+          requestOrigin.endsWith('.pages.dev') ||
+          /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(requestOrigin);
+
+        if (isAllowed) {
+          return callback(null, true);
+        }
+        return callback(new Error(`Origin ${requestOrigin} not allowed by CORS`));
+      },
+      credentials: true,
+    })
+  );
   app.use(express.json());
   app.use(requestLogger);
 
