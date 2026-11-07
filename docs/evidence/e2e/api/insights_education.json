@@ -1,0 +1,200 @@
+{
+  "path": "/insights/education",
+  "status": 200,
+  "body": {
+    "data": {
+      "sector": "education",
+      "data_classification": "derived_calculation",
+      "is_official": false,
+      "source_classification": "synthetic_demo",
+      "dataset_version": "ds_demo_curated_2025_v1",
+      "index": {
+        "score": 40.4,
+        "change": 3.3
+      },
+      "normalization": {
+        "method": "min_max_across_regions_per_indicator",
+        "scale": [
+          0,
+          100
+        ],
+        "direction_adjusted": true,
+        "weights": "equal",
+        "reference_year": 2025,
+        "previous_year": 2024,
+        "indicators_used": 4,
+        "indicators_missing": 0,
+        "note": "Raw values in different units are never averaged. Each indicator is normalised against its observed regional range for the reference year, direction applied, then equal-weighted."
+      },
+      "kpis": [
+        {
+          "key": "literacy_rate",
+          "label": "Literacy rate",
+          "arabic_label": "معدل الإلمام بالقراءة",
+          "value": 94.13,
+          "unit": "percent",
+          "change": 0.2,
+          "higher_is_better": true
+        },
+        {
+          "key": "school_enrolment",
+          "label": "School enrolment",
+          "arabic_label": "الالتحاق بالمدارس",
+          "value": 90.77,
+          "unit": "percent",
+          "change": 0.3,
+          "higher_is_better": true
+        },
+        {
+          "key": "teacher_pupil_ratio",
+          "label": "Teacher : pupil",
+          "arabic_label": "المعلم : الطالب",
+          "value": 21.91,
+          "unit": "pupils_per_teacher",
+          "change": 0,
+          "higher_is_better": false
+        },
+        {
+          "key": "tertiary_completion",
+          "label": "Tertiary completion",
+          "arabic_label": "إتمام التعليم العالي",
+          "value": 34.4,
+          "unit": "percent",
+          "change": 0.5,
+          "higher_is_better": true
+        }
+      ],
+      "trend": {
+        "points": []
+      },
+      "breakdown": {
+        "title": "education",
+        "arabic_title": "education",
+        "unit": "value",
+        "bars": []
+      },
+      "indicators": [
+        {
+          "key": "literacy_rate",
+          "label": "Literacy rate",
+          "arabic_label": "معدل الإلمام بالقراءة",
+          "value": 94.13,
+          "unit": "percent"
+        },
+        {
+          "key": "school_enrolment",
+          "label": "School enrolment",
+          "arabic_label": "الالتحاق بالمدارس",
+          "value": 90.77,
+          "unit": "percent"
+        },
+        {
+          "key": "teacher_pupil_ratio",
+          "label": "Teacher : pupil",
+          "arabic_label": "المعلم : الطالب",
+          "value": 21.91,
+          "unit": "pupils_per_teacher"
+        },
+        {
+          "key": "tertiary_completion",
+          "label": "Tertiary completion",
+          "arabic_label": "إتمام التعليم العالي",
+          "value": 34.4,
+          "unit": "percent"
+        }
+      ],
+      "ranking": {
+        "basis": "normalized_sector_composite",
+        "top": [
+          {
+            "rank": 1,
+            "region_id": "central_capital",
+            "name": "Central Capital",
+            "arabic_name": "العاصمة المركزية",
+            "score": 100
+          },
+          {
+            "rank": 2,
+            "region_id": "lakeside",
+            "name": "Lakeside",
+            "arabic_name": "ضفاف البحيرة",
+            "score": 66.9
+          },
+          {
+            "rank": 3,
+            "region_id": "western_coast",
+            "name": "Western Coast",
+            "arabic_name": "الساحل الغربي",
+            "score": 59.6
+          },
+          {
+            "rank": 4,
+            "region_id": "harbor_lowlands",
+            "name": "Harbor Lowlands",
+            "arabic_name": "سهول الميناء",
+            "score": 52.5
+          },
+          {
+            "rank": 5,
+            "region_id": "northern_plains",
+            "name": "Northern Plains",
+            "arabic_name": "السهول الشمالية",
+            "score": 45.3
+          }
+        ],
+        "bottom": [
+          {
+            "rank": 12,
+            "region_id": "frontier",
+            "name": "Frontier",
+            "arabic_name": "المنطقة الحدودية",
+            "score": 0
+          },
+          {
+            "rank": 11,
+            "region_id": "steppe",
+            "name": "Steppe",
+            "arabic_name": "السهوب",
+            "score": 7.2
+          },
+          {
+            "rank": 10,
+            "region_id": "delta",
+            "name": "Delta",
+            "arabic_name": "الدلتا",
+            "score": 19.3
+          },
+          {
+            "rank": 9,
+            "region_id": "northern_highlands",
+            "name": "Northern Highlands",
+            "arabic_name": "المرتفعات الشمالية",
+            "score": 23.8
+          },
+          {
+            "rank": 8,
+            "region_id": "riverside",
+            "name": "Riverside",
+            "arabic_name": "ضفة النهر",
+            "score": 33.2
+          }
+        ]
+      },
+      "ai_insight": {
+        "text": "No generated narrative is available; review the verified observations above.",
+        "arabic_text": "لا توجد رواية مولدة متاحة؛ راجع الملاحظات الموثقة أعلاه."
+      },
+      "provenance": {
+        "dataset_version": "ds_demo_curated_2025_v1",
+        "source": "Synthetic demonstration dataset generated by scripts/pipeline_ingest.py",
+        "source_file": "curated_regional_development.canonical.json",
+        "license": "Synthetic academic demonstration data; no official licence is claimed.",
+        "geographic_coverage": "12 illustrative regions; 2019-2025; not official statistics",
+        "observation_period": "2024-2025",
+        "method": "Aggregated from version-matched indicator and regional metric observations.",
+        "data_classification": "derived_calculation",
+        "verification_status": "verified_dataset_derived"
+      }
+    }
+  }
+}

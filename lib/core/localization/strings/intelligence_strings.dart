@@ -8,7 +8,9 @@ const Map<String, String> intelligenceEn = {
   'pred_projected': 'Projected index · {year}',
   'pred_confidence': '{n}% confidence',
   'pred_note': 'Shaded area marks the forecast interval.',
+  'pred_simulated_title': 'Simulation disclaimer',
   'pred_model_performance': 'Model performance',
+  'pred_metric_unavailable': 'Unavailable',
   'pred_improvers': 'Regions most likely to improve',
   'pred_by_year': '+{n} by {year}',
 
@@ -20,6 +22,8 @@ const Map<String, String> intelligenceEn = {
   'asst_prompt_3': 'Summarise education trends',
   'asst_source': 'Source: {name} · {period}',
   'asst_error': 'I could not answer that. Please try again.',
+  'asst_fallback_notice':
+      'Answered from verified records: the free AI model is unavailable right now.',
   'btn_send': 'Send',
 
   'rec_index_impact': 'Index impact',
@@ -41,7 +45,9 @@ const Map<String, String> intelligenceAr = {
   'pred_projected': 'المؤشر المتوقع · {year}',
   'pred_confidence': 'ثقة {n}%',
   'pred_note': 'المنطقة المظللة تمثل نطاق التوقع.',
+  'pred_simulated_title': 'إخلاء مسؤولية بشأن المحاكاة',
   'pred_model_performance': 'أداء النماذج',
+  'pred_metric_unavailable': 'غير متاح',
   'pred_improvers': 'المناطق الأكثر احتمالاً للتحسن',
   'pred_by_year': '+{n} بحلول {year}',
 
@@ -53,6 +59,8 @@ const Map<String, String> intelligenceAr = {
   'asst_prompt_3': 'لخّص اتجاهات التعليم',
   'asst_source': 'المصدر: {name} · {period}',
   'asst_error': 'تعذّر الرد على سؤالك. حاول مرة أخرى.',
+  'asst_fallback_notice':
+      'إجابة مستخرجة من سجلات موثقة: نموذج الذكاء الاصطناعي المجاني غير متاح حالياً.',
   'btn_send': 'إرسال',
 
   'rec_index_impact': 'أثر المؤشر',

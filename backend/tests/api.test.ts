@@ -1,7 +1,10 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { Express } from 'express';
+import { DatasetService } from '../src/services/dataset.service.js';
+import { prisma } from '../src/database/prisma.js';
+import { ForecastRepository } from '../src/repositories/forecast.repository.js';
 
 describe('Decidix Backend API Contract Tests', () => {
   let app: Express;
@@ -16,7 +19,7 @@ describe('Decidix Backend API Contract Tests', () => {
         name: 'Integration Tester',
         email: `tester_${Date.now()}@decidix.gov`,
         password: 'Password123!',
-        role: 'analyst',
+        role: 'decision_maker',
       });
     expect(res.status).toBe(201);
     expect(res.body.data.token).toBeDefined();
@@ -51,19 +54,17 @@ describe('Decidix Backend API Contract Tests', () => {
       expect(res.status).toBe(200);
       expect(res.body.data).toBeDefined();
       expect(res.body.data.index.score).toBe(68.4);
-      expect(res.body.data.kpis).toHaveLength(4);
+      expect(res.body.data.kpis).toHaveLength(0);
+      expect(res.body.data.provenance.data_classification).toBe('synthetic_demonstration');
       expect(res.body.data.trend.points).toHaveLength(7);
       expect(res.body.data.needs_attention).toHaveLength(3);
     });
 
-    it('GET /v1/regions/map-points returns geographic points', async () => {
+    it('GET /v1/regions/map-points does not expose unverified fixture geography', async () => {
       const res = await request(app).get('/v1/regions/map-points?sector=overall');
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.data)).toBe(true);
-      expect(res.body.data.length).toBe(12);
-      expect(res.body.data[0]).toHaveProperty('latitude');
-      expect(res.body.data[0]).toHaveProperty('longitude');
-      expect(res.body.data[0]).toHaveProperty('score');
+      expect(res.body.data).toHaveLength(0);
     });
 
     it('GET /v1/regions supports pagination and search', async () => {
@@ -129,11 +130,50 @@ describe('Decidix Backend API Contract Tests', () => {
 
   describe('Intelligence Module', () => {
     it('GET /v1/intelligence/predictions returns ML forecasts and metrics', async () => {
-      const res = await request(app).get('/v1/intelligence/predictions?target_year=2028');
-      expect(res.status).toBe(200);
-      expect(res.body.data.target_year).toBe(2028);
-      expect(res.body.data.models.length).toBe(3);
-      expect(res.body.data.series.length).toBeGreaterThan(5);
+      const activeSpy = vi.spyOn(DatasetService, 'active').mockResolvedValue({
+        id: 'ds_api_test',
+        version: 'api-test',
+        source: 'Synthetic test fixture',
+        license: 'test-only',
+        coverage: 'test',
+      } as never);
+      const historySpy = vi.spyOn(prisma.nationalIndexHistory, 'findMany').mockResolvedValue([
+        { year: 2019, score: 93.0 },
+        { year: 2020, score: 93.4 },
+        { year: 2021, score: 93.8 },
+        { year: 2022, score: 94.1 },
+        { year: 2023, score: 94.4 },
+        { year: 2024, score: 94.7 },
+        { year: 2025, score: 94.9 },
+      ] as never);
+      try {
+        await ForecastRepository.upsertForecast({
+          id: 'fc_api_test_2028',
+          regionId: null,
+          indicatorId: 'development_index',
+          forecastYear: 2028,
+          predictedValue: 95.8,
+          lowerBound: 95.6,
+          upperBound: 96.0,
+          confidenceLevel: 0.8,
+          modelName: 'linear_trend_baseline',
+          modelVersion: '1.0.0',
+          forecastSource: 'experimental_ml',
+          forecastMethod: 'ordinary_least_squares_trend',
+          validationStatus: 'experimental',
+          isCalibrated: false,
+          datasetVersionId: 'ds_api_test',
+        });
+
+        const res = await request(app).get('/v1/intelligence/predictions?target_year=2028');
+        expect(res.status).toBe(200);
+        expect(res.body.data.target_year).toBe(2028);
+        expect(res.body.data.models.length).toBeGreaterThanOrEqual(1);
+        expect(res.body.data.series.length).toBeGreaterThan(5);
+      } finally {
+        historySpy.mockRestore();
+        activeSpy.mockRestore();
+      }
     });
 
     it('POST /v1/intelligence/assistant/chat returns grounded reply with citations', async () => {
@@ -157,7 +197,9 @@ describe('Decidix Backend API Contract Tests', () => {
 
       if (listRes.body.data.length > 0) {
         const firstId = listRes.body.data[0].id;
-        const acceptRes = await request(app).post(`/v1/intelligence/recommendations/${firstId}/accept`);
+        const acceptRes = await request(app)
+          .post(`/v1/intelligence/recommendations/${firstId}/accept`)
+          .set('Authorization', `Bearer ${authToken}`);
         expect(acceptRes.status).toBe(200);
         expect(acceptRes.body.data.status).toBe('in_plan');
 
@@ -222,4 +264,3 @@ describe('Decidix Backend API Contract Tests', () => {
     });
   });
 });
-

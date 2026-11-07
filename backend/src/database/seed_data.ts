@@ -216,10 +216,13 @@ export const SEED_RECOMMENDATIONS = [
 ];
 
 export const SEED_DATA_SOURCES = [
-  { id: 'src_moh', name: 'Ministry of Health Registry', arabic_name: 'سجل وزارة الصحة', original_source: 'National Health Information Center', license: 'Official Government Open Data License', geographic_coverage: 'National (12 Regions)', time_coverage: '2019-2025', update_frequency: 'Quarterly', record_count: 148200, completeness_pct: 98.4, timeliness_pct: 95.0, accuracy_pct: 97.2, age_days: 12, status: 'synced', last_synced_at: '2025-10-20T00:00:00Z' },
-  { id: 'src_moe', name: 'Ministry of Education EMIS', arabic_name: 'نظام معلومات إدارة التعليم', original_source: 'General Directorate of Educational Planning', license: 'Official Government Open Data License', geographic_coverage: 'National (12 Regions)', time_coverage: '2019-2025', update_frequency: 'Bi-annual', record_count: 89400, completeness_pct: 99.1, timeliness_pct: 92.5, accuracy_pct: 98.0, age_days: 18, status: 'synced', last_synced_at: '2025-10-14T00:00:00Z' },
-  { id: 'src_stats', name: 'Central Bureau of Statistics (Labor Force Survey)', arabic_name: 'المسح الميداني للقوى العاملة', original_source: 'National Statistics Authority', license: 'Public Statistical Authority License', geographic_coverage: 'National (12 Regions)', time_coverage: '2019-2025', update_frequency: 'Quarterly', record_count: 245000, completeness_pct: 96.5, timeliness_pct: 89.0, accuracy_pct: 95.8, age_days: 28, status: 'synced', last_synced_at: '2025-10-04T00:00:00Z' },
-  { id: 'src_infra', name: 'National Infrastructure & Utilities Cadastre', arabic_name: 'السجل الوطني للبنية التحتية والمرافق', original_source: 'Ministry of Transport & Water Resources', license: 'Official Government Open Data License', geographic_coverage: 'National (12 Regions)', time_coverage: '2020-2025', update_frequency: 'Monthly', record_count: 312000, completeness_pct: 94.0, timeliness_pct: 96.2, accuracy_pct: 93.5, age_days: 8, status: 'synced', last_synced_at: '2025-10-24T00:00:00Z' }
+  // Provenance is synthetic: scripts/pipeline_ingest.py generates every row from a
+  // fixed regional baseline. accuracy_pct is a structural schema/range validation
+  // result, never a statistical accuracy measurement against an official source.
+  { id: 'src_moh', name: 'Synthetic Health Sector Model', arabic_name: 'نموذج محاكاة قطاع الصحة', original_source: 'Synthetic generator: scripts/pipeline_ingest.py (no external publisher)', license: 'N/A — synthetic academic demonstration data', geographic_coverage: 'Simulated 12-region grid (illustrative, not official boundaries)', time_coverage: '2019-2025 (synthetic annual series)', update_frequency: 'Not scheduled (offline generator)', record_count: 84, completeness_pct: 100.0, timeliness_pct: 100.0, accuracy_pct: 100.0, age_days: 0, status: 'synced', last_synced_at: '2026-11-03T14:46:03Z' },
+  { id: 'src_moe', name: 'Synthetic Education Sector Model', arabic_name: 'نموذج محاكاة قطاع التعليم', original_source: 'Synthetic generator: scripts/pipeline_ingest.py (no external publisher)', license: 'N/A — synthetic academic demonstration data', geographic_coverage: 'Simulated 12-region grid (illustrative, not official boundaries)', time_coverage: '2019-2025 (synthetic annual series)', update_frequency: 'Not scheduled (offline generator)', record_count: 84, completeness_pct: 100.0, timeliness_pct: 100.0, accuracy_pct: 100.0, age_days: 0, status: 'synced', last_synced_at: '2026-11-03T14:46:03Z' },
+  { id: 'src_stats', name: 'Synthetic Labor & Economy Model', arabic_name: 'نموذج محاكاة قطاع العمل والاقتصاد', original_source: 'Synthetic generator: scripts/pipeline_ingest.py (no external publisher)', license: 'N/A — synthetic academic demonstration data', geographic_coverage: 'Simulated 12-region grid (illustrative, not official boundaries)', time_coverage: '2019-2025 (synthetic annual series)', update_frequency: 'Not scheduled (offline generator)', record_count: 84, completeness_pct: 100.0, timeliness_pct: 100.0, accuracy_pct: 100.0, age_days: 0, status: 'synced', last_synced_at: '2026-11-03T14:46:03Z' },
+  { id: 'src_infra', name: 'Synthetic Infrastructure Model', arabic_name: 'نموذج محاكاة البنية التحتية', original_source: 'Synthetic generator: scripts/pipeline_ingest.py (no external publisher)', license: 'N/A — synthetic academic demonstration data', geographic_coverage: 'Simulated 12-region grid (illustrative, not official boundaries)', time_coverage: '2019-2025 (synthetic annual series)', update_frequency: 'Not scheduled (offline generator)', record_count: 84, completeness_pct: 100.0, timeliness_pct: 100.0, accuracy_pct: 100.0, age_days: 0, status: 'synced', last_synced_at: '2026-11-03T14:46:03Z' }
 ];
 
 export const SEED_RAG_DOCUMENTS = [
@@ -229,7 +232,7 @@ export const SEED_RAG_DOCUMENTS = [
     arabic_title: 'تقييم فوارق الرعاية الصحية في المنطقة الحدودية',
     content: 'Frontier region shows acute healthcare under-capacity. Doctor-to-population ratio is 1.1 per 1,000 residents compared to national target of 2.5. Clinic density is 38% below the national mean, primarily driven by geographic fragmentation across 45,000 km² of arid terrain.',
     arabic_content: 'تظهر المنطقة الحدودية نقصاً حاداً في طاقة الرعاية الصحية. تبلغ نسبة الأطباء للسكان 1.1 لكل 1000 نسمة مقارنة بالمستهدف الوطني 2.5. كثافة العيادات تقل بـ 38% عن المتوسط الوطني نظراً للتشتت الجغرافي عبر 45 ألف كم مربع.',
-    source: 'Ministry of Health Registry',
+    source: 'Decidix Synthetic Sector Assessment (not an official publication)',
     period: '2025-Q4',
     category: 'healthcare',
     region_id: 'frontier'
@@ -240,7 +243,7 @@ export const SEED_RAG_DOCUMENTS = [
     arabic_title: 'دراسة منظومة ترع الدلتا والصرف الصحي لمياه الشرب',
     content: 'Delta region accounts for 2.2M population with agricultural economy. Rural sanitation index is 58/100, where irrigation runoff impacts water treatment inlet stations. Clean water project prj_delta_clean_water reached 68% completion with $145M budget.',
     arabic_content: 'تضم منطقة الدلتا 2.2 مليون نسمة باقتصاد زراعي. مؤشر الصرف الصحي الريفي يبلغ 58/100، حيث يؤثر الصرف الزراعي على مآخذ محطات المعالجة. مشروع مياه الدلتا حقق 68% إنجاز بميزانية 145 مليون دولار.',
-    source: 'National Infrastructure & Utilities Cadastre',
+    source: 'Decidix Synthetic Sector Assessment (not an official publication)',
     period: '2025-Q4',
     category: 'infrastructure',
     region_id: 'delta'
@@ -251,7 +254,7 @@ export const SEED_RAG_DOCUMENTS = [
     arabic_title: 'التوظيف والانتقال نحو الطاقة المتجددة في السهوب',
     content: 'Steppe region has registered unemployment at 8.4% with youth unemployment nearing 14.8%. Developing regional solar micro-grids and vocational agro-tech training offers highest multiplier on employment growth.',
     arabic_content: 'سجلت السهوب معدل بطالة 8.4% وبطالة شباب تقارب 14.8%. تطوير شبكات الطاقة الشمسية المصغرة ومراكز التدريب المهني الزراعي يتيح أعلى مضاعف لنمو الوظائف.',
-    source: 'Central Bureau of Statistics',
+    source: 'Decidix Synthetic Sector Assessment (not an official publication)',
     period: '2025-Q4',
     category: 'economy',
     region_id: 'steppe'

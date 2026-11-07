@@ -95,6 +95,7 @@ class SectorInsights {
   /// Worst first.
   final List<RankedRegion> rankingBottom;
   final LocalizedText aiInsight;
+  final DatasetProvenance? provenance;
 
   const SectorInsights({
     required this.sector,
@@ -107,6 +108,7 @@ class SectorInsights {
     required this.rankingTop,
     required this.rankingBottom,
     required this.aiInsight,
+    this.provenance,
   });
 
   factory SectorInsights.fromJson(JsonMap json) {
@@ -123,6 +125,9 @@ class SectorInsights {
       rankingTop: ranking.listOf('top', RankedRegion.fromJson),
       rankingBottom: ranking.listOf('bottom', RankedRegion.fromJson),
       aiInsight: LocalizedText.read(json.object('ai_insight'), 'text'),
+      provenance: json['provenance'] is Map
+          ? DatasetProvenance.fromJson(json.object('provenance'))
+          : null,
     );
   }
 }
@@ -173,12 +178,14 @@ class RegionComparison {
   /// `overall` first, then the four domains.
   final List<ComparisonMetric> metrics;
   final LocalizedText gapAnalysis;
+  final DatasetProvenance? provenance;
 
   const RegionComparison({
     required this.a,
     required this.b,
     required this.metrics,
     required this.gapAnalysis,
+    this.provenance,
   });
 
   factory RegionComparison.fromJson(JsonMap json) => RegionComparison(
@@ -186,6 +193,9 @@ class RegionComparison {
     b: ComparedRegion.fromJson(json.object('b')),
     metrics: json.listOf('metrics', ComparisonMetric.fromJson),
     gapAnalysis: LocalizedText.read(json.object('gap_analysis'), 'text'),
+    provenance: json['provenance'] is Map
+        ? DatasetProvenance.fromJson(json.object('provenance'))
+        : null,
   );
 }
 
@@ -233,6 +243,7 @@ class HistoricalData {
   final List<TrendPoint> trend;
   final List<TrendPoint> annualChange;
   final List<Milestone> milestones;
+  final DatasetProvenance? provenance;
 
   const HistoricalData({
     required this.sector,
@@ -242,6 +253,7 @@ class HistoricalData {
     required this.trend,
     required this.annualChange,
     required this.milestones,
+    this.provenance,
   });
 
   factory HistoricalData.fromJson(JsonMap json) {
@@ -252,19 +264,19 @@ class HistoricalData {
         ? TrendPoint.readList(json.object('trend'), 'points')
         : (json.containsKey('points') ? TrendPoint.readList(json, 'points') : <TrendPoint>[]);
 
-    final currentVal = summary != null
+    final double currentVal = (summary != null
         ? summary.number('current')
-        : (trendPoints.isNotEmpty ? trendPoints.last.value : 68.4);
+        : (trendPoints.isNotEmpty ? trendPoints.last.value : 0)).toDouble();
 
-    final startYearVal = summary != null
+    final int startYearVal = summary != null
         ? summary.integer('start_year')
-        : (trendPoints.isNotEmpty ? trendPoints.first.year : 2019);
+        : (trendPoints.isNotEmpty ? trendPoints.first.year : 0);
 
-    final changeSinceStartVal = summary != null
+    final double changeSinceStartVal = (summary != null
         ? summary.number('change_since_start')
         : (trendPoints.isNotEmpty
             ? double.parse((trendPoints.last.value - trendPoints.first.value).toStringAsFixed(1))
-            : 10.2);
+            : 0)).toDouble();
 
     final annualChangePoints = json.containsKey('annual_change') && json['annual_change'] is List
         ? TrendPoint.readList(json, 'annual_change')
@@ -278,6 +290,9 @@ class HistoricalData {
       trend: trendPoints,
       annualChange: annualChangePoints,
       milestones: json.listOf('milestones', Milestone.fromJson),
+      provenance: json['provenance'] is Map
+          ? DatasetProvenance.fromJson(json.object('provenance'))
+          : null,
     );
   }
 }
@@ -288,7 +303,7 @@ class PriorityEntry {
   final LocalizedText name;
   final Priority priority;
   final double needScore;
-  final DomainScore weakestDomain;
+  final DomainScore? weakestDomain;
 
   const PriorityEntry({
     required this.rank,
@@ -305,7 +320,9 @@ class PriorityEntry {
     name: LocalizedText.read(json, 'name'),
     priority: parsePriority(json['priority']),
     needScore: json.number('need_score'),
-    weakestDomain: DomainScore.fromJson(json.object('weakest_domain')),
+    weakestDomain: json['weakest_domain'] is Map
+        ? DomainScore.fromJson(json.object('weakest_domain'))
+        : null,
   );
 }
 
@@ -316,12 +333,14 @@ class PriorityOverview {
 
   /// Highest need first.
   final List<PriorityEntry> queue;
+  final DatasetProvenance? provenance;
 
   const PriorityOverview({
     required this.high,
     required this.medium,
     required this.low,
     required this.queue,
+    this.provenance,
   });
 
   factory PriorityOverview.fromJson(JsonMap json) {
@@ -331,6 +350,9 @@ class PriorityOverview {
       medium: summary.integer('medium'),
       low: summary.integer('low'),
       queue: json.listOf('queue', PriorityEntry.fromJson),
+      provenance: json['provenance'] is Map
+          ? DatasetProvenance.fromJson(json.object('provenance'))
+          : null,
     );
   }
 }
@@ -399,6 +421,7 @@ class DataQuality {
   final double accuracy;
   final List<CoverageEntry> lowestCoverage;
   final List<DataSource> sources;
+  final DatasetProvenance? provenance;
 
   const DataQuality({
     required this.score,
@@ -408,6 +431,7 @@ class DataQuality {
     required this.accuracy,
     required this.lowestCoverage,
     required this.sources,
+    this.provenance,
   });
 
   factory DataQuality.fromJson(JsonMap json) {
@@ -432,6 +456,9 @@ class DataQuality {
           ? json.listOf('lowest_coverage_regions', CoverageEntry.fromJson)
           : const <CoverageEntry>[],
       sources: json.listOf('sources', DataSource.fromJson),
+      provenance: json['provenance'] is Map
+          ? DatasetProvenance.fromJson(json.object('provenance'))
+          : null,
     );
   }
 }

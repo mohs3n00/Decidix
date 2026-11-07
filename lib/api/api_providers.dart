@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/config/app_config.dart';
 import '../core/network/api_client.dart';
 import '../core/network/api_endpoints.dart';
 import 'repositories/decisions_api.dart';
+import 'repositories/datasets_api.dart';
 import 'repositories/insights_api.dart';
 import 'repositories/intelligence_api.dart';
 import 'repositories/notifications_api.dart';
@@ -13,21 +15,21 @@ import 'transport/mock_transport.dart';
 
 /// Picks where answers come from: the files in assets/mock, or the server.
 ///
-/// Calling the server with no address is a setup mistake. It fails here, with
-/// a message that says what to do, instead of as a network error on every
-/// screen.
+/// The configuration is validated first, so a release build with a missing,
+/// plain-HTTP, or development address fails immediately with a message that
+/// says what to change instead of showing mock data or failing per screen.
 ApiTransport createTransport({
   required bool useMock,
   required String baseUrl,
   required ApiClient Function() client,
+  bool isRelease = kReleaseMode,
 }) {
+  AppConfig.validateApiConfiguration(
+    useMock: useMock,
+    baseUrl: baseUrl,
+    isRelease: isRelease,
+  );
   if (useMock) return MockTransport();
-  if (baseUrl.trim().isEmpty) {
-    throw StateError(
-      'API_BASE_URL is not set. Run with --dart-define-from-file=env/staging.json '
-      '(or env/prod.json), or use USE_MOCK=true.',
-    );
-  }
   return DioTransport(client());
 }
 
@@ -59,4 +61,8 @@ final decisionsApiProvider = Provider<DecisionsApi>(
 
 final notificationsApiProvider = Provider<NotificationsApi>(
   (ref) => NotificationsApi(ref.watch(apiTransportProvider)),
+);
+
+final datasetsApiProvider = Provider<DatasetsApi>(
+  (ref) => DatasetsApi(ref.watch(apiClientProvider)),
 );

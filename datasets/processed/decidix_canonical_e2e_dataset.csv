@@ -1,0 +1,26 @@
+#decidix-csv: v1
+#name: Comprehensive Regional Development Index 2026
+#name_ar: مؤشر التنمية الإقليمية الشامل 2026
+#source: Saudi Ministry of Economy and Planning (E2E Verification)
+#license: Open Government License
+#geographic_coverage: National Coverage (Riyadh, Makkah, Eastern Province)
+#time_coverage: 2024-2025
+#update_frequency: Annual
+#completeness_pct: 99.2
+#timeliness_pct: 97.5
+#accuracy_pct: 99.8
+#age_days: 5
+#development_indicator: e2e_dev_idx
+region_id,region_name,region_name_ar,region_population,region_latitude,region_longitude,indicator_key,indicator_label,indicator_label_ar,indicator_domain,indicator_unit,indicator_higher_is_better,year,value
+reg_riyadh_e2e,Riyadh Region,منطقة الرياض,8620000,24.7136,46.6753,e2e_dev_idx,Development Index,مؤشر التنمية,overall,score_100,true,2024,84.5
+reg_riyadh_e2e,Riyadh Region,منطقة الرياض,8620000,24.7136,46.6753,e2e_dev_idx,Development Index,مؤشر التنمية,overall,score_100,true,2025,86.2
+reg_riyadh_e2e,Riyadh Region,منطقة الرياض,8620000,24.7136,46.6753,e2e_lit_rate,Literacy Rate,معدل الإلمام بالقراءة والكتابة,education,percent,true,2024,98.1
+reg_riyadh_e2e,Riyadh Region,منطقة الرياض,8620000,24.7136,46.6753,e2e_lit_rate,Literacy Rate,معدل الإلمام بالقراءة والكتابة,education,percent,true,2025,98.6
+reg_makkah_e2e,Makkah Region,منطقة مكة المكرمة,9000000,21.3891,39.8579,e2e_dev_idx,Development Index,مؤشر التنمية,overall,score_100,true,2024,81.0
+reg_makkah_e2e,Makkah Region,منطقة مكة المكرمة,9000000,21.3891,39.8579,e2e_dev_idx,Development Index,مؤشر التنمية,overall,score_100,true,2025,83.4
+reg_makkah_e2e,Makkah Region,منطقة مكة المكرمة,9000000,21.3891,39.8579,e2e_lit_rate,Literacy Rate,معدل الإلمام بالقراءة والكتابة,education,percent,true,2024,96.8
+reg_makkah_e2e,Makkah Region,منطقة مكة المكرمة,9000000,21.3891,39.8579,e2e_lit_rate,Literacy Rate,معدل الإلمام بالقراءة والكتابة,education,percent,true,2025,97.2
+reg_eastern_e2e,Eastern Province,المنطقة الشرقية,5125000,26.4207,50.0888,e2e_dev_idx,Development Index,مؤشر التنمية,overall,score_100,true,2024,82.0
+reg_eastern_e2e,Eastern Province,المنطقة الشرقية,5125000,26.4207,50.0888,e2e_dev_idx,Development Index,مؤشر التنمية,overall,score_100,true,2025,84.1
+reg_eastern_e2e,Eastern Province,المنطقة الشرقية,5125000,26.4207,50.0888,e2e_lit_rate,Literacy Rate,معدل الإلمام بالقراءة والكتابة,education,percent,true,2024,97.4
+reg_eastern_e2e,Eastern Province,المنطقة الشرقية,5125000,26.4207,50.0888,e2e_lit_rate,Literacy Rate,معدل الإلمام بالقراءة والكتابة,education,percent,true,2025,97.9

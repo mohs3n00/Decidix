@@ -8,7 +8,10 @@ export interface UserEntity {
   arabic_name?: string | null;
   email: string;
   password_hash: string;
+  google_subject?: string | null;
   role: string;
+  email_verified: boolean;
+  email_verified_at?: Date | null;
 }
 
 export interface SessionEntity {
@@ -23,7 +26,27 @@ export interface SessionEntity {
   user?: UserEntity | null;
 }
 
+export interface VerificationTokenEntity {
+  id: string;
+  userId: string;
+  tokenHash: string;
+  expiresAt: Date;
+  usedAt?: Date | null;
+  createdAt: Date;
+}
+
+export interface PasswordResetTokenEntity {
+  id: string;
+  userId: string;
+  tokenHash: string;
+  expiresAt: Date;
+  usedAt?: Date | null;
+  createdAt: Date;
+}
+
 const localSessions = new Map<string, SessionEntity>();
+const localVerificationTokens = new Map<string, VerificationTokenEntity>();
+const localPasswordResetTokens = new Map<string, PasswordResetTokenEntity>();
 
 const localUsers = new Map<string, UserEntity>([
   [
@@ -35,6 +58,8 @@ const localUsers = new Map<string, UserEntity>([
       name: 'System Administrator',
       arabic_name: 'مدير النظام',
       role: 'admin',
+      email_verified: true,
+      email_verified_at: new Date('2026-01-01T00:00:00Z'),
     },
   ],
   [
@@ -46,6 +71,8 @@ const localUsers = new Map<string, UserEntity>([
       name: 'Lead Policy Analyst',
       arabic_name: 'كبير محللي السياسات',
       role: 'analyst',
+      email_verified: true,
+      email_verified_at: new Date('2026-01-01T00:00:00Z'),
     },
   ],
   [
@@ -57,6 +84,8 @@ const localUsers = new Map<string, UserEntity>([
       name: 'Executive Decision Maker',
       arabic_name: 'متخذ القرار التنفيذي',
       role: 'decision_maker',
+      email_verified: true,
+      email_verified_at: new Date('2026-01-01T00:00:00Z'),
     },
   ],
   [
@@ -68,6 +97,8 @@ const localUsers = new Map<string, UserEntity>([
       name: 'Strategic Planner',
       arabic_name: 'مخطط استراتيجي',
       role: 'planner',
+      email_verified: true,
+      email_verified_at: new Date('2026-01-01T00:00:00Z'),
     },
   ],
 ]);
@@ -81,6 +112,9 @@ export class AuthRepository {
     const isDbReady = await testPrismaConnection();
 
     if (!isDbReady) {
+      if (env.NODE_ENV !== 'test') {
+        throw AppError.internal('Authentication database is unavailable', 'AUTH_DATABASE_UNAVAILABLE');
+      }
       return localUsers.get(normalizedEmail) || null;
     }
 
@@ -90,7 +124,7 @@ export class AuthRepository {
       });
 
       if (!user) {
-        return localUsers.get(normalizedEmail) || null;
+        return env.NODE_ENV === 'test' ? localUsers.get(normalizedEmail) || null : null;
       }
 
       return {
@@ -99,11 +133,63 @@ export class AuthRepository {
         arabic_name: user.arabicName,
         email: user.email,
         password_hash: user.passwordHash,
+        google_subject: user.googleSubject,
         role: user.role,
+        email_verified: user.emailVerified,
+        email_verified_at: user.emailVerifiedAt,
       };
     } catch (err) {
-      if (env.NODE_ENV === 'production') throw err;
+      if (env.NODE_ENV !== 'test') throw err;
       return localUsers.get(normalizedEmail) || null;
+    }
+  }
+
+  static async findByGoogleSubject(subject: string): Promise<UserEntity | null> {
+    if (!subject.trim()) return null;
+    const isDbReady = await testPrismaConnection();
+    if (!isDbReady) {
+      if (env.NODE_ENV !== 'test') {
+        throw AppError.internal('Authentication database is unavailable', 'AUTH_DATABASE_UNAVAILABLE');
+      }
+      return null;
+    }
+    try {
+      const user = await prisma.user.findUnique({ where: { googleSubject: subject } });
+      return user
+        ? {
+            id: user.id,
+            name: user.name,
+            arabic_name: user.arabicName,
+            email: user.email,
+            password_hash: user.passwordHash,
+            google_subject: user.googleSubject,
+            role: user.role,
+            email_verified: user.emailVerified,
+            email_verified_at: user.emailVerifiedAt,
+          }
+        : null;
+    } catch (err) {
+      if (env.NODE_ENV !== 'test') throw err;
+      return null;
+    }
+  }
+
+  static async linkGoogleSubject(userId: string, subject: string): Promise<void> {
+    if (!subject.trim()) return;
+    const isDbReady = await testPrismaConnection();
+    if (!isDbReady) {
+      if (env.NODE_ENV !== 'test') {
+        throw AppError.internal('Authentication database is unavailable', 'AUTH_DATABASE_UNAVAILABLE');
+      }
+      return;
+    }
+    try {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { googleSubject: subject },
+      });
+    } catch (err) {
+      if (env.NODE_ENV !== 'test') throw err;
     }
   }
 
@@ -114,6 +200,9 @@ export class AuthRepository {
     const isDbReady = await testPrismaConnection();
 
     if (!isDbReady) {
+      if (env.NODE_ENV !== 'test') {
+        throw AppError.internal('Authentication database is unavailable', 'AUTH_DATABASE_UNAVAILABLE');
+      }
       for (const u of localUsers.values()) {
         if (u.id === id) return u;
       }
@@ -126,8 +215,10 @@ export class AuthRepository {
       });
 
       if (!user) {
-        for (const u of localUsers.values()) {
-          if (u.id === id) return u;
+        if (env.NODE_ENV === 'test') {
+          for (const u of localUsers.values()) {
+            if (u.id === id) return u;
+          }
         }
         return null;
       }
@@ -138,10 +229,13 @@ export class AuthRepository {
         arabic_name: user.arabicName,
         email: user.email,
         password_hash: user.passwordHash,
+        google_subject: user.googleSubject,
         role: user.role,
+        email_verified: user.emailVerified,
+        email_verified_at: user.emailVerifiedAt,
       };
     } catch (err) {
-      if (env.NODE_ENV === 'production') throw err;
+      if (env.NODE_ENV !== 'test') throw err;
       for (const u of localUsers.values()) {
         if (u.id === id) return u;
       }
@@ -158,11 +252,19 @@ export class AuthRepository {
     email: string;
     password_hash: string;
     role: string;
+    google_subject?: string;
+    email_verified?: boolean;
+    email_verified_at?: Date | null;
   }): Promise<UserEntity> {
     const normalizedEmail = data.email.toLowerCase().trim();
     const isDbReady = await testPrismaConnection();
+    const emailVerified = data.email_verified ?? false;
+    const emailVerifiedAt = data.email_verified_at ?? (emailVerified ? new Date() : null);
 
     if (!isDbReady) {
+      if (env.NODE_ENV !== 'test') {
+        throw AppError.internal('Authentication database is unavailable', 'AUTH_DATABASE_UNAVAILABLE');
+      }
       if (localUsers.has(normalizedEmail)) {
         throw AppError.badRequest('User with this email already exists', 'EMAIL_ALREADY_EXISTS');
       }
@@ -173,7 +275,10 @@ export class AuthRepository {
         arabic_name: data.arabic_name,
         email: normalizedEmail,
         password_hash: data.password_hash,
+        google_subject: data.google_subject,
         role: data.role,
+        email_verified: emailVerified,
+        email_verified_at: emailVerifiedAt,
       };
       localUsers.set(normalizedEmail, user);
       return user;
@@ -194,7 +299,10 @@ export class AuthRepository {
           arabicName: data.arabic_name,
           email: normalizedEmail,
           passwordHash: data.password_hash,
+          googleSubject: data.google_subject,
           role: data.role,
+          emailVerified,
+          emailVerifiedAt,
         },
       });
 
@@ -204,11 +312,14 @@ export class AuthRepository {
         arabic_name: user.arabicName,
         email: user.email,
         password_hash: user.passwordHash,
+        google_subject: user.googleSubject,
         role: user.role,
+        email_verified: user.emailVerified,
+        email_verified_at: user.emailVerifiedAt,
       };
     } catch (err: any) {
       if (err instanceof AppError) throw err;
-      if (env.NODE_ENV === 'production') throw err;
+      if (env.NODE_ENV !== 'test') throw err;
 
       // Fallback
       if (localUsers.has(normalizedEmail)) {
@@ -220,7 +331,10 @@ export class AuthRepository {
         arabic_name: data.arabic_name,
         email: normalizedEmail,
         password_hash: data.password_hash,
+        google_subject: data.google_subject,
         role: data.role,
+        email_verified: emailVerified,
+        email_verified_at: emailVerifiedAt,
       };
       localUsers.set(normalizedEmail, user);
       return user;
@@ -242,6 +356,9 @@ export class AuthRepository {
     const isDbReady = await testPrismaConnection();
 
     if (!isDbReady) {
+      if (env.NODE_ENV !== 'test') {
+        throw AppError.internal('Authentication database is unavailable', 'AUTH_DATABASE_UNAVAILABLE');
+      }
       const user = await this.findById(data.userId);
       const session: SessionEntity = {
         id: sessionId,
@@ -288,11 +405,12 @@ export class AuthRepository {
               email: created.user.email,
               password_hash: created.user.passwordHash,
               role: created.user.role,
+              email_verified: (created.user as any).emailVerified ?? true,
             }
           : null,
       };
     } catch (err) {
-      if (env.NODE_ENV === 'production') throw err;
+      if (env.NODE_ENV !== 'test') throw err;
       const user = await this.findById(data.userId);
       const session: SessionEntity = {
         id: sessionId,
@@ -317,6 +435,9 @@ export class AuthRepository {
     const isDbReady = await testPrismaConnection();
 
     if (!isDbReady) {
+      if (env.NODE_ENV !== 'test') {
+        throw AppError.internal('Authentication database is unavailable', 'AUTH_DATABASE_UNAVAILABLE');
+      }
       for (const s of localSessions.values()) {
         if (s.refreshTokenHash === refreshTokenHash) {
           const user = await this.findById(s.userId);
@@ -333,10 +454,12 @@ export class AuthRepository {
       });
 
       if (!session) {
-        for (const s of localSessions.values()) {
-          if (s.refreshTokenHash === refreshTokenHash) {
-            const user = await this.findById(s.userId);
-            return { ...s, user };
+        if (env.NODE_ENV === 'test') {
+          for (const s of localSessions.values()) {
+            if (s.refreshTokenHash === refreshTokenHash) {
+              const user = await this.findById(s.userId);
+              return { ...s, user };
+            }
           }
         }
         return null;
@@ -359,11 +482,12 @@ export class AuthRepository {
               email: session.user.email,
               password_hash: session.user.passwordHash,
               role: session.user.role,
+              email_verified: (session.user as any).emailVerified ?? true,
             }
           : null,
       };
     } catch (err) {
-      if (env.NODE_ENV === 'production') throw err;
+      if (env.NODE_ENV !== 'test') throw err;
       for (const s of localSessions.values()) {
         if (s.refreshTokenHash === refreshTokenHash) {
           const user = await this.findById(s.userId);
@@ -379,6 +503,9 @@ export class AuthRepository {
    */
   static async revokeSession(id: string): Promise<void> {
     const isDbReady = await testPrismaConnection();
+    if (!isDbReady && env.NODE_ENV !== 'test') {
+      throw AppError.internal('Authentication database is unavailable', 'AUTH_DATABASE_UNAVAILABLE');
+    }
 
     const local = localSessions.get(id);
     if (local) {
@@ -392,7 +519,7 @@ export class AuthRepository {
           data: { revokedAt: new Date() },
         });
       } catch (err) {
-        if (env.NODE_ENV === 'production') throw err;
+        if (env.NODE_ENV !== 'test') throw err;
       }
     }
   }
@@ -402,6 +529,9 @@ export class AuthRepository {
    */
   static async revokeAllUserSessions(userId: string): Promise<void> {
     const isDbReady = await testPrismaConnection();
+    if (!isDbReady && env.NODE_ENV !== 'test') {
+      throw AppError.internal('Authentication database is unavailable', 'AUTH_DATABASE_UNAVAILABLE');
+    }
 
     for (const s of localSessions.values()) {
       if (s.userId === userId && !s.revokedAt) {
@@ -416,7 +546,7 @@ export class AuthRepository {
           data: { revokedAt: new Date() },
         });
       } catch (err) {
-        if (env.NODE_ENV === 'production') throw err;
+        if (env.NODE_ENV !== 'test') throw err;
       }
     }
   }
@@ -428,12 +558,16 @@ export class AuthRepository {
     const isDbReady = await testPrismaConnection();
 
     if (!isDbReady) {
+      if (env.NODE_ENV !== 'test') {
+        throw AppError.internal('Authentication database is unavailable', 'AUTH_DATABASE_UNAVAILABLE');
+      }
       return Array.from(localUsers.values()).map((u) => ({
         id: u.id,
         name: u.name,
         arabic_name: u.arabic_name,
         email: u.email,
         role: u.role,
+        email_verified: u.email_verified ?? true,
       }));
     }
 
@@ -447,15 +581,17 @@ export class AuthRepository {
         arabic_name: u.arabicName,
         email: u.email,
         role: u.role,
+        email_verified: (u as any).emailVerified ?? true,
       }));
     } catch (err) {
-      if (env.NODE_ENV === 'production') throw err;
+      if (env.NODE_ENV !== 'test') throw err;
       return Array.from(localUsers.values()).map((u) => ({
         id: u.id,
         name: u.name,
         arabic_name: u.arabic_name,
         email: u.email,
         role: u.role,
+        email_verified: u.email_verified ?? true,
       }));
     }
   }
@@ -465,10 +601,15 @@ export class AuthRepository {
    */
   static async updatePassword(userId: string, newPasswordHash: string): Promise<void> {
     const isDbReady = await testPrismaConnection();
+    if (!isDbReady && env.NODE_ENV !== 'test') {
+      throw AppError.internal('Authentication database is unavailable', 'AUTH_DATABASE_UNAVAILABLE');
+    }
 
-    for (const u of localUsers.values()) {
-      if (u.id === userId) {
-        u.password_hash = newPasswordHash;
+    if (env.NODE_ENV === 'test') {
+      for (const u of localUsers.values()) {
+        if (u.id === userId) {
+          u.password_hash = newPasswordHash;
+        }
       }
     }
 
@@ -479,9 +620,290 @@ export class AuthRepository {
           data: { passwordHash: newPasswordHash },
         });
       } catch (err) {
-        if (env.NODE_ENV === 'production') throw err;
+        if (env.NODE_ENV !== 'test') throw err;
       }
     }
   }
-}
 
+  /**
+   * Marks a user's email as verified.
+   */
+  static async markEmailVerified(userId: string): Promise<UserEntity> {
+    const isDbReady = await testPrismaConnection();
+    const verifiedAt = new Date();
+
+    if (env.NODE_ENV === 'test') {
+      for (const u of localUsers.values()) {
+        if (u.id === userId) {
+          u.email_verified = true;
+          u.email_verified_at = verifiedAt;
+          return u;
+        }
+      }
+    }
+
+    if (!isDbReady) {
+      throw AppError.internal('Authentication database is unavailable', 'AUTH_DATABASE_UNAVAILABLE');
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        emailVerified: true,
+        emailVerifiedAt: verifiedAt,
+      },
+    });
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      arabic_name: updated.arabicName,
+      email: updated.email,
+      password_hash: updated.passwordHash,
+      google_subject: updated.googleSubject,
+      role: updated.role,
+      email_verified: updated.emailVerified,
+      email_verified_at: updated.emailVerifiedAt,
+    };
+  }
+
+  /**
+   * Creates an email verification token record.
+   */
+  static async createEmailVerificationToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void> {
+    const id = `evt_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const now = new Date();
+
+    if (env.NODE_ENV === 'test') {
+      localVerificationTokens.set(tokenHash, {
+        id,
+        userId,
+        tokenHash,
+        expiresAt,
+        usedAt: null,
+        createdAt: now,
+      });
+    }
+
+    const isDbReady = await testPrismaConnection();
+    if (isDbReady) {
+      try {
+        await prisma.emailVerificationToken.create({
+          data: {
+            id,
+            userId,
+            tokenHash,
+            expiresAt,
+          },
+        });
+      } catch (err) {
+        if (env.NODE_ENV !== 'test') throw err;
+      }
+    }
+  }
+
+  /**
+   * Finds an email verification token by its hash.
+   */
+  static async findEmailVerificationToken(
+    tokenHash: string
+  ): Promise<{ id: string; userId: string; expiresAt: Date; usedAt: Date | null } | null> {
+    const isDbReady = await testPrismaConnection();
+    if (!isDbReady && env.NODE_ENV === 'test') {
+      const token = localVerificationTokens.get(tokenHash);
+      return token
+        ? { id: token.id, userId: token.userId, expiresAt: token.expiresAt, usedAt: token.usedAt ?? null }
+        : null;
+    }
+
+    try {
+      const record = await prisma.emailVerificationToken.findUnique({
+        where: { tokenHash },
+      });
+      if (!record && env.NODE_ENV === 'test') {
+        const token = localVerificationTokens.get(tokenHash);
+        return token
+          ? { id: token.id, userId: token.userId, expiresAt: token.expiresAt, usedAt: token.usedAt ?? null }
+          : null;
+      }
+      return record;
+    } catch (err) {
+      if (env.NODE_ENV === 'test') {
+        const token = localVerificationTokens.get(tokenHash);
+        return token
+          ? { id: token.id, userId: token.userId, expiresAt: token.expiresAt, usedAt: token.usedAt ?? null }
+          : null;
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Marks an email verification token as used.
+   */
+  static async markEmailVerificationTokenUsed(tokenId: string): Promise<void> {
+    const now = new Date();
+    if (env.NODE_ENV === 'test') {
+      for (const t of localVerificationTokens.values()) {
+        if (t.id === tokenId) t.usedAt = now;
+      }
+    }
+
+    const isDbReady = await testPrismaConnection();
+    if (isDbReady) {
+      try {
+        await prisma.emailVerificationToken.update({
+          where: { id: tokenId },
+          data: { usedAt: now },
+        });
+      } catch (err) {
+        if (env.NODE_ENV !== 'test') throw err;
+      }
+    }
+  }
+
+  /**
+   * Finds the latest verification token for rate limiting / resend throttling.
+   */
+  static async findLatestVerificationTokenForUser(userId: string): Promise<{ createdAt: Date } | null> {
+    const isDbReady = await testPrismaConnection();
+    if (!isDbReady && env.NODE_ENV === 'test') {
+      const userTokens = Array.from(localVerificationTokens.values())
+        .filter((t) => t.userId === userId)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      return userTokens[0] ? { createdAt: userTokens[0].createdAt } : null;
+    }
+
+    try {
+      const record = await prisma.emailVerificationToken.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        select: { createdAt: true },
+      });
+      return record;
+    } catch (err) {
+      if (env.NODE_ENV === 'test') return null;
+      throw err;
+    }
+  }
+
+  /**
+   * Creates a password reset token record.
+   */
+  static async createPasswordResetToken(userId: string, tokenHash: string, expiresAt: Date): Promise<void> {
+    const id = `prt_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const now = new Date();
+
+    if (env.NODE_ENV === 'test') {
+      localPasswordResetTokens.set(tokenHash, {
+        id,
+        userId,
+        tokenHash,
+        expiresAt,
+        usedAt: null,
+        createdAt: now,
+      });
+    }
+
+    const isDbReady = await testPrismaConnection();
+    if (isDbReady) {
+      try {
+        await prisma.passwordResetToken.create({
+          data: {
+            id,
+            userId,
+            tokenHash,
+            expiresAt,
+          },
+        });
+      } catch (err) {
+        if (env.NODE_ENV !== 'test') throw err;
+      }
+    }
+  }
+
+  /**
+   * Finds a password reset token by its hash.
+   */
+  static async findPasswordResetToken(
+    tokenHash: string
+  ): Promise<{ id: string; userId: string; expiresAt: Date; usedAt: Date | null } | null> {
+    const isDbReady = await testPrismaConnection();
+    if (!isDbReady && env.NODE_ENV === 'test') {
+      const token = localPasswordResetTokens.get(tokenHash);
+      return token
+        ? { id: token.id, userId: token.userId, expiresAt: token.expiresAt, usedAt: token.usedAt ?? null }
+        : null;
+    }
+
+    try {
+      const record = await prisma.passwordResetToken.findUnique({
+        where: { tokenHash },
+      });
+      if (!record && env.NODE_ENV === 'test') {
+        const token = localPasswordResetTokens.get(tokenHash);
+        return token
+          ? { id: token.id, userId: token.userId, expiresAt: token.expiresAt, usedAt: token.usedAt ?? null }
+          : null;
+      }
+      return record;
+    } catch (err) {
+      if (env.NODE_ENV === 'test') {
+        const token = localPasswordResetTokens.get(tokenHash);
+        return token
+          ? { id: token.id, userId: token.userId, expiresAt: token.expiresAt, usedAt: token.usedAt ?? null }
+          : null;
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Marks a password reset token as used.
+   */
+  static async markPasswordResetTokenUsed(tokenId: string): Promise<void> {
+    const now = new Date();
+    if (env.NODE_ENV === 'test') {
+      for (const t of localPasswordResetTokens.values()) {
+        if (t.id === tokenId) t.usedAt = now;
+      }
+    }
+
+    const isDbReady = await testPrismaConnection();
+    if (isDbReady) {
+      try {
+        await prisma.passwordResetToken.update({
+          where: { id: tokenId },
+          data: { usedAt: now },
+        });
+      } catch (err) {
+        if (env.NODE_ENV !== 'test') throw err;
+      }
+    }
+  }
+
+  /**
+   * Finds the latest password reset token for rate limiting / throttling.
+   */
+  static async findLatestPasswordResetTokenForUser(userId: string): Promise<{ createdAt: Date } | null> {
+    const isDbReady = await testPrismaConnection();
+    if (!isDbReady && env.NODE_ENV === 'test') {
+      const userTokens = Array.from(localPasswordResetTokens.values())
+        .filter((t) => t.userId === userId)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      return userTokens[0] ? { createdAt: userTokens[0].createdAt } : null;
+    }
+
+    try {
+      const record = await prisma.passwordResetToken.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        select: { createdAt: true },
+      });
+      return record;
+    } catch (err) {
+      if (env.NODE_ENV === 'test') return null;
+      throw err;
+    }
+  }
+}

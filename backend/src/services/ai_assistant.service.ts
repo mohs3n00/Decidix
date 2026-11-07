@@ -1,8 +1,10 @@
 import { AppError } from '../utils/response.js';
 import { env } from '../config/env.js';
 import { RagRepository, RetrievedDocument } from '../repositories/rag.repository.js';
-import { OpenRouterService, AssistantChatResult } from '../integrations/openrouter.js';
+import { OpenRouterService, AssistantChatResult, AnswerSource, ProviderStatus } from '../integrations/openrouter.js';
 import { ConversationMemoryService } from './conversation_memory.service.js';
+import { DatasetService } from './dataset.service.js';
+import { EvidenceService } from './evidence.service.js';
 
 export interface AssistantChatParams {
   message: string;
@@ -32,6 +34,12 @@ export interface AssistantChatResponse {
     }>;
   };
   suggested_prompts: string[];
+
+  /** Whether the text came from the model, the deterministic fallback, or a refusal. */
+  answer_source: AnswerSource;
+
+  /** Why the deterministic fallback was used; null when the model answered. */
+  provider_status: ProviderStatus | null;
 }
 
 export class AiAssistantService {
@@ -68,15 +76,43 @@ export class AiAssistantService {
 
     const history = ConversationMemoryService.getRecentHistory(session.conversationId);
 
-    // 3. Grounded Evidence Retrieval via RagRepository
+    const activeDataset = env.NODE_ENV === 'test' ? true : await DatasetService.active();
+    if (!activeDataset) {
+      const refusal = await OpenRouterService.generateAnswer({
+        message: trimmedMessage,
+        language,
+        retrievedDocs: [],
+        conversationHistory: [],
+      });
+      return {
+        conversation_id: session.conversationId,
+        reply: refusal.reply,
+        suggested_prompts: [],
+        answer_source: refusal.answer_source,
+        provider_status: refusal.provider_status,
+      };
+    }
+
+    // 3. Grounded evidence: structured dataset facts + approved RAG documents.
+    // A dataset-evidence lookup failure must not turn a chat request into a 500;
+    // the assistant then relies on RAG documents (or refuses if none).
     const minSim = params.minSimilarity ?? env.RAG_SIMILARITY_THRESHOLD ?? 0.65;
+    const structuredEvidence = await EvidenceService.buildEvidence(trimmedMessage).catch(() => []);
     const searchResult = await RagRepository.search({
       query: trimmedMessage,
       minSimilarity: minSim,
       limit: 3,
+      allowInMemoryFallback: env.NODE_ENV === 'test',
     });
 
-    const retrievedDocs: RetrievedDocument[] = searchResult.documents;
+    const seen = new Set<string>();
+    const retrievedDocs: RetrievedDocument[] = [...structuredEvidence, ...searchResult.documents]
+      .filter((document) => {
+        if (seen.has(document.id)) return false;
+        seen.add(document.id);
+        return true;
+      })
+      .slice(0, 6);
 
     // 4. Generate Grounded or Refusal Response
     const result: AssistantChatResult = await OpenRouterService.generateAnswer({
@@ -95,7 +131,8 @@ export class AiAssistantService {
       conversation_id: session.conversationId,
       reply: result.reply,
       suggested_prompts: result.suggested_prompts,
+      answer_source: result.answer_source,
+      provider_status: result.provider_status,
     };
   }
 }
-

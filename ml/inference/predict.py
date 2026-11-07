@@ -13,6 +13,11 @@ from datetime import datetime
 VALID_MODELS = ["temporal_ensemble", "gradient_boosting", "random_forest"]
 MIN_HORIZON_YEAR = 2026
 MAX_HORIZON_YEAR = 2030
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+
+def project_path(*parts: str) -> str:
+    return os.path.join(PROJECT_ROOT, *parts)
 
 REGION_METADATA = {
     "central_capital": {"name": "Central Capital", "arabic_name": "العاصمة المركزية"},
@@ -49,9 +54,9 @@ def load_model_artifact(model_name: str = "temporal_ensemble"):
     """Loads verified serialized model artifact with fallback resolution."""
     validate_model_name(model_name)
     candidates = [
-        os.path.join("ml", "models", "artifacts", f"{model_name}.joblib"),
-        os.path.join("ml", "models", f"{model_name}_forecaster.joblib"),
-        os.path.join("ml", "models", f"{model_name}.joblib"),
+        project_path("ml", "models", "artifacts", f"{model_name}.joblib"),
+        project_path("ml", "models", f"{model_name}_forecaster.joblib"),
+        project_path("ml", "models", f"{model_name}.joblib"),
     ]
     for path in candidates:
         if os.path.exists(path):
@@ -63,8 +68,8 @@ def load_model_artifact(model_name: str = "temporal_ensemble"):
 def load_feature_columns():
     """Loads expected feature columns vector."""
     candidates = [
-        os.path.join("ml", "models", "artifacts", "feature_columns.joblib"),
-        os.path.join("ml", "models", "feature_columns.joblib"),
+        project_path("ml", "models", "artifacts", "feature_columns.joblib"),
+        project_path("ml", "models", "feature_columns.joblib"),
     ]
     for path in candidates:
         if os.path.exists(path):
@@ -73,7 +78,7 @@ def load_feature_columns():
 
 def load_model_registry() -> dict:
     """Loads model registry metadata if available."""
-    path = os.path.join("ml", "models", "model_registry.json")
+    path = project_path("ml", "models", "model_registry.json")
     if os.path.exists(path):
         try:
             with open(path, "r", encoding="utf-8") as f:
@@ -94,7 +99,7 @@ def run_forecast(target_year: int = 2028, model_name: str = "temporal_ensemble")
     feature_cols = load_feature_columns()
     registry = load_model_registry()
 
-    curated_path = os.path.join("datasets", "processed", "curated_regional_development.csv")
+    curated_path = project_path("datasets", "processed", "curated_regional_development.csv")
     if not os.path.exists(curated_path):
         raise FileNotFoundError(f"Curated dataset not found at '{curated_path}'.")
 

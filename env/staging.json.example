@@ -1,0 +1,7 @@
+{
+  "_comment": "Copy this file to env/staging.json and fill in the real values. env/staging.json is .gitignored.",
+  "USE_MOCK": false,
+  "API_BASE_URL": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1",
+  "GOOGLE_SERVER_CLIENT_ID": "YOUR_WEB_OAUTH_CLIENT_ID.apps.googleusercontent.com"
+}
+

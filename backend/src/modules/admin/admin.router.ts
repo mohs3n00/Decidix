@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { requireAuth, requireRole } from '../../middleware/auth.js';
+import { requireAuth, requireRole, requireVerifiedEmail } from '../../middleware/auth.js';
 import { adminRateLimiter } from '../../middleware/rate_limit.js';
 import { sendSuccess } from '../../utils/response.js';
 import { AuthRepository } from '../../repositories/auth.repository.js';
@@ -16,6 +16,7 @@ adminRouter.get(
   adminRateLimiter,
   requireAuth,
   requireRole('admin'),
+  requireVerifiedEmail,
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const users = await AuthRepository.listUsers();
@@ -35,6 +36,7 @@ adminRouter.post(
   adminRateLimiter,
   requireAuth,
   requireRole('admin'),
+  requireVerifiedEmail,
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;

@@ -16,8 +16,11 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from preprocessing.features import prepare_features
 
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+
 def train_and_evaluate():
-    data_path = "datasets/processed/curated_regional_development.csv"
+    data_path = os.path.join(PROJECT_ROOT, "datasets", "processed", "curated_regional_development.csv")
     if not os.path.exists(data_path):
         raise FileNotFoundError(f"Processed dataset not found at {data_path}. Run scripts/pipeline_ingest.py first.")
 
@@ -44,7 +47,8 @@ def train_and_evaluate():
         ], weights=[0.6, 0.4])
     }
 
-    os.makedirs("ml/models/artifacts", exist_ok=True)
+    artifacts_dir = os.path.join(PROJECT_ROOT, "ml", "models", "artifacts")
+    os.makedirs(artifacts_dir, exist_ok=True)
     evaluation_results = {}
 
     for name, model in models.items():
@@ -66,11 +70,11 @@ def train_and_evaluate():
         }
 
         # Save model weights
-        joblib.dump(model, f"ml/models/artifacts/{name}.joblib")
+        joblib.dump(model, os.path.join(artifacts_dir, f"{name}.joblib"))
         print(f"Model [{name}]: R²={r2:.3f}, MAE={mae:.3f}, RMSE={rmse:.3f} -> Saved.")
 
     # Save feature columns template for reproducible inference
-    joblib.dump(list(X.columns), "ml/models/artifacts/feature_columns.joblib")
+    joblib.dump(list(X.columns), os.path.join(artifacts_dir, "feature_columns.joblib"))
 
     # Save model registry
     registry = {
@@ -80,7 +84,7 @@ def train_and_evaluate():
         "selected_production_model": "temporal_ensemble"
     }
 
-    with open("ml/models/model_registry.json", "w") as f:
+    with open(os.path.join(PROJECT_ROOT, "ml", "models", "model_registry.json"), "w") as f:
         json.dump(registry, f, indent=2)
 
     print("Model training and evaluation successfully completed: ml/models/model_registry.json")

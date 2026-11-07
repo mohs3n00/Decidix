@@ -3,6 +3,8 @@ class AppAssets {
 
   static const String logoNavy = 'assets/icon/Asset 2.svg';
   static const String logoWhite = 'assets/icon/Asset 3.svg';
+  static const String iconChatBot = 'assets/icon/Icon chat bot.png';
+  static const String appIconImage = 'assets/image/Artboard 4@2x.png';
 
   static const String icOverview = 'assets/icon/ic_overview.svg';
   static const String icInsights = 'assets/icon/ic_insights.svg';

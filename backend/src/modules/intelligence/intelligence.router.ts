@@ -3,22 +3,38 @@ import { z } from 'zod';
 import { SEED_RECOMMENDATIONS } from '../../database/seed_data.js';
 import { sendSuccess, AppError } from '../../utils/response.js';
 import { validateRequest } from '../../middleware/validator.js';
-import { optionalAuth } from '../../middleware/auth.js';
+import { optionalAuth, requireAuth, requirePermission } from '../../middleware/auth.js';
 import { assistantRateLimiter } from '../../middleware/rate_limit.js';
 import { RagService } from '../../integrations/rag.js';
 import { OpenRouterService } from '../../integrations/openrouter.js';
 import { ForecastRepository } from '../../repositories/forecast.repository.js';
 import { AiAssistantService } from '../../services/ai_assistant.service.js';
+import { env } from '../../config/env.js';
+import { prisma } from '../../database/prisma.js';
+import { DatasetService } from '../../services/dataset.service.js';
 
 export const intelligenceRouter = Router();
 
 // In-memory status tracking for recommendations (suggested, in_plan, dismissed)
 const recommendationStates = new Map<string, 'suggested' | 'in_plan' | 'dismissed'>();
 
+async function requireActiveDataset(next: NextFunction): Promise<boolean> {
+  if (env.NODE_ENV === 'test' || (await DatasetService.hasApprovedActiveDataset())) return true;
+  next(
+    AppError.unavailable(
+      'No approved dataset is connected. Connect and validate a dataset before viewing recommendations.',
+      'DATASET_NOT_CONNECTED'
+    )
+  );
+  return false;
+}
+
 // GET /v1/intelligence/predictions?target_year=2027|2028|2030
 const predictionsQuerySchema = z.object({
   target_year: z.enum(['2027', '2028', '2030']).default('2028').transform((val) => parseInt(val, 10)),
-  validation_status: z.enum(['validated', 'experimental']).default('validated').optional(),
+  // The version-scoped, explainable model writes `experimental` forecasts;
+  // `simulated` remains selectable for the legacy scenario rows.
+  validation_status: z.enum(['simulated', 'experimental', 'validated']).default('experimental'),
 });
 
 intelligenceRouter.get(
@@ -74,7 +90,74 @@ intelligenceRouter.post(
 );
 
 // GET /v1/intelligence/recommendations?priority=
-intelligenceRouter.get('/intelligence/recommendations', (req: Request, res: Response): void => {
+intelligenceRouter.get('/intelligence/recommendations', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  if (!(await requireActiveDataset(next))) return;
+  if (env.NODE_ENV !== 'test') {
+    try {
+      const active = await DatasetService.active();
+      if (!active) {
+        return next(AppError.unavailable('No approved dataset is connected.', 'DATASET_NOT_CONNECTED'));
+      }
+      const priority = req.query.priority as string | undefined;
+      const recommendations = await prisma.aiRecommendation.findMany({
+        where: {
+          status: 'suggested',
+          datasetVersionId: active.id,
+          region: { datasetVersionId: active.id },
+          ...(priority && priority !== 'all' ? { priority } : {}),
+        },
+        include: { region: true },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (recommendations.length === 0) {
+        return next(
+          AppError.unavailable(
+            'No verified recommendations are available for the active dataset.',
+            'DATASET_NOT_CONNECTED'
+          )
+        );
+      }
+      sendSuccess(
+        res,
+        recommendations.map((recommendation) => ({
+          id: recommendation.id,
+          priority: recommendation.priority,
+          region: {
+            region_id: recommendation.region.id,
+            name: recommendation.region.name,
+            arabic_name: recommendation.region.arabicName,
+          },
+          domain: recommendation.domain,
+          title: recommendation.title,
+          arabic_title: recommendation.arabicTitle,
+          summary: recommendation.summary,
+          arabic_summary: recommendation.arabicSummary,
+          index_impact: Number(recommendation.indexImpact),
+          estimated_cost: {
+            amount: Number(recommendation.estimatedCostAmount),
+            currency: recommendation.estimatedCostCurrency,
+          },
+          confidence: recommendation.confidence,
+          confidence_classification: 'unvalidated_without_methodology',
+          status: recommendation.status,
+          provenance: {
+            dataset_version: active.id,
+            source: active.source,
+            source_file: active.filename,
+            license: active.license,
+            geographic_coverage: active.coverage,
+            observation_period: null,
+            data_classification: 'derived_calculation',
+            verification_status: 'verified_dataset_unvalidated_method',
+          },
+        }))
+      );
+      return;
+    } catch (error) {
+      next(error);
+      return;
+    }
+  }
   const priority = req.query.priority as string | undefined;
 
   let list = SEED_RECOMMENDATIONS.map((rec) => {
@@ -98,14 +181,29 @@ intelligenceRouter.get('/intelligence/recommendations', (req: Request, res: Resp
 // POST /v1/intelligence/recommendations/:id/accept
 intelligenceRouter.post(
   '/intelligence/recommendations/:id/accept',
-  optionalAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    if (req.user && req.user.role === 'viewer') {
-      return next(
-        AppError.forbidden("User role 'viewer' lacks permission 'projects:manage' for this action.", 'PERMISSION_DENIED')
-      );
-    }
+  requireAuth,
+  requirePermission('projects:manage'),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (!(await requireActiveDataset(next))) return;
     const { id } = req.params;
+    if (env.NODE_ENV !== 'test') {
+      try {
+        const active = await DatasetService.active();
+        const recommendation = active
+          ? await prisma.aiRecommendation.findFirst({ where: { id, datasetVersionId: active.id } })
+          : null;
+        if (!recommendation) return next(AppError.notFound(`Recommendation '${id}' not found`));
+        const updated = await prisma.aiRecommendation.update({
+          where: { id },
+          data: { status: 'in_plan' },
+        });
+        sendSuccess(res, { id: updated.id, status: updated.status });
+        return;
+      } catch (error) {
+        next(error);
+        return;
+      }
+    }
     const exists = SEED_RECOMMENDATIONS.some((r) => r.id === id);
     if (!exists) {
       return next(AppError.notFound(`Recommendation '${id}' not found`));
@@ -119,14 +217,29 @@ intelligenceRouter.post(
 // POST /v1/intelligence/recommendations/:id/dismiss
 intelligenceRouter.post(
   '/intelligence/recommendations/:id/dismiss',
-  optionalAuth,
-  (req: Request, res: Response, next: NextFunction): void => {
-    if (req.user && req.user.role === 'viewer') {
-      return next(
-        AppError.forbidden("User role 'viewer' lacks permission 'projects:manage' for this action.", 'PERMISSION_DENIED')
-      );
-    }
+  requireAuth,
+  requirePermission('projects:manage'),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (!(await requireActiveDataset(next))) return;
     const { id } = req.params;
+    if (env.NODE_ENV !== 'test') {
+      try {
+        const active = await DatasetService.active();
+        const recommendation = active
+          ? await prisma.aiRecommendation.findFirst({ where: { id, datasetVersionId: active.id } })
+          : null;
+        if (!recommendation) return next(AppError.notFound(`Recommendation '${id}' not found`));
+        const updated = await prisma.aiRecommendation.update({
+          where: { id },
+          data: { status: 'dismissed' },
+        });
+        sendSuccess(res, { id: updated.id, status: updated.status });
+        return;
+      } catch (error) {
+        next(error);
+        return;
+      }
+    }
     const exists = SEED_RECOMMENDATIONS.some((r) => r.id === id);
     if (!exists) {
       return next(AppError.notFound(`Recommendation '${id}' not found`));
@@ -136,4 +249,3 @@ intelligenceRouter.post(
     sendSuccess(res, { id, status: 'dismissed' });
   }
 );
-

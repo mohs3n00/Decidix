@@ -58,9 +58,15 @@ class LoadingSkeleton extends StatelessWidget {
 /// Error state with a retry button. Wire [onRetry] to `ref.invalidate(...)`.
 class ErrorView extends StatelessWidget {
   final String? message;
+  final bool datasetUnavailable;
   final VoidCallback onRetry;
 
-  const ErrorView({super.key, this.message, required this.onRetry});
+  const ErrorView({
+    super.key,
+    this.message,
+    this.datasetUnavailable = false,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +89,10 @@ class ErrorView extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              message ?? context.tr('error_retry_hint'),
+              message ??
+                  (datasetUnavailable
+                      ? context.tr('dataset_not_connected')
+                      : context.tr('error_retry_hint')),
               textAlign: TextAlign.center,
               style: AppTypography.bodyS.copyWith(color: AppColors.ink),
             ),

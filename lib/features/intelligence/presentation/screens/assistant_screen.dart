@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../api/models/intelligence.dart';
 import '../../../../core/constants/app_assets.dart';
@@ -136,6 +135,187 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
   }
 }
 
+class _BotAvatar extends StatelessWidget {
+  final double size;
+
+  const _BotAvatar({this.size = 28});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.white,
+        border: Border.all(color: AppColors.hairline),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.navy.withValues(alpha: 0.06),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(2),
+      child: ClipOval(
+        child: Image.asset(
+          AppAssets.iconChatBot,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+}
+
+class _ThinkingBotAvatar extends StatefulWidget {
+  final double size;
+
+  const _ThinkingBotAvatar({this.size = 34});
+
+  @override
+  State<_ThinkingBotAvatar> createState() => _ThinkingBotAvatarState();
+}
+
+class _ThinkingBotAvatarState extends State<_ThinkingBotAvatar>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final value = _controller.value;
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Outer glowing pulsing halo aura
+            Container(
+              width: widget.size + 14 + (6 * value),
+              height: widget.size + 14 + (6 * value),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    AppColors.cyan.withValues(alpha: 0.35 * (1.0 - value * 0.3)),
+                    AppColors.blue.withValues(alpha: 0.15 * (1.0 - value)),
+                    Colors.transparent,
+                  ],
+                  stops: const [0.3, 0.7, 1.0],
+                ),
+              ),
+            ),
+            // Breathing and glowing avatar container
+            Transform.scale(
+              scale: 1.0 + (0.06 * value),
+              child: Container(
+                width: widget.size,
+                height: widget.size,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.white,
+                  border: Border.all(
+                    color: Color.lerp(AppColors.blue, AppColors.cyan, value)!,
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.cyan.withValues(alpha: 0.3 + 0.3 * value),
+                      blurRadius: 8 + 8 * value,
+                      spreadRadius: 1 + 2 * value,
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(3),
+                child: ClipOval(
+                  child: Image.asset(
+                    AppAssets.iconChatBot,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ThinkingDotsAnimation extends StatefulWidget {
+  const _ThinkingDotsAnimation();
+
+  @override
+  State<_ThinkingDotsAnimation> createState() => _ThinkingDotsAnimationState();
+}
+
+class _ThinkingDotsAnimationState extends State<_ThinkingDotsAnimation>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (index) {
+            final delay = index * 0.2;
+            final phase = (_controller.value - delay) % 1.0;
+            final double bounce = -4.0 * (phase < 0.5 ? (1.0 - (phase * 2 - 1).abs()) : 0.0);
+            final double opacity = 0.35 + 0.65 * (phase < 0.5 ? (1.0 - (phase * 2 - 1).abs()) : 0.0);
+
+            return Transform.translate(
+              offset: Offset(0, bounce),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.blue.withValues(alpha: opacity),
+                ),
+              ),
+            );
+          }),
+        );
+      },
+    );
+  }
+}
+
 class _AssistantBubble extends StatelessWidget {
   final String text;
   final ChatReply? reply;
@@ -156,80 +336,116 @@ class _AssistantBubble extends StatelessWidget {
 
     return Align(
       alignment: AlignmentDirectional.centerStart,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 320),
-        child: DecidixCard(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                text,
-                style: AppTypography.bodyM.copyWith(
-                  color: isError ? AppColors.dangerText : AppColors.navy,
-                ),
-              ),
-              if (rows != null && rows.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.wellTint,
-                    borderRadius: AppRadius.innerRadius,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Column(
-                    children: [
-                      for (final (i, row) in rows.indexed) ...[
-                        if (i > 0) const Divider(height: 1),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  row.name.resolve(locale),
-                                  style: AppTypography.labelM,
-                                ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Padding(
+            padding: EdgeInsetsDirectional.only(top: 4),
+            child: _BotAvatar(size: 28),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 290),
+              child: DecidixCard(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      text,
+                      style: AppTypography.bodyM.copyWith(
+                        color: isError ? AppColors.dangerText : AppColors.navy,
+                      ),
+                    ),
+                    if (reply?.answerSource == AnswerSource.deterministicFallback) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.verified_outlined,
+                            size: 12,
+                            color: AppColors.ink,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              fmt.tr('asst_fallback_notice'),
+                              style: AppTypography.microRegular.copyWith(
+                                color: AppColors.ink,
                               ),
-                              Text(
-                                '${row.change < 0 ? '▼' : '▲'} ${fmt.points(row.change)}',
-                                style: AppTypography.captionRegular.copyWith(
-                                  color: row.change < 0
-                                      ? AppColors.dangerText
-                                      : AppColors.successText,
-                                ),
-                              ),
-                              SizedBox(
-                                width: 36,
-                                child: Text(
-                                  fmt.number(row.score, decimals: 0),
-                                  textAlign: TextAlign.end,
-                                  style: AppTypography.labelLStrong,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (rows != null && rows.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.wellTint,
+                          borderRadius: AppRadius.innerRadius,
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Column(
+                          children: [
+                            for (final (i, row) in rows.indexed) ...[
+                              if (i > 0) const Divider(height: 1),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        row.name.resolve(locale),
+                                        style: AppTypography.labelM,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${row.change < 0 ? '▼' : '▲'} ${fmt.points(row.change)}',
+                                      style: AppTypography.captionRegular.copyWith(
+                                        color: row.change < 0
+                                            ? AppColors.dangerText
+                                            : AppColors.successText,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 36,
+                                      child: Text(
+                                        fmt.number(row.score, decimals: 0),
+                                        textAlign: TextAlign.end,
+                                        style: AppTypography.labelLStrong,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ],
-                  ),
+                    for (final source in sources) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        fmt.tr('asst_source', {
+                          'name': source.name.resolve(locale),
+                          'period': fmt.period(source.period),
+                        }),
+                        style: AppTypography.microRegular.copyWith(
+                          color: AppColors.ink,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              ],
-              for (final source in sources) ...[
-                const SizedBox(height: 10),
-                Text(
-                  fmt.tr('asst_source', {
-                    'name': source.name.resolve(locale),
-                    'period': fmt.period(source.period),
-                  }),
-                  style: AppTypography.microRegular.copyWith(
-                    color: AppColors.ink,
-                  ),
-                ),
-              ],
-            ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -276,15 +492,17 @@ class _TypingBubble extends StatelessWidget {
       alignment: AlignmentDirectional.centerStart,
       child: Semantics(
         label: context.fmt.tr('loading'),
-        child: DecidixCard(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-          child: Text(
-            '•••',
-            style: AppTypography.titleM.copyWith(
-              color: AppColors.ink,
-              letterSpacing: 2,
+        child: const Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _ThinkingBotAvatar(size: 32),
+            SizedBox(width: 8),
+            DecidixCard(
+              padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: _ThinkingDotsAnimation(),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -340,13 +558,12 @@ class _InputBar extends StatelessWidget {
       padding: const EdgeInsetsDirectional.fromSTEB(16, 6, 6, 6),
       child: Row(
         children: [
-          SvgPicture.asset(
-            AppAssets.icAiSpark,
-            width: 16,
-            height: 16,
-            colorFilter: const ColorFilter.mode(
-              AppColors.blue,
-              BlendMode.srcIn,
+          ClipOval(
+            child: Image.asset(
+              AppAssets.iconChatBot,
+              width: 22,
+              height: 22,
+              fit: BoxFit.contain,
             ),
           ),
           const SizedBox(width: 10),

@@ -143,6 +143,35 @@ void main() {
 
       expect(adapter.last!.headers.containsKey('Authorization'), isFalse);
     });
+
+    test('refreshes once and retries a protected request after 401', () async {
+      var requests = 0;
+      var refreshes = 0;
+      final adapter = _FakeAdapter((options) {
+        requests++;
+        if (requests == 1) {
+          return _json({'error': {'message': 'expired'}}, 401);
+        }
+        return _json({'data': {'ok': true}});
+      });
+      final dio = Dio(BaseOptions(baseUrl: 'https://test.local/v1'))
+        ..httpClientAdapter = adapter;
+      final client = ApiClient(
+        dio: dio,
+        logRequests: false,
+        authToken: () => 'new-token',
+        refreshAccessToken: () async {
+          refreshes++;
+          return true;
+        },
+      );
+
+      final response = await DioTransport(client).get('/overview');
+
+      expect(response.data, {'ok': true});
+      expect(requests, 2);
+      expect(refreshes, 1);
+    });
   });
 
   group('errors', () {

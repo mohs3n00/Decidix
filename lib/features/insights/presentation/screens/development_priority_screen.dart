@@ -146,15 +146,16 @@ class _QueueCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  fmt.tr('prio_weakest', {
-                    'domain': entry.weakestDomain.label.resolve(locale),
-                    'score': fmt.number(entry.weakestDomain.score, decimals: 0),
-                  }),
-                  style: AppTypography.captionRegular.copyWith(
-                    color: AppColors.ink,
+                if (entry.weakestDomain != null)
+                  Text(
+                    fmt.tr('prio_weakest', {
+                      'domain': entry.weakestDomain!.label.resolve(locale),
+                      'score': fmt.number(entry.weakestDomain!.score, decimals: 0),
+                    }),
+                    style: AppTypography.captionRegular.copyWith(
+                      color: AppColors.ink,
+                    ),
                   ),
-                ),
               ],
             ),
           ),

@@ -15,6 +15,7 @@ import '../../features/insights/presentation/screens/region_comparison_screen.da
 import '../../features/insights/presentation/screens/historical_analysis_screen.dart';
 import '../../features/insights/presentation/screens/development_priority_screen.dart';
 import '../../features/insights/presentation/screens/data_quality_screen.dart';
+import '../../features/datasets/presentation/screens/dataset_upload_screen.dart';
 
 // Intelligence Screens
 import '../../features/intelligence/presentation/screens/predictions_screen.dart';
@@ -26,6 +27,7 @@ import '../../features/decisions/presentation/screens/simulator_screen.dart';
 import '../../features/decisions/presentation/screens/development_projects_screen.dart';
 import '../../features/decisions/presentation/screens/citizen_reports_screen.dart';
 
+import '../../features/auth/presentation/screens/login_screen.dart';
 import 'app_shell.dart';
 import 'not_found_screen.dart';
 
@@ -38,6 +40,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/overview/dashboard',
     errorBuilder: (context, state) => const NotFoundScreen(),
     routes: [
+      GoRoute(
+        path: '/login',
+        pageBuilder: (context, state) =>
+            const NoTransitionPage(child: LoginScreen()),
+      ),
       ShellRoute(
         navigatorKey: shellNavigatorKey,
         builder: (context, state, child) {
@@ -112,6 +119,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/insights/data-quality',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: DataQualityScreen()),
+          ),
+          GoRoute(
+            path: '/datasets/upload',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: DatasetUploadScreen()),
           ),
 
           // 3. Intelligence

@@ -1,8 +1,10 @@
 import { prisma, testPrismaConnection } from '../database/prisma.js';
 import { SEED_REGIONS, SEED_DATA_SOURCES, SEED_OVERVIEW } from '../database/seed_data.js';
 import { toNumber } from '../utils/decimal.js';
-import { env } from '../config/env.js';
+import { compositeScore, finiteMean, normalizeToScore } from '../utils/analytics.js';
+import { env, syntheticDataAllowed } from '../config/env.js';
 import { AppError } from '../utils/response.js';
+import { DatasetService } from '../services/dataset.service.js';
 
 const SECTOR_CONFIGS: Record<string, {
   label: string;
@@ -138,10 +140,55 @@ const SECTOR_CONFIGS: Record<string, {
 };
 
 export class InsightsRepository {
+  private static async requireVerifiedDataset() {
+    if (!(await DatasetService.hasApprovedActiveDataset()) || !(await testPrismaConnection())) {
+      throw AppError.unavailable(
+        'No verified analytical dataset is available for this output.',
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+    const active = await DatasetService.active();
+    if (!active) {
+      throw AppError.unavailable(
+        'No verified analytical dataset is available for this output.',
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+    return active;
+  }
+
+  private static async assertDatasetAvailable(): Promise<void> {
+    if (!syntheticDataAllowed() && !(await DatasetService.hasApprovedActiveDataset())) {
+      throw AppError.unavailable(
+        'No approved dataset is connected. Connect and validate a dataset before viewing insights.',
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+  }
+
+  /**
+   * Batch 2 provenance guard: a version whose source/licence says synthetic,
+   * demo, test or illustrative must never be returned as official data.
+   * (The verified paths previously hard-coded `is_official: true`.)
+   */
+  private static isSyntheticDataset(active: {
+    source: string;
+    license: string;
+    coverage: string;
+  }): boolean {
+    return /(synthetic|demo|test|illustrative)/i.test(
+      `${active.source} ${active.license} ${active.coverage}`
+    );
+  }
+
   /**
    * Fetches sector deep-dive analytics.
    */
   static async getSectorData(sector: 'education' | 'healthcare' | 'economy' | 'infrastructure') {
+    if (!syntheticDataAllowed()) {
+      return this.getVerifiedSectorData(sector);
+    }
+    await this.assertDatasetAvailable();
     const config = SECTOR_CONFIGS[sector];
     const isDbReady = await testPrismaConnection();
 
@@ -186,6 +233,8 @@ export class InsightsRepository {
 
     return {
       sector,
+      data_classification: 'synthetic_reference_model',
+      is_official: false,
       index: config.index,
       kpis: config.kpis,
       trend: { points: SEED_OVERVIEW.trend_points_7y },
@@ -200,6 +249,10 @@ export class InsightsRepository {
    * Compares 2 regions side by side.
    */
   static async getComparison(aId: string, bId: string) {
+    if (!syntheticDataAllowed()) {
+      return this.getVerifiedComparison(aId, bId);
+    }
+    await this.assertDatasetAvailable();
     const isDbReady = await testPrismaConnection();
 
     let regA = SEED_REGIONS.find((r) => r.id === aId.toLowerCase());
@@ -228,19 +281,27 @@ export class InsightsRepository {
     const leader = regA.score >= regB.score ? regA : regB;
     const trailer = regA.score >= regB.score ? regB : regA;
 
+    const domainMetrics = [
+      { key: 'education', label: 'Education', arabic_label: 'التعليم', score_a: regA.domains.education, score_b: regB.domains.education },
+      { key: 'healthcare', label: 'Healthcare', arabic_label: 'الرعاية الصحية', score_a: regA.domains.healthcare, score_b: regB.domains.healthcare },
+      { key: 'economy', label: 'Economy', arabic_label: 'الاقتصاد', score_a: regA.domains.economy, score_b: regB.domains.economy },
+      { key: 'infrastructure', label: 'Infrastructure', arabic_label: 'البنية التحتية', score_a: regA.domains.infrastructure, score_b: regB.domains.infrastructure },
+    ];
+    const widest = [...domainMetrics].sort(
+      (x, y) => Math.abs(y.score_a - y.score_b) - Math.abs(x.score_a - x.score_b)
+    )[0];
+    const widestGap = Number(Math.abs(widest.score_a - widest.score_b).toFixed(1));
+
     return {
       a: { id: regA.id, name: regA.name, arabic_name: regA.arabic_name, score: regA.score },
       b: { id: regB.id, name: regB.name, arabic_name: regB.arabic_name, score: regB.score },
       metrics: [
         { key: 'overall', label: 'Overall', arabic_label: 'الإجمالي', score_a: regA.score, score_b: regB.score },
-        { key: 'education', label: 'Education', arabic_label: 'التعليم', score_a: regA.domains.education, score_b: regB.domains.education },
-        { key: 'healthcare', label: 'Healthcare', arabic_label: 'الرعاية الصحية', score_a: regA.domains.healthcare, score_b: regB.domains.healthcare },
-        { key: 'economy', label: 'Economy', arabic_label: 'الاقتصاد', score_a: regA.domains.economy, score_b: regB.domains.economy },
-        { key: 'infrastructure', label: 'Infrastructure', arabic_label: 'البنية التحتية', score_a: regA.domains.infrastructure, score_b: regB.domains.infrastructure },
+        ...domainMetrics,
       ],
       gap_analysis: {
-        text: `${leader.name} leads ${trailer.name} by ${diff} index points. The widest disparity occurs in healthcare and economy.`,
-        arabic_text: `تتقدم ${leader.arabic_name} على ${trailer.arabic_name} بفارق ${diff} نقطة في المؤشر. وأوسع فجوة في الرعاية الصحية والاقتصاد.`,
+        text: `${leader.name} leads ${trailer.name} by ${diff} index points. The widest domain gap is ${widest.label} at ${widestGap} points.`,
+        arabic_text: `${leader.arabic_name} على ${trailer.arabic_name} بفارق ${diff} نقطة في المؤشر. وأوسع فجوة قطاعية في ${widest.arabic_label} بفارق ${widestGap} نقطة.`,
       },
     };
   }
@@ -248,19 +309,31 @@ export class InsightsRepository {
   /**
    * Fetches historical milestones and national trend.
    */
-  static getHistorical(_sector = 'overall', range: '3Y' | '5Y' | '7Y' = '7Y') {
+  static async getHistorical(_sector = 'overall', range: '3Y' | '5Y' | '7Y' = '7Y') {
+    if (!syntheticDataAllowed()) {
+      return this.getVerifiedHistorical(_sector, range);
+    }
+    await this.assertDatasetAvailable();
     const count = range === '3Y' ? 3 : range === '5Y' ? 5 : 7;
     const points = SEED_OVERVIEW.trend_points_7y.slice(-count);
+    const first = points[0];
+    const last = points[points.length - 1];
+    const annualChange =
+      points.length > 1 && last && first
+        ? Number(((last.value - first.value) / (points.length - 1)).toFixed(2))
+        : 0;
 
     return {
       range,
       points,
-      annual_change: 1.8,
-      milestones: [
-        { year: 2021, text: 'National Healthcare Access Directive enacted', arabic_text: 'إقرار التوجيه الوطني للوصول إلى الرعاية الصحية' },
-        { year: 2023, text: 'Rural Broadband Infrastructure reached 70% coverage', arabic_text: 'وصول تغطية النطاق العريض الريفي إلى 70%' },
-        { year: 2025, text: 'Launch of Clean Water Sanitation Initiative across Delta', arabic_text: 'إطلاق مبادرة مياه الشرب النظيفة والصرف في الدلتا' },
-      ],
+      annual_change: annualChange,
+      // No verified policy events are ingested for this dataset, so the list is
+      // intentionally empty instead of being populated with invented events.
+      milestones: [],
+      milestones_note:
+        'No verified policy milestone records are ingested; this list is intentionally empty rather than populated with invented events.',
+      data_classification: 'synthetic',
+      is_official: false,
     };
   }
 
@@ -268,6 +341,10 @@ export class InsightsRepository {
    * Fetches urgency-ranked priority queue.
    */
   static async getPriorityQueue(limit = 10) {
+    if (!syntheticDataAllowed()) {
+      return this.getVerifiedPriorityQueue(limit);
+    }
+    await this.assertDatasetAvailable();
     const isDbReady = await testPrismaConnection();
     let regions = [...SEED_REGIONS];
 
@@ -324,6 +401,10 @@ export class InsightsRepository {
    * Fetches dataset provenance and data quality report.
    */
   static async getDataQuality() {
+    if (!syntheticDataAllowed()) {
+      return this.getVerifiedDataQuality();
+    }
+    await this.assertDatasetAvailable();
     const isDbReady = await testPrismaConnection();
     let sources = SEED_DATA_SOURCES;
 
@@ -354,20 +435,440 @@ export class InsightsRepository {
       }
     }
 
+    const avg = (values: number[]) =>
+      values.length === 0
+        ? 0
+        : Number((values.reduce((a, b) => a + b, 0) / values.length).toFixed(1));
+
+    const completeness = avg(sources.map((s) => s.completeness_pct));
+    const timeliness = avg(sources.map((s) => s.timeliness_pct));
+    const accuracy = avg(sources.map((s) => s.accuracy_pct));
+    const score = Number(((completeness + timeliness + accuracy) / 3).toFixed(1));
+
     return {
-      score: 96,
-      completeness: 98,
-      timeliness: 94,
-      accuracy: 96,
+      score,
+      completeness,
+      timeliness,
+      accuracy,
       coverage: '12 / 12 regions',
+      data_classification: 'synthetic',
+      is_official: false,
+      accuracy_definition: 'structural_schema_and_range_validation',
+      provenance_note:
+        'All datasets are generated locally by scripts/pipeline_ingest.py from a fixed 12-region baseline. They are not official statistics. The reported dimensions describe structural integrity of the generated files (completeness, recency against the declared coverage window, schema/range validation), not statistical accuracy against a real population.',
       sources: sources.map((s) => ({
+        id: s.id,
         name: s.name,
         arabic_name: s.arabic_name,
+        original_source: s.original_source,
+        license: s.license,
+        record_count: s.record_count,
         frequency: s.update_frequency,
         status: s.status,
         age_days: s.age_days,
       })),
     };
   }
-}
 
+  private static async getVerifiedSectorData(
+    sector: 'education' | 'healthcare' | 'economy' | 'infrastructure'
+  ) {
+    const active = await this.requireVerifiedDataset();
+    const indicators = await prisma.indicator.findMany({
+      where: { domain: sector, datasetVersionId: active.id },
+      select: { key: true, label: true, arabicLabel: true, unit: true, higherIsBetter: true },
+    });
+    if (indicators.length === 0) {
+      throw AppError.unavailable(
+        `No verified ${sector} indicators are available for dataset ${active.id}.`,
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+
+    const metrics = await prisma.regionalMetric.findMany({
+      where: {
+        indicatorKey: { in: indicators.map((indicator) => indicator.key) },
+        datasetVersionId: active.id,
+        region: { datasetVersionId: active.id },
+      },
+      orderBy: { year: 'desc' },
+      include: { region: true },
+    });
+    if (metrics.length === 0) {
+      throw AppError.unavailable(
+        `No verified regional ${sector} observations are available for dataset ${active.id}.`,
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+
+    const yearsDesc = [...new Set(metrics.map((metric) => metric.year))].sort((a, b) => b - a);
+    const latestYear = yearsDesc[0];
+    const previousYear = yearsDesc[1] ?? null;
+
+    /**
+     * Batch 3: raw values with different units are NEVER averaged. Each
+     * indicator is min-max normalised to 0..100 against its observed regional
+     * range in the reference year (direction applied), then equal-weighted.
+     * Missing observations are excluded and reported, not treated as zero.
+     */
+    const components = indicators
+      .map((indicator) => {
+        const atYear = (year: number) =>
+          metrics
+            .filter((metric) => metric.indicatorKey === indicator.key && metric.year === year)
+            .map((metric) => ({ regionId: metric.regionId, value: toNumber(metric.value) }));
+        const latest = atYear(latestYear);
+        if (latest.length === 0) return null;
+        const previous = previousYear === null ? [] : atYear(previousYear);
+        const values = latest.map((entry) => entry.value);
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const national = finiteMean(values);
+        if (national === null) return null;
+        const previousNational = finiteMean(previous.map((entry) => entry.value));
+        return {
+          indicator,
+          latest,
+          min,
+          max,
+          national,
+          previousNational,
+          normalized: normalizeToScore({ value: national, min, max, higherIsBetter: indicator.higherIsBetter }),
+          previousNormalized:
+            previousNational === null
+              ? null
+              : normalizeToScore({
+                  value: previousNational,
+                  min,
+                  max,
+                  higherIsBetter: indicator.higherIsBetter,
+                }),
+        };
+      })
+      .filter((component): component is NonNullable<typeof component> => component !== null);
+
+    if (components.length === 0) {
+      throw AppError.unavailable(
+        `No verified ${sector} observations can be normalised for dataset ${active.id}.`,
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+
+    const kpis = components.map((component) => ({
+      key: component.indicator.key,
+      label: component.indicator.label,
+      arabic_label: component.indicator.arabicLabel,
+      value: Number(component.national.toFixed(2)),
+      unit: component.indicator.unit,
+      change:
+        component.previousNational === null
+          ? 0
+          : Number((component.national - component.previousNational).toFixed(2)),
+      higher_is_better: component.indicator.higherIsBetter,
+    }));
+
+    const composite = compositeScore(components.map((component) => ({ normalized: component.normalized })));
+    const previousComposite = compositeScore(
+      components.map((component) => ({ normalized: component.previousNormalized }))
+    );
+    if (composite.score === null) {
+      throw AppError.unavailable(
+        `No comparable ${sector} score can be computed for dataset ${active.id}.`,
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+
+    const regionIds = [...new Set(metrics.filter((metric) => metric.year === latestYear).map((metric) => metric.regionId))];
+    const ranking = regionIds
+      .map((regionId) => {
+        const metric = metrics.find(
+          (candidate) => candidate.regionId === regionId && candidate.year === latestYear
+        )!;
+        const regionScore = compositeScore(
+          components.map((component) => {
+            const entry = component.latest.find((candidate) => candidate.regionId === regionId);
+            return {
+              normalized:
+                entry === undefined
+                  ? null
+                  : normalizeToScore({
+                      value: entry.value,
+                      min: component.min,
+                      max: component.max,
+                      higherIsBetter: component.indicator.higherIsBetter,
+                    }),
+            };
+          })
+        ).score;
+        return {
+          region_id: regionId,
+          name: metric.region.name,
+          arabic_name: metric.region.arabicName,
+          score: regionScore ?? 0,
+        };
+      })
+      .sort((a, b) => b.score - a.score)
+      .map((entry, index) => ({ rank: index + 1, ...entry }));
+
+    return {
+      sector,
+      data_classification: 'derived_calculation',
+      is_official: !this.isSyntheticDataset(active),
+      source_classification: this.isSyntheticDataset(active) ? 'synthetic_demo' : 'official_source',
+      dataset_version: active.id,
+      index: {
+        score: composite.score,
+        change:
+          previousComposite.score === null
+            ? 0
+            : Number((composite.score - previousComposite.score).toFixed(1)),
+      },
+      normalization: {
+        method: 'min_max_across_regions_per_indicator',
+        scale: [0, 100],
+        direction_adjusted: true,
+        weights: 'equal',
+        reference_year: latestYear,
+        previous_year: previousYear,
+        indicators_used: composite.used,
+        indicators_missing: composite.missing,
+        note:
+          'Raw values in different units are never averaged. Each indicator is normalised against its observed regional range for the reference year, direction applied, then equal-weighted.',
+      },
+      kpis,
+      trend: { points: [] },
+      breakdown: { title: sector, arabic_title: sector, unit: 'value', bars: [] },
+      indicators: kpis.map(({ key, label, arabic_label, value, unit }) => ({
+        key,
+        label,
+        arabic_label,
+        value,
+        unit,
+      })),
+      ranking: {
+        basis: 'normalized_sector_composite',
+        top: ranking.slice(0, 5),
+        bottom: ranking.slice(-5).reverse(),
+      },
+      ai_insight: {
+        text: 'No generated narrative is available; review the verified observations above.',
+        arabic_text: 'لا توجد رواية مولدة متاحة؛ راجع الملاحظات الموثقة أعلاه.',
+      },
+      provenance: {
+        dataset_version: active.id,
+        source: active.source,
+        source_file: active.filename,
+        license: active.license,
+        geographic_coverage: active.coverage,
+        observation_period:
+          previousYear === null ? String(latestYear) : `${previousYear}-${latestYear}`,
+        method: 'Aggregated from version-matched indicator and regional metric observations.',
+        data_classification: 'derived_calculation',
+        verification_status: 'verified_dataset_derived',
+      },
+    };
+  }
+
+  private static async getVerifiedHistorical(sector: string, range: '3Y' | '5Y' | '7Y') {
+    const active = await this.requireVerifiedDataset();
+    const count = range === '3Y' ? 3 : range === '5Y' ? 5 : 7;
+    const rows =
+      sector === 'overall'
+        ? await prisma.nationalIndexHistory.findMany({
+            where: { datasetVersionId: active.id },
+            orderBy: { year: 'desc' },
+            take: count,
+          })
+        : await prisma.regionalMetric.findMany({
+            where: {
+              indicatorKey: sector,
+              datasetVersionId: active.id,
+              indicator: { datasetVersionId: active.id },
+            },
+            orderBy: { year: 'desc' },
+            take: count,
+          });
+    if (rows.length === 0) {
+      throw AppError.unavailable(
+        `No verified historical ${sector} observations are available for dataset ${active.id}.`,
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+    const points = rows
+      .reverse()
+      .map((row) => ({ year: row.year, value: toNumber('score' in row ? row.score : row.value) }));
+    const first = points[0];
+    const last = points[points.length - 1];
+    return {
+      range,
+      points,
+      annual_change:
+        points.length > 1 ? Number(((last.value - first.value) / (points.length - 1)).toFixed(2)) : 0,
+      milestones: [],
+      milestones_note: 'No verified policy milestone records are ingested.',
+      data_classification: this.isSyntheticDataset(active)
+        ? 'derived_calculation'
+        : 'official_observed',
+      is_official: !this.isSyntheticDataset(active),
+      source_classification: this.isSyntheticDataset(active) ? 'synthetic_demo' : 'official_source',
+      dataset_version: active.id,
+      provenance: {
+        dataset_version: active.id,
+        source: active.source,
+        source_file: active.filename,
+        license: active.license,
+        geographic_coverage: active.coverage,
+        observation_period: points.length ? `${points[0].year}-${points[points.length - 1].year}` : null,
+        method: 'Version-matched persisted historical observations.',
+        data_classification: this.isSyntheticDataset(active)
+          ? 'derived_calculation'
+          : 'official_observed',
+        verification_status: 'verified_dataset_observed',
+      },
+    };
+  }
+
+  private static async getVerifiedPriorityQueue(limit: number) {
+    const active = await this.requireVerifiedDataset();
+    const regions = await prisma.region.findMany({
+      where: { datasetVersionId: active.id },
+      orderBy: { score: 'asc' },
+      take: Math.max(limit, 1),
+    });
+    if (regions.length === 0) {
+      throw AppError.unavailable(
+        `No verified regional observations are available for dataset ${active.id}.`,
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+    return {
+      summary: {
+        high: regions.filter((region) => region.priority === 'high' || region.priority === 'critical').length,
+        medium: regions.filter((region) => region.priority === 'medium').length,
+        low: regions.filter((region) => region.priority === 'low').length,
+      },
+      queue: regions.map((region, index) => ({
+        rank: index + 1,
+        region_id: region.id,
+        name: region.name,
+        arabic_name: region.arabicName,
+        priority: region.priority,
+        need_score: Math.round(100 - toNumber(region.score)),
+        weakest_domain: null,
+      })),
+      data_classification: 'derived_calculation',
+      is_official: !this.isSyntheticDataset(active),
+      source_classification: this.isSyntheticDataset(active) ? 'synthetic_demo' : 'official_source',
+      dataset_version: active.id,
+      provenance: {
+        dataset_version: active.id,
+        source: active.source,
+        source_file: active.filename,
+        license: active.license,
+        geographic_coverage: active.coverage,
+        observation_period: null,
+        method: 'Priority derived from version-matched regional scores.',
+        data_classification: 'derived_calculation',
+        verification_status: 'verified_dataset_derived',
+      },
+    };
+  }
+
+  private static async getVerifiedDataQuality() {
+    const active = await this.requireVerifiedDataset();
+    const sources = await prisma.datasetMetadata.findMany({
+      where: { datasetVersionId: active.id },
+    });
+    if (sources.length === 0) {
+      throw AppError.unavailable(
+        `No verified provenance metadata is available for dataset ${active.id}.`,
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+    const average = (values: number[]) =>
+      Number((values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1));
+    const completeness = average(sources.map((source) => toNumber(source.completenessPct)));
+    const timeliness = average(sources.map((source) => toNumber(source.timelinessPct)));
+    const accuracy = average(sources.map((source) => toNumber(source.accuracyPct)));
+    return {
+      score: Number(((completeness + timeliness + accuracy) / 3).toFixed(1)),
+      completeness,
+      timeliness,
+      accuracy,
+      coverage: active.coverage,
+      data_classification: 'derived_calculation',
+      is_official: !this.isSyntheticDataset(active),
+      source_classification: this.isSyntheticDataset(active) ? 'synthetic_demo' : 'official_source',
+      dataset_version: active.id,
+      accuracy_definition: 'dataset validation metadata',
+      provenance: {
+        dataset_version: active.id,
+        source: active.source,
+        source_file: active.filename,
+        license: active.license,
+        geographic_coverage: active.coverage,
+        observation_period: null,
+        method: 'Aggregated from version-matched dataset metadata.',
+        data_classification: 'derived_calculation',
+        verification_status: 'verified_dataset_derived',
+      },
+      sources: sources.map((source) => ({
+        id: source.id,
+        name: source.name,
+        arabic_name: source.arabicName,
+        original_source: source.originalSource,
+        license: source.license,
+        record_count: source.recordCount,
+        frequency: source.updateFrequency,
+        status: source.status,
+        age_days: source.ageDays,
+      })),
+    };
+  }
+
+  private static async getVerifiedComparison(aId: string, bId: string) {
+    const active = await this.requireVerifiedDataset();
+    const regions = await prisma.region.findMany({
+      where: { id: { in: [aId.toLowerCase(), bId.toLowerCase()] }, datasetVersionId: active.id },
+      include: {
+        metrics: {
+          where: { datasetVersionId: active.id },
+          orderBy: { year: 'desc' },
+        },
+      },
+    });
+    if (regions.length !== 2) {
+      throw AppError.unavailable(
+        `No verified comparison observations are available for dataset ${active.id}.`,
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+    const [a, b] = [aId.toLowerCase(), bId.toLowerCase()].map((id) => regions.find((region) => region.id === id)!);
+    const scoreA = toNumber(a.score);
+    const scoreB = toNumber(b.score);
+    return {
+      a: { id: a.id, name: a.name, arabic_name: a.arabicName, score: scoreA },
+      b: { id: b.id, name: b.name, arabic_name: b.arabicName, score: scoreB },
+      metrics: [{ key: 'overall', label: 'Overall', arabic_label: 'الإجمالي', score_a: scoreA, score_b: scoreB }],
+      gap_analysis: {
+        text: 'Comparison is limited to the verified overall observations.',
+        arabic_text: 'تقتصر المقارنة على الملاحظات الإجمالية الموثقة.',
+      },
+      data_classification: 'derived_calculation',
+      is_official: !this.isSyntheticDataset(active),
+      source_classification: this.isSyntheticDataset(active) ? 'synthetic_demo' : 'official_source',
+      dataset_version: active.id,
+      provenance: {
+        dataset_version: active.id,
+        source: active.source,
+        source_file: active.filename,
+        license: active.license,
+        geographic_coverage: active.coverage,
+        observation_period: null,
+        method: 'Comparison derived from version-matched regional observations.',
+        data_classification: 'derived_calculation',
+        verification_status: 'verified_dataset_derived',
+      },
+    };
+  }
+}

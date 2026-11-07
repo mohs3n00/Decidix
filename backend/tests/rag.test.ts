@@ -334,7 +334,7 @@ describe('Phase C3.1 & C3.1.1 — RAG Infrastructure, Embedding Compatibility & 
 
       expect(doc.id).toBe('doc_economy_steppe');
       expect(doc.title).toBe('Steppe Employment and Renewable Energy Transition');
-      expect(doc.source).toBe('Central Bureau of Statistics');
+      expect(doc.source).toBe('Decidix Synthetic Sector Assessment (not an official publication)');
       expect(doc.period).toBe('2025-Q4');
       expect(doc.content).toContain('Steppe region has registered unemployment');
       expect(typeof doc.similarityScore).toBe('number');
@@ -356,7 +356,7 @@ describe('Phase C3.1 & C3.1.1 — RAG Infrastructure, Embedding Compatibility & 
           arabicTitle: 'تقييم فوارق الرعاية الصحية في المنطقة الحدودية',
           content: 'Clinic density is 38% below national mean.',
           arabicContent: 'كثافة العيادات تقل بـ 38% عن المتوسط الوطني.',
-          source: 'Ministry of Health Registry',
+          source: 'Decidix Synthetic Sector Assessment (not an official publication)',
           sourceUrl: null,
           period: '2025-Q4',
           category: 'healthcare',
@@ -432,7 +432,7 @@ describe('Phase C3.1 & C3.1.1 — RAG Infrastructure, Embedding Compatibility & 
             arabicTitle: 'التوظيف والانتقال نحو الطاقة المتجددة في السهوب',
             content: 'Steppe region economic diversification.',
             arabicContent: 'تنويع اقتصاد السهوب.',
-            source: 'Central Bureau of Statistics',
+            source: 'Decidix Synthetic Sector Assessment (not an official publication)',
             sourceUrl: null,
             period: '2025-Q4',
             category: 'economy',
@@ -449,7 +449,8 @@ describe('Phase C3.1 & C3.1.1 — RAG Infrastructure, Embedding Compatibility & 
         );
 
         expect(result).toBeDefined();
-        expect(result.reply.text).toContain('Central Capital leads with index 86 versus 47 for Steppe');
+        expect(result.reply.text).toContain('Based on the retrieved Decidix records:');
+        expect(result.reply.text).toContain('[Source: Steppe Employment and Renewable Energy Transition (2025-Q4)]');
         expect(result.suggested_prompts.length).toBeGreaterThan(0);
       } finally {
         if (originalKey) {

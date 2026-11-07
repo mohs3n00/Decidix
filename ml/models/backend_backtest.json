@@ -1,0 +1,49 @@
+{
+  "generatedAt": "2026-11-06T12:01:01.673Z",
+  "datasetVersion": "ds_demo_curated_2025_v1",
+  "datasetVersionLabel": "demo-curated-2025-v1",
+  "sourceClassification": "synthetic_demo",
+  "model": {
+    "name": "linear_trend_baseline",
+    "version": "1.0.0",
+    "method": "ordinary_least_squares_trend"
+  },
+  "training": {
+    "years": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "observations": 7,
+    "slope": 0.261,
+    "intercept": -432.964,
+    "residualStd": 0.086
+  },
+  "evaluation": {
+    "trainYears": [
+      2019,
+      2020,
+      2021,
+      2022,
+      2023
+    ],
+    "testYears": [
+      2024,
+      2025
+    ],
+    "mae": 0.21,
+    "rmse": 0.216
+  },
+  "evaluationNote": "Temporal holdout on synthetic demonstration data. These metrics describe fit to the generated series, not real-world forecast accuracy.",
+  "forecasts": [
+    2026,
+    2027,
+    2028,
+    2029,
+    2030
+  ]
+}

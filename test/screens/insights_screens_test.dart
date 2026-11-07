@@ -189,8 +189,9 @@ void main() {
 
       await scrollTo(tester, find.text('Data sources'));
       await scrollTo(tester, find.text('Overdue · 41 days'));
-      expect(find.text('Synced today'), findsOneWidget);
-      expect(find.text('2 days ago'), findsOneWidget);
+      // All three synthetic sources are generated in the same run, so none is stale.
+      expect(find.text('Synced today'), findsNWidgets(2));
+      expect(find.text('2 days ago'), findsNothing);
     });
   });
 }

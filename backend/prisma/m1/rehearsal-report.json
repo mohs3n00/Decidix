@@ -1,0 +1,2034 @@
+{
+  "runTag": "20261105t101022z_edf8f9",
+  "generatedAt": "2026-11-05T10:10:27.980Z",
+  "serverVersion": "PostgreSQL 18.6 on x86_64-windows, compiled by msvc-19.44.35229, 64-bit",
+  "states": [
+    "empty",
+    "legacy",
+    "versioned",
+    "unattributable"
+  ],
+  "total": 304,
+  "passed": 304,
+  "ok": true,
+  "results": [
+    {
+      "scope": "audit",
+      "name": "M1 SQL scripts pass the destructive-statement audit",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "database starts with no user schemas (disposable and empty)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy snapshot captured for 15 tables",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "new table dataset_runtime_state exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "new table dataset_activation_events exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "new table indicator_definitions exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "new table region_boundaries exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "new table region_relations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "new table region_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "new table national_index_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "new table regional_metric_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "new table sector_breakdown_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "new table observation_source_records exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "new table model_runs exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "new table migration_quarantine_records exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "activation function activate_dataset_bundle() exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "lineage reconciliation functions exist",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only index uq_indicator_definitions_open exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only index uq_region_boundaries_open exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only index uq_dataset_metadata_version exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only index uq_dataset_versions_bundle_family exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only index uq_recommendations_version_external exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only index uq_rag_documents_version_external exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only index idx_ml_forecasts_version_year exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only index idx_regional_metric_obs_year exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only index idx_national_obs_version_year exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only constraint dataset_runtime_state_pointer_shape exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only constraint indicator_definitions_range_valid exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only constraint region_boundaries_range_valid exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only constraint region_relations_distinct_regions exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only constraint region_relations_range_valid exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only constraint region_observations_version_region exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only constraint national_index_observations_version_period exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only constraint regional_metric_observations_identity exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only constraint sector_breakdown_observations_identity exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "SQL-only constraint migration_quarantine_records_identity exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "dataset_records -> dataset_versions is ON DELETE RESTRICT (confdeltype=r)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "004 exclusion constraint indicator_definitions_no_overlap present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "004 exclusion constraint region_boundaries_no_overlap present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy users unchanged (0 rows, 11 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy regions unchanged (0 rows, 14 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy indicators unchanged (0 rows, 10 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy regional_metrics unchanged (0 rows, 9 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy national_index_history unchanged (0 rows, 15 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy sector_breakdowns unchanged (0 rows, 9 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy development_projects unchanged (0 rows, 12 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy citizen_reports unchanged (0 rows, 12 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy ai_recommendations unchanged (0 rows, 16 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy dataset_metadata unchanged (0 rows, 17 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy dataset_versions unchanged (0 rows, 16 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy dataset_records unchanged (0 rows, 6 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy rag_documents unchanged (0 rows, 15 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy ml_forecasts unchanged (0 rows, 15 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy audit_logs unchanged (0 rows, 8 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "indicator_definitions captured 0 catalog era(s)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "region_boundaries captured 0 geometry era(s)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "external_id populated for rag_documents and ai_recommendations",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "ai_recommendations.seq populated from sequence",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "M1 invents no observations (backfill is M3)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "quarantine copies every NULL-provenance row (0)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "quarantine reason is no_version_provenance",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "empty",
+      "name": "legacy rows keep their NULL provenance (nothing re-attributed)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "database starts with no user schemas (disposable and empty)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy snapshot captured for 15 tables",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "new table dataset_runtime_state exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "new table dataset_activation_events exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "new table indicator_definitions exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "new table region_boundaries exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "new table region_relations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "new table region_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "new table national_index_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "new table regional_metric_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "new table sector_breakdown_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "new table observation_source_records exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "new table model_runs exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "new table migration_quarantine_records exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "activation function activate_dataset_bundle() exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "lineage reconciliation functions exist",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only index uq_indicator_definitions_open exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only index uq_region_boundaries_open exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only index uq_dataset_metadata_version exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only index uq_dataset_versions_bundle_family exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only index uq_recommendations_version_external exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only index uq_rag_documents_version_external exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only index idx_ml_forecasts_version_year exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only index idx_regional_metric_obs_year exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only index idx_national_obs_version_year exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only constraint dataset_runtime_state_pointer_shape exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only constraint indicator_definitions_range_valid exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only constraint region_boundaries_range_valid exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only constraint region_relations_distinct_regions exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only constraint region_relations_range_valid exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only constraint region_observations_version_region exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only constraint national_index_observations_version_period exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only constraint regional_metric_observations_identity exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only constraint sector_breakdown_observations_identity exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "SQL-only constraint migration_quarantine_records_identity exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "dataset_records -> dataset_versions is ON DELETE RESTRICT (confdeltype=r)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "004 exclusion constraint indicator_definitions_no_overlap present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "004 exclusion constraint region_boundaries_no_overlap present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy users unchanged (0 rows, 11 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy regions unchanged (2 rows, 14 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy indicators unchanged (2 rows, 10 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy regional_metrics unchanged (2 rows, 9 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy national_index_history unchanged (1 rows, 15 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy sector_breakdowns unchanged (1 rows, 9 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy development_projects unchanged (0 rows, 12 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy citizen_reports unchanged (0 rows, 12 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy ai_recommendations unchanged (1 rows, 16 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy dataset_metadata unchanged (1 rows, 17 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy dataset_versions unchanged (0 rows, 16 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy dataset_records unchanged (0 rows, 6 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy rag_documents unchanged (1 rows, 15 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy ml_forecasts unchanged (0 rows, 15 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy audit_logs unchanged (0 rows, 8 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "indicator_definitions captured 2 catalog era(s)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "region_boundaries captured 2 geometry era(s)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "external_id populated for rag_documents and ai_recommendations",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "ai_recommendations.seq populated from sequence",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "M1 invents no observations (backfill is M3)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "quarantine copies every NULL-provenance row (8)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "quarantine reason is no_version_provenance",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "legacy",
+      "name": "legacy rows keep their NULL provenance (nothing re-attributed)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "database starts with no user schemas (disposable and empty)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy snapshot captured for 15 tables",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "new table dataset_runtime_state exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "new table dataset_activation_events exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "new table indicator_definitions exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "new table region_boundaries exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "new table region_relations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "new table region_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "new table national_index_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "new table regional_metric_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "new table sector_breakdown_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "new table observation_source_records exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "new table model_runs exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "new table migration_quarantine_records exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "activation function activate_dataset_bundle() exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "lineage reconciliation functions exist",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only index uq_indicator_definitions_open exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only index uq_region_boundaries_open exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only index uq_dataset_metadata_version exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only index uq_dataset_versions_bundle_family exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only index uq_recommendations_version_external exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only index uq_rag_documents_version_external exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only index idx_ml_forecasts_version_year exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only index idx_regional_metric_obs_year exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only index idx_national_obs_version_year exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only constraint dataset_runtime_state_pointer_shape exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only constraint indicator_definitions_range_valid exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only constraint region_boundaries_range_valid exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only constraint region_relations_distinct_regions exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only constraint region_relations_range_valid exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only constraint region_observations_version_region exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only constraint national_index_observations_version_period exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only constraint regional_metric_observations_identity exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only constraint sector_breakdown_observations_identity exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "SQL-only constraint migration_quarantine_records_identity exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "dataset_records -> dataset_versions is ON DELETE RESTRICT (confdeltype=r)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "004 exclusion constraint indicator_definitions_no_overlap present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "004 exclusion constraint region_boundaries_no_overlap present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy users unchanged (0 rows, 11 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy regions unchanged (2 rows, 14 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy indicators unchanged (2 rows, 10 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy regional_metrics unchanged (2 rows, 9 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy national_index_history unchanged (1 rows, 15 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy sector_breakdowns unchanged (1 rows, 9 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy development_projects unchanged (0 rows, 12 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy citizen_reports unchanged (0 rows, 12 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy ai_recommendations unchanged (1 rows, 16 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy dataset_metadata unchanged (1 rows, 17 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy dataset_versions unchanged (4 rows, 16 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy dataset_records unchanged (4 rows, 6 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy rag_documents unchanged (1 rows, 15 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy ml_forecasts unchanged (1 rows, 15 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy audit_logs unchanged (0 rows, 8 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "indicator_definitions captured 2 catalog era(s)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "region_boundaries captured 2 geometry era(s)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "external_id populated for rag_documents and ai_recommendations",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "ai_recommendations.seq populated from sequence",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "M1 invents no observations (backfill is M3)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "quarantine copies every NULL-provenance row (1)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "quarantine reason is no_version_provenance",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "legacy rows keep their NULL provenance (nothing re-attributed)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "second open definition era for one indicator rejected (23505)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "definition era with effective_to < effective_from rejected (23514)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "metric observation with unknown definition era rejected (23503)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "metric observation bound to a real definition era is accepted",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "second open boundary era for one region rejected (23505)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "observation referencing an unknown boundary era rejected (23503)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "region relation from a region to itself rejected (23514)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "region relation with unknown type rejected (23514)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "activation of a validated version returns one pointer row",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "activation points the runtime state at ver-a",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "activation records the bundle key",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "activation of an unvalidated version rejected (23514)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "activation refuses a bundle containing an unvalidated member (23514)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "two versions of one family in one bundle rejected (23505)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "activation with blank actor rejected (22023)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "activation of a missing version rejected (23503)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "activation sets the single active pointer to ver-a",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "activation mirrors exactly one active version in the family",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "activation writes an audit event naming the actor",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "activation audit event records actor and reason",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "observation-source link to a record of the same version accepted",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "lineage reconciliation reports no mismatch for a same-version link",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "cross-version link is detected by report_lineage_version_mismatches()",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "orphan link is detected by report_orphan_observation_source_records()",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "duplicate observation-source link rejected (23505)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "deleting a dataset_record that supports evidence rejected (23001)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "versioned",
+      "name": "deleting a dataset_version that owns raw records rejected (23001)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "database starts with no user schemas (disposable and empty)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy snapshot captured for 15 tables",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "new table dataset_runtime_state exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "new table dataset_activation_events exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "new table indicator_definitions exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "new table region_boundaries exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "new table region_relations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "new table region_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "new table national_index_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "new table regional_metric_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "new table sector_breakdown_observations exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "new table observation_source_records exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "new table model_runs exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "new table migration_quarantine_records exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "activation function activate_dataset_bundle() exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "lineage reconciliation functions exist",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only index uq_indicator_definitions_open exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only index uq_region_boundaries_open exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only index uq_dataset_metadata_version exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only index uq_dataset_versions_bundle_family exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only index uq_recommendations_version_external exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only index uq_rag_documents_version_external exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only index idx_ml_forecasts_version_year exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only index idx_regional_metric_obs_year exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only index idx_national_obs_version_year exists and is valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only constraint dataset_runtime_state_pointer_shape exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only constraint indicator_definitions_range_valid exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only constraint region_boundaries_range_valid exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only constraint region_relations_distinct_regions exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only constraint region_relations_range_valid exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only constraint region_observations_version_region exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only constraint national_index_observations_version_period exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only constraint regional_metric_observations_identity exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only constraint sector_breakdown_observations_identity exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "SQL-only constraint migration_quarantine_records_identity exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "dataset_records -> dataset_versions is ON DELETE RESTRICT (confdeltype=r)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "004 exclusion constraint indicator_definitions_no_overlap present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "004 exclusion constraint region_boundaries_no_overlap present",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy users unchanged (0 rows, 11 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy regions unchanged (2 rows, 14 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy indicators unchanged (2 rows, 10 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy regional_metrics unchanged (2 rows, 9 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy national_index_history unchanged (1 rows, 15 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy sector_breakdowns unchanged (1 rows, 9 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy development_projects unchanged (0 rows, 12 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy citizen_reports unchanged (0 rows, 12 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy ai_recommendations unchanged (1 rows, 16 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy dataset_metadata unchanged (1 rows, 17 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy dataset_versions unchanged (2 rows, 16 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy dataset_records unchanged (0 rows, 6 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy rag_documents unchanged (1 rows, 15 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy ml_forecasts unchanged (0 rows, 15 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy audit_logs unchanged (0 rows, 8 original columns)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "indicator_definitions captured 2 catalog era(s)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "region_boundaries captured 2 geometry era(s)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "external_id populated for rag_documents and ai_recommendations",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "ai_recommendations.seq populated from sequence",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "M1 invents no observations (backfill is M3)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "quarantine copies every NULL-provenance row (8)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "quarantine reason is no_version_provenance",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "legacy rows keep their NULL provenance (nothing re-attributed)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "second open definition era for one indicator rejected (23505)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "definition era with effective_to < effective_from rejected (23514)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "metric observation with unknown definition era rejected (23503)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "metric observation bound to a real definition era is accepted",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "second open boundary era for one region rejected (23505)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "observation referencing an unknown boundary era rejected (23503)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "region relation from a region to itself rejected (23514)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "region relation with unknown type rejected (23514)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "activation of a validated version returns one pointer row",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "activation points the runtime state at ver-a",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "activation with blank actor rejected (22023)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "activation of a missing version rejected (23503)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "activation sets the single active pointer to ver-a",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "activation mirrors exactly one active version in the family",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "activation writes an audit event naming the actor",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "unattributable",
+      "name": "activation audit event records actor and reason",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "rollback",
+      "name": "001 refuses a database without the legacy schema",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "rollback",
+      "name": "refused 001 leaves no M1 tables behind",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "rollback",
+      "name": "injected mid-migration failure is raised",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "rollback",
+      "name": "rollback removes every 001 object created in the transaction",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "rollback",
+      "name": "rollback removes every 002 object created in the transaction",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "rollback",
+      "name": "rollback leaves every legacy table unchanged",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "rollback",
+      "name": "duplicate metadata makes the 003 unique build fail (23505)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "rollback",
+      "name": "failed concurrent index is reported INVALID (indisvalid=false)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "rollback",
+      "name": "statements before the failing one stay applied (fail-visible, not atomic)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "down",
+      "name": "M1 schema is present before rollback",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "down",
+      "name": "rollback leaves every legacy table and row unchanged",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "down",
+      "name": "rollback drops all 12 M1 tables",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "down",
+      "name": "rollback drops every M1 column added to legacy tables",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "down",
+      "name": "rollback drops the M1 functions",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "down",
+      "name": "rollback restores dataset_records ON DELETE CASCADE (confdeltype=c)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "scope": "down",
+      "name": "rollback removes the optional 004 exclusion constraints",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "log": [
+    {
+      "scope": "run",
+      "message": "server: PostgreSQL 18.6"
+    },
+    {
+      "scope": "empty",
+      "message": "created disposable database decidix_m1_20261105t101022z_edf8f9_empty"
+    },
+    {
+      "scope": "empty",
+      "message": "server: PostgreSQL 18.6"
+    },
+    {
+      "scope": "empty",
+      "message": "legacy baseline applied: 10 Prisma migrations (0_init .. 20261104233000_add_analytical_dataset_lineage)"
+    },
+    {
+      "scope": "empty",
+      "message": "001_schema.sql committed (transactional DDL)"
+    },
+    {
+      "scope": "empty",
+      "message": "002_backfill.sql committed (additive backfill + quarantine copies)"
+    },
+    {
+      "scope": "empty",
+      "message": "003_indexes.sql applied statement-by-statement (no transaction: CONCURRENTLY)"
+    },
+    {
+      "scope": "empty",
+      "message": "004_optional_exclusions.sql applied (btree_gist present)"
+    },
+    {
+      "scope": "empty",
+      "message": "dropped disposable database decidix_m1_20261105t101022z_edf8f9_empty"
+    },
+    {
+      "scope": "legacy",
+      "message": "created disposable database decidix_m1_20261105t101022z_edf8f9_legacy"
+    },
+    {
+      "scope": "legacy",
+      "message": "server: PostgreSQL 18.6"
+    },
+    {
+      "scope": "legacy",
+      "message": "legacy baseline applied: 10 Prisma migrations (0_init .. 20261104233000_add_analytical_dataset_lineage)"
+    },
+    {
+      "scope": "legacy",
+      "message": "001_schema.sql committed (transactional DDL)"
+    },
+    {
+      "scope": "legacy",
+      "message": "002_backfill.sql committed (additive backfill + quarantine copies)"
+    },
+    {
+      "scope": "legacy",
+      "message": "003_indexes.sql applied statement-by-statement (no transaction: CONCURRENTLY)"
+    },
+    {
+      "scope": "legacy",
+      "message": "004_optional_exclusions.sql applied (btree_gist present)"
+    },
+    {
+      "scope": "legacy",
+      "message": "dropped disposable database decidix_m1_20261105t101022z_edf8f9_legacy"
+    },
+    {
+      "scope": "versioned",
+      "message": "created disposable database decidix_m1_20261105t101022z_edf8f9_versioned"
+    },
+    {
+      "scope": "versioned",
+      "message": "server: PostgreSQL 18.6"
+    },
+    {
+      "scope": "versioned",
+      "message": "legacy baseline applied: 10 Prisma migrations (0_init .. 20261104233000_add_analytical_dataset_lineage)"
+    },
+    {
+      "scope": "versioned",
+      "message": "001_schema.sql committed (transactional DDL)"
+    },
+    {
+      "scope": "versioned",
+      "message": "pre-M1 versions assigned dataset_family/bundle_key from the release manifest"
+    },
+    {
+      "scope": "versioned",
+      "message": "002_backfill.sql committed (additive backfill + quarantine copies)"
+    },
+    {
+      "scope": "versioned",
+      "message": "003_indexes.sql applied statement-by-statement (no transaction: CONCURRENTLY)"
+    },
+    {
+      "scope": "versioned",
+      "message": "004_optional_exclusions.sql applied (btree_gist present)"
+    },
+    {
+      "scope": "versioned",
+      "message": "dropped disposable database decidix_m1_20261105t101022z_edf8f9_versioned"
+    },
+    {
+      "scope": "unattributable",
+      "message": "created disposable database decidix_m1_20261105t101022z_edf8f9_unattributable"
+    },
+    {
+      "scope": "unattributable",
+      "message": "server: PostgreSQL 18.6"
+    },
+    {
+      "scope": "unattributable",
+      "message": "legacy baseline applied: 10 Prisma migrations (0_init .. 20261104233000_add_analytical_dataset_lineage)"
+    },
+    {
+      "scope": "unattributable",
+      "message": "001_schema.sql committed (transactional DDL)"
+    },
+    {
+      "scope": "unattributable",
+      "message": "002_backfill.sql committed (additive backfill + quarantine copies)"
+    },
+    {
+      "scope": "unattributable",
+      "message": "003_indexes.sql applied statement-by-statement (no transaction: CONCURRENTLY)"
+    },
+    {
+      "scope": "unattributable",
+      "message": "004_optional_exclusions.sql applied (btree_gist present)"
+    },
+    {
+      "scope": "unattributable",
+      "message": "bundle-specific assertions are not applicable (no bundles in this state)"
+    },
+    {
+      "scope": "unattributable",
+      "message": "dropped disposable database decidix_m1_20261105t101022z_edf8f9_unattributable"
+    },
+    {
+      "scope": "rollback",
+      "message": "created disposable database decidix_m1_20261105t101022z_edf8f9_failure"
+    },
+    {
+      "scope": "rollback",
+      "message": "legacy baseline applied: 10 Prisma migrations (0_init .. 20261104233000_add_analytical_dataset_lineage)"
+    },
+    {
+      "scope": "rollback",
+      "message": "001 + 002 + FK validation applied; index builds deferred to the failing step"
+    },
+    {
+      "scope": "rollback",
+      "message": "dropped disposable database decidix_m1_20261105t101022z_edf8f9_failure"
+    },
+    {
+      "scope": "down",
+      "message": "created disposable database decidix_m1_20261105t101022z_edf8f9_down"
+    },
+    {
+      "scope": "down",
+      "message": "legacy baseline applied: 10 Prisma migrations (0_init .. 20261104233000_add_analytical_dataset_lineage)"
+    },
+    {
+      "scope": "down",
+      "message": "001_schema.sql committed (transactional DDL)"
+    },
+    {
+      "scope": "down",
+      "message": "pre-M1 versions assigned dataset_family/bundle_key from the release manifest"
+    },
+    {
+      "scope": "down",
+      "message": "002_backfill.sql committed (additive backfill + quarantine copies)"
+    },
+    {
+      "scope": "down",
+      "message": "003_indexes.sql applied statement-by-statement (no transaction: CONCURRENTLY)"
+    },
+    {
+      "scope": "down",
+      "message": "004_optional_exclusions.sql applied (btree_gist present)"
+    },
+    {
+      "scope": "down",
+      "message": "005_rollback.sql committed"
+    },
+    {
+      "scope": "down",
+      "message": "dropped disposable database decidix_m1_20261105t101022z_edf8f9_down"
+    }
+  ]
+}

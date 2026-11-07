@@ -129,7 +129,7 @@ Screen numbers match the Figma file. **Mock file** is under `assets/mock/`.
 
 | # | Screen | Request | Mock file |
 |---|---|---|---|
-| 13 | ML Predictions | `GET /intelligence/predictions?target_year=2027\|2028\|2030` | `intelligence/predictions.json` |
+| 13 | ML Predictions | `GET /intelligence/predictions?target_year=2027\|2028\|2030&validation_status=simulated\|experimental` | `intelligence/predictions.json` |
 | 14 | AI Assistant | `POST /intelligence/assistant/chat` | `intelligence/assistant_chat.json` |
 | 15 | Recommendations | `GET /intelligence/recommendations?priority=` | `intelligence/recommendations.json` |
 | 15 | Add to plan | `POST /intelligence/recommendations/{id}/accept` | `intelligence/recommendation_accept.json` |
@@ -137,12 +137,38 @@ Screen numbers match the Figma file. **Mock file** is under `assets/mock/`.
 
 - **Predictions**: `series` mixes `actual` and `forecast` points. `lower`/`upper` are `null` for
   actual points. The series ends at `target_year`.
+- **Forecast classification (additive):** every predictions response carries
+  `forecast_classification: { source, is_simulated, is_official, is_calibrated, validation_status,
+  disclaimer_en, disclaimer_ar }`. The scenario series is `source: "simulated_scenario"` with
+  `is_simulated: true`, `is_official: false`, `is_calibrated: false`; the ML series stays
+  `validation_status: "experimental"`. Clients must render the disclaimer and must not describe
+  either series as an official projection.
+- **Provenance (additive):** analytical responses may carry `provenance` with
+  `data_classification`, source and dataset version, observation period,
+  method, verification status, and bilingual disclaimer. Synthetic fixtures
+  are `synthetic_demonstration` and are not official observations.
+- **Model metrics:** `models[].r2` is nullable. It must be `null` when a
+  reproducible out-of-sample evaluation artifact is unavailable; clients must
+  display an unavailable state rather than an accuracy claim.
+- **Top improvers:** `top_improvers` is empty unless at least two verified
+  historical observations exist for each region under comparison. Forecast
+  scenarios and synthetic fixture history cannot produce observed rankings.
+- **`validation_status` values:** `simulated` (default) and `experimental`. The former `validated`
+  value is a **deprecated alias** accepted for backward compatibility and normalised to `simulated`;
+  it is never returned.
 - **Assistant** request body:
   ```json
   { "message": "Which region needs help most?", "language": "en", "conversation_id": null }
   ```
   `conversation_id` is `null` for the first message; the response returns the id to reuse.
   `reply.table` is optional (`null` when the answer has no table). Replies are not streamed in v1.
+
+  Every answer also carries provenance at the top level. `answer_source` is `model` (a real `:free`
+  completion that passed grounded-citation validation), `deterministic_fallback` (the offline answer
+  extracted from the retrieved records), or `refusal` (insufficient evidence). `provider_status` explains a
+  fallback — `rate_limited`, `payment_required`, `timeout`, `unavailable`, `citations_rejected`,
+  `not_configured` — and is `null` when the model answered. Clients must label a deterministic fallback as
+  an evidence-extracted summary and never present it as model output.
 - **Recommendations**: `status` is `suggested | in_plan | dismissed`. The list returns
   `suggested` items only.
 

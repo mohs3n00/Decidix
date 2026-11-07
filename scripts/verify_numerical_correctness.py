@@ -143,9 +143,8 @@ def audit_backend_api():
     assert pred["confidence"] == 87, f"Expected 87%, got {pred['confidence']}"
     models = {m["name"]: m["r2"] for m in pred["models"]}
     print(f"Models Evaluated: {models}")
-    assert models["Gradient boosting"] == 0.91
-    assert models["Random forest"] == 0.88
-    assert models["Temporal ensemble"] == 0.93
+    assert all(value is None for value in models.values()), "Unverified model accuracy must be unavailable"
+    assert pred["top_improvers"] == [], "Synthetic or forecast history must not create observed rankings"
 
     print("\n[ALL LIVE STAGING DATA INDEPENDENTLY AUDITED & VERIFIED]")
 

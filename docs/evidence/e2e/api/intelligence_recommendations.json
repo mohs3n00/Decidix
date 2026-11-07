@@ -1,0 +1,10 @@
+{
+  "path": "/intelligence/recommendations",
+  "status": 503,
+  "body": {
+    "error": {
+      "code": "DATASET_NOT_CONNECTED",
+      "message": "No verified recommendations are available for the active dataset."
+    }
+  }
+}

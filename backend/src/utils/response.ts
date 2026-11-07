@@ -57,6 +57,10 @@ export class AppError extends Error {
     return new AppError(message, 429, code);
   }
 
+  static unavailable(message: string, code = 'DATASET_NOT_CONNECTED') {
+    return new AppError(message, 503, code);
+  }
+
   static internal(message = 'Internal server error', code = 'INTERNAL_ERROR') {
     return new AppError(message, 500, code);
   }
@@ -80,4 +84,3 @@ export function sendError(res: Response, error: AppError): Response {
   };
   return res.status(error.statusCode).json(payload);
 }
-

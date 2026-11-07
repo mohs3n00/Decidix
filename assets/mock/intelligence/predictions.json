@@ -4,6 +4,25 @@
     "available_years": [2027, 2028, 2030],
     "projected_index": 73.5,
     "confidence": 87,
+    "forecast_classification": {
+      "source": "simulated_scenario",
+      "is_simulated": true,
+      "is_official": false,
+      "is_calibrated": false,
+      "validation_status": "simulated",
+      "disclaimer_en": "Simulated forecast: these values are modelled scenarios built on stated assumptions. They are not official government projections and have not been empirically validated.",
+      "disclaimer_ar": "توقع محاكاة: هذه القيم سيناريوهات مبنية على افتراضات معلنة. وهي ليست توقعات حكومية رسمية ولم يتم التحقق منها تجريبياً."
+    },
+    "provenance": {
+      "data_classification": "synthetic_demonstration",
+      "source": "Decidix development fixtures",
+      "dataset_version": "synthetic-v2.0.0",
+      "observation_period": "2019-2025",
+      "method": "Algorithmically generated development fixtures; not an observed statistical series.",
+      "verification_status": "unverified",
+      "disclaimer_en": "Synthetic demonstration data. It is not an official measurement and must not be used as evidence of national or regional performance.",
+      "disclaimer_ar": "بيانات توضيحية اصطناعية. ليست قياسات رسمية ولا يجوز استخدامها دليلاً على الأداء الوطني أو الإقليمي."
+    },
     "series": [
       { "year": 2021, "value": 60.4, "kind": "actual", "lower": null, "upper": null },
       { "year": 2022, "value": 62.2, "kind": "actual", "lower": null, "upper": null },
@@ -15,14 +34,10 @@
       { "year": 2028, "value": 73.5, "kind": "forecast", "lower": 71.4, "upper": 75.6 }
     ],
     "models": [
-      { "id": "gradient_boosting", "name": "Gradient boosting", "arabic_name": "التعزيز المتدرج", "r2": 0.91 },
-      { "id": "random_forest", "name": "Random forest", "arabic_name": "الغابة العشوائية", "r2": 0.88 },
-      { "id": "temporal_ensemble", "name": "Temporal ensemble", "arabic_name": "المجموعة الزمنية", "r2": 0.93 }
+      { "id": "gradient_boosting", "name": "Gradient boosting", "arabic_name": "التعزيز المتدرج", "r2": null },
+      { "id": "random_forest", "name": "Random forest", "arabic_name": "الغابة العشوائية", "r2": null },
+      { "id": "temporal_ensemble", "name": "Temporal ensemble", "arabic_name": "المجموعة الزمنية", "r2": null }
     ],
-    "top_improvers": [
-      { "region_id": "central_capital", "name": "Central Capital", "arabic_name": "العاصمة المركزية", "delta": 8.4 },
-      { "region_id": "lakeside", "name": "Lakeside", "arabic_name": "ضفاف البحيرة", "delta": 7.3 },
-      { "region_id": "western_coast", "name": "Western Coast", "arabic_name": "الساحل الغربي", "delta": 6.0 }
-    ]
+    "top_improvers": []
   }
 }

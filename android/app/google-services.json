@@ -12,7 +12,12 @@
           "package_name": "com.decidixteam.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "50086376748-676lft8efht29skofqs9ouk3ic8nldue.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDrDOeBxGHVO1ZrLPfjU9JAljd9z_LfPCk"

@@ -1,8 +1,9 @@
 import { prisma, testPrismaConnection } from '../database/prisma.js';
 import { SEED_REGIONS } from '../database/seed_data.js';
 import { toNumber } from '../utils/decimal.js';
-import { env } from '../config/env.js';
+import { env, syntheticDataAllowed } from '../config/env.js';
 import { AppError } from '../utils/response.js';
+import { DatasetService } from './dataset.service.js';
 
 export type SectorDomain = 'education' | 'healthcare' | 'infrastructure' | 'economy';
 
@@ -51,6 +52,16 @@ export interface SimulationResult {
     ceiling_hit: boolean;
     coefficients: Record<SectorDomain, { alpha: number; K: number }>;
     disclaimer: string;
+  };
+  provenance?: {
+    dataset_version: string;
+    source: string;
+    source_file: string;
+    license: string;
+    geographic_coverage: string;
+    observation_period: string | null;
+    data_classification: 'simulated_scenario';
+    baseline_classification: 'official_observed';
   };
 }
 
@@ -172,25 +183,53 @@ export class SimulatorService {
     }
 
     const normalizedRegionId = regionId.trim().toLowerCase();
+    const activeDataset = syntheticDataAllowed() ? null : await DatasetService.active();
+    if (!syntheticDataAllowed() && !activeDataset) {
+      throw AppError.unavailable(
+        'Simulation is unavailable until a verified dataset is active.',
+        'DATASET_NOT_CONNECTED'
+      );
+    }
 
     // 1. Resolve Region & Baseline Score
     const isDbReady = await testPrismaConnection();
     let region = SEED_REGIONS.find((r) => r.id === normalizedRegionId);
+    let regionScore: number | null = region?.score ?? null;
 
     if (isDbReady) {
       try {
         const dbRegion = await prisma.region.findUnique({
           where: { id: normalizedRegionId },
         });
-        if (dbRegion && region) {
-          region = { ...region, score: toNumber(dbRegion.score) };
+        const verifiedRegion = !syntheticDataAllowed() && activeDataset
+          ? await prisma.region.findFirst({
+              where: { id: normalizedRegionId, datasetVersionId: activeDataset.id },
+            })
+          : dbRegion;
+        if (verifiedRegion) {
+          regionScore = toNumber(verifiedRegion.score);
         }
       } catch (err) {
         if (env.NODE_ENV === 'production') throw err;
       }
     }
+    if (!syntheticDataAllowed() && !isDbReady) {
+      throw AppError.unavailable(
+        'Simulation is unavailable until verified regional data is connected.',
+        'DATABASE_NOT_CONNECTED'
+      );
+    }
+    if (!syntheticDataAllowed() && isDbReady) {
+      const dbRegion = await prisma.region.findFirst({
+        where: { id: normalizedRegionId, datasetVersionId: activeDataset!.id },
+      });
+      if (!dbRegion) {
+        throw AppError.notFound(`Region '${regionId}' not found`, 'REGION_NOT_FOUND');
+      }
+      regionScore = toNumber(dbRegion.score);
+    }
 
-    if (!region) {
+    if (regionScore === null) {
       throw AppError.notFound(`Region '${regionId}' not found`, 'REGION_NOT_FOUND');
     }
 
@@ -203,7 +242,7 @@ export class SimulatorService {
       }
     }
 
-    const todayScore = Math.max(0, Math.min(SIMULATION_CONFIG.MAX_SCORE_CEILING, region.score));
+    const todayScore = Math.max(0, Math.min(SIMULATION_CONFIG.MAX_SCORE_CEILING, regionScore));
     const beta = calculateRegionalDeficitFactor(todayScore);
 
     // 3. Compute Concave Non-Linear Sector Gains & Current Marginal Yields
@@ -272,7 +311,7 @@ export class SimulatorService {
     };
 
     return {
-      region_id: region.id,
+      region_id: normalizedRegionId,
       horizon_months: SIMULATION_CONFIG.HORIZON_MONTHS,
       today_score: todayScore,
       projected_score: projectedScore,
@@ -304,6 +343,20 @@ export class SimulatorService {
         },
         disclaimer: SIMULATION_CONFIG.DISCLAIMER,
       },
+      ...(activeDataset
+        ? {
+            provenance: {
+              dataset_version: activeDataset.id,
+              source: activeDataset.source,
+              source_file: activeDataset.filename,
+              license: activeDataset.license,
+              geographic_coverage: activeDataset.coverage,
+              observation_period: null,
+              data_classification: 'simulated_scenario' as const,
+              baseline_classification: 'official_observed' as const,
+            },
+          }
+        : {}),
     };
   }
 }

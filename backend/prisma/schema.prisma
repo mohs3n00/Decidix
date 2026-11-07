@@ -15,11 +15,14 @@ model User {
   id           String          @id @db.VarChar(64)
   email        String          @unique @db.VarChar(255)
   passwordHash String          @map("password_hash") @db.VarChar(255)
+  googleSubject String?        @unique @map("google_subject") @db.VarChar(255)
   name         String          @db.VarChar(255)
   arabicName   String?         @map("arabic_name") @db.VarChar(255)
   role         String          @default("viewer") @db.VarChar(32)
   department   String?         @db.VarChar(100)
   isActive     Boolean         @default(true) @map("is_active")
+  emailVerified Boolean        @default(false) @map("email_verified")
+  emailVerifiedAt DateTime?    @map("email_verified_at") @db.Timestamptz
   createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamptz
   updatedAt    DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -27,6 +30,8 @@ model User {
   auditLogs    AuditLog[]
   sessions     Session[]
   deviceTokens DeviceToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
 
   @@map("users")
 }
@@ -70,6 +75,40 @@ model DeviceToken {
   @@map("device_tokens")
 }
 
+// 1d. Email Verification Tokens
+model EmailVerificationToken {
+  id         String    @id @default(uuid()) @db.VarChar(64)
+  userId     String    @map("user_id") @db.VarChar(64)
+  tokenHash  String    @unique @map("token_hash") @db.VarChar(255)
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz
+  usedAt     DateTime? @map("used_at") @db.Timestamptz
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_email_verification_user_id")
+  @@index([tokenHash], map: "idx_email_verification_token_hash")
+  @@index([expiresAt], map: "idx_email_verification_expires_at")
+  @@map("email_verification_tokens")
+}
+
+// 1e. Password Reset Tokens
+model PasswordResetToken {
+  id         String    @id @default(uuid()) @db.VarChar(64)
+  userId     String    @map("user_id") @db.VarChar(64)
+  tokenHash  String    @unique @map("token_hash") @db.VarChar(255)
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz
+  usedAt     DateTime? @map("used_at") @db.Timestamptz
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_password_reset_user_id")
+  @@index([tokenHash], map: "idx_password_reset_token_hash")
+  @@index([expiresAt], map: "idx_password_reset_expires_at")
+  @@map("password_reset_tokens")
+}
+
 // 2. Regions Catalog
 model Region {
   id              String               @id @db.VarChar(64) // Slug e.g. "central_capital", "frontier"
@@ -92,10 +131,14 @@ model Region {
   recommendations AiRecommendation[]
   ragDocuments    RagDocument[]
   forecasts       MlForecast[]
+  datasetVersionId String?              @map("dataset_version_id") @db.VarChar(64)
+  datasetVersion   DatasetVersion?      @relation(fields: [datasetVersionId], references: [id], onDelete: SetNull)
 
   @@index([rank], map: "idx_regions_rank")
   @@index([priority], map: "idx_regions_priority")
   @@index([score], map: "idx_regions_score")
+  @@index([datasetVersionId], map: "idx_regions_dataset_version")
+
   @@map("regions")
 }
 
@@ -112,9 +155,13 @@ model Indicator {
   createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz
 
   metrics           RegionalMetric[]
+  datasetVersionId String?              @map("dataset_version_id") @db.VarChar(64)
+  datasetVersion   DatasetVersion?      @relation(fields: [datasetVersionId], references: [id], onDelete: SetNull)
 
   @@index([domain], map: "idx_indicators_domain")
+
   @@map("indicators")
+  @@index([datasetVersionId], map: "idx_indicators_dataset_version")
 }
 
 // 4. National Development Index History
@@ -133,9 +180,12 @@ model NationalIndexHistory {
   aiInsightText       String   @map("ai_insight_text") @db.Text
   aiInsightArabicText String   @map("ai_insight_arabic_text") @db.Text
   createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+  datasetVersionId    String?  @map("dataset_version_id") @db.VarChar(64)
+  datasetVersion      DatasetVersion? @relation(fields: [datasetVersionId], references: [id], onDelete: SetNull)
 
   @@index([year(sort: Desc)], map: "idx_national_index_year")
   @@map("national_index_history")
+  @@index([datasetVersionId], map: "idx_national_index_dataset_version")
 }
 
 // 5. Regional Metrics & Sparklines
@@ -148,6 +198,8 @@ model RegionalMetric {
   change       Decimal   @default(0.0) @db.Decimal(5, 2)
   sparkline    Json?
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  datasetVersionId String? @map("dataset_version_id") @db.VarChar(64)
+  datasetVersion DatasetVersion? @relation(fields: [datasetVersionId], references: [id], onDelete: SetNull)
 
   region       Region    @relation(fields: [regionId], references: [id], onDelete: Cascade)
   indicator    Indicator @relation(fields: [indicatorKey], references: [key], onDelete: Cascade)
@@ -155,6 +207,7 @@ model RegionalMetric {
   @@unique([regionId, indicatorKey, year], map: "uq_region_indicator_year")
   @@index([regionId, indicatorKey], map: "idx_regional_metrics_reg_ind")
   @@map("regional_metrics")
+  @@index([datasetVersionId], map: "idx_regional_metrics_dataset_version")
 }
 
 // 6. Sector Breakdowns
@@ -167,8 +220,11 @@ model SectorBreakdown {
   value       Decimal @db.Decimal(10, 2)
   unit        String  @db.VarChar(32)
   sortOrder   Int     @default(0) @map("sort_order")
+  datasetVersionId String? @map("dataset_version_id") @db.VarChar(64)
+  datasetVersion DatasetVersion? @relation(fields: [datasetVersionId], references: [id], onDelete: SetNull)
 
   @@map("sector_breakdowns")
+  @@index([datasetVersionId], map: "idx_sector_breakdowns_dataset_version")
 }
 
 // 7. Development Projects Portfolio
@@ -247,11 +303,15 @@ model AiRecommendation {
   status                String   @default("suggested") @db.VarChar(32)
   createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt             DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  datasetVersionId      String?  @map("dataset_version_id") @db.VarChar(64)
+  datasetVersion        DatasetVersion? @relation(fields: [datasetVersionId], references: [id], onDelete: SetNull)
 
   region                Region   @relation(fields: [regionId], references: [id], onDelete: Cascade)
 
   @@index([status], map: "idx_recommendations_status")
   @@index([regionId], map: "idx_recommendations_region")
+  @@index([datasetVersionId], map: "idx_recommendations_dataset_version")
+
   @@map("ai_recommendations")
 }
 
@@ -273,8 +333,11 @@ model DatasetMetadata {
   ageDays            Int      @default(0) @map("age_days")
   status             String   @default("synced") @db.VarChar(32)
   lastSyncedAt       DateTime @default(now()) @map("last_synced_at") @db.Timestamptz
+  datasetVersionId   String?    @map("dataset_version_id") @db.VarChar(64)
+  datasetVersion     DatasetVersion? @relation(fields: [datasetVersionId], references: [id], onDelete: SetNull)
 
   @@map("dataset_metadata")
+  @@index([datasetVersionId], map: "idx_dataset_metadata_dataset_version")
 }
 
 // 12. Audit Logs
@@ -313,11 +376,67 @@ model RagDocument {
   updatedAt     DateTime                     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   region        Region?                      @relation(fields: [regionId], references: [id], onDelete: SetNull)
+  datasetVersionId String?                   @map("dataset_version_id") @db.VarChar(64)
+  datasetVersion   DatasetVersion?           @relation(fields: [datasetVersionId], references: [id], onDelete: SetNull)
 
   @@index([category], map: "idx_rag_documents_category")
   @@index([regionId], map: "idx_rag_documents_region")
   @@index([accessScope], map: "idx_rag_documents_access")
+  @@index([datasetVersionId], map: "idx_rag_documents_dataset_version")
+
   @@map("rag_documents")
+}
+
+model DatasetVersion {
+  id              String   @id @db.VarChar(64)
+  version         String   @unique @db.VarChar(64)
+  filename        String   @db.VarChar(255)
+  objectKey       String   @map("object_key") @db.Text
+  checksumSha256  String   @map("checksum_sha256") @db.VarChar(64)
+  format          String   @db.VarChar(16)
+  source          String   @db.VarChar(255)
+  license         String   @db.VarChar(255)
+  coverage        String   @db.Text
+  uploadedAt      DateTime @default(now()) @map("uploaded_at") @db.Timestamptz
+  validatedAt     DateTime? @map("validated_at") @db.Timestamptz
+  validationStatus String  @default("uploaded") @map("validation_status") @db.VarChar(32)
+  validationError String?  @map("validation_error") @db.Text
+  recordCount     Int      @default(0) @map("record_count")
+  isActive        Boolean  @default(false) @map("is_active")
+  createdBy       String   @map("created_by") @db.VarChar(64)
+
+  records         DatasetRecord[]
+  ragDocuments    RagDocument[]
+  regions         Region[]
+  indicators      Indicator[]
+  nationalHistory NationalIndexHistory[]
+  regionalMetrics RegionalMetric[]
+  sectorBreakdowns SectorBreakdown[]
+  recommendations AiRecommendation[]
+  metadata        DatasetMetadata[]
+  forecasts       MlForecast[]
+
+  @@index([isActive], map: "idx_dataset_versions_active")
+  @@index([validationStatus], map: "idx_dataset_versions_status")
+
+  @@map("dataset_versions")
+}
+
+model DatasetRecord {
+  id              String        @id @db.VarChar(64)
+  datasetVersionId String        @map("dataset_version_id") @db.VarChar(64)
+  recordIndex     Int           @map("record_index")
+  payload         Json
+  isRetrievable   Boolean       @default(false) @map("is_retrievable")
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  // Migration-backed legacy behaviour: raw records belong to their version.
+  datasetVersion  DatasetVersion @relation(fields: [datasetVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([datasetVersionId, recordIndex], map: "dataset_records_version_index_key")
+  @@index([datasetVersionId, isRetrievable], map: "idx_dataset_records_retrievable")
+
+  @@map("dataset_records")
 }
 
 // 14. ML Forecasts & Predictions
@@ -332,13 +451,18 @@ model MlForecast {
   confidenceLevel  Decimal?  @default(0.95) @map("confidence_level") @db.Decimal(3, 2)
   modelName        String    @default("temporal_ensemble") @map("model_name") @db.VarChar(64)
   modelVersion     String    @default("1.0.0") @map("model_version") @db.VarChar(32)
-  forecastSource   String    @default("official_planning") @map("forecast_source") @db.VarChar(64)
+  forecastSource   String    @default("simulated_scenario") @map("forecast_source") @db.VarChar(64)
   forecastMethod   String    @default("temporal_ensemble") @map("forecast_method") @db.VarChar(64)
-  validationStatus String    @default("validated") @map("validation_status") @db.VarChar(32)
-  isCalibrated     Boolean   @default(true) @map("is_calibrated")
+  validationStatus String    @default("simulated") @map("validation_status") @db.VarChar(32)
+  isCalibrated     Boolean   @default(false) @map("is_calibrated")
   createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
+  datasetVersionId String?   @map("dataset_version_id") @db.VarChar(64)
+
   region           Region?   @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  datasetVersion   DatasetVersion? @relation(fields: [datasetVersionId], references: [id], onDelete: SetNull)
+
+  @@index([datasetVersionId], map: "idx_ml_forecasts_dataset_version")
 
   @@unique([regionId, indicatorId, forecastYear, modelVersion, validationStatus], map: "uq_ml_forecasts")
   @@index([forecastYear], map: "idx_ml_forecasts_year")

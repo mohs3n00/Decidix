@@ -1,0 +1,123 @@
+{
+  "path": "/regions/central_capital",
+  "status": 200,
+  "body": {
+    "data": {
+      "id": "central_capital",
+      "name": "Central Capital",
+      "arabic_name": "العاصمة المركزية",
+      "rank": 1,
+      "rank_total": 12,
+      "score": 95,
+      "change": 0,
+      "priority": "high",
+      "population": 9200000,
+      "area_km2": 0,
+      "area_available": false,
+      "domains": [
+        {
+          "key": "education",
+          "label": "Education",
+          "arabic_label": "التعليم",
+          "score": 91,
+          "is_measured": false
+        },
+        {
+          "key": "healthcare",
+          "label": "Healthcare",
+          "arabic_label": "الرعاية الصحية",
+          "score": 85,
+          "is_measured": false
+        },
+        {
+          "key": "economy",
+          "label": "Economy & jobs",
+          "arabic_label": "الاقتصاد والوظائف",
+          "score": 88,
+          "is_measured": false
+        },
+        {
+          "key": "infrastructure",
+          "label": "Infrastructure",
+          "arabic_label": "البنية التحتية",
+          "score": 80,
+          "is_measured": false
+        }
+      ],
+      "history": {
+        "region": [
+          {
+            "year": 2019,
+            "value": 95
+          },
+          {
+            "year": 2020,
+            "value": 95
+          },
+          {
+            "year": 2021,
+            "value": 95
+          },
+          {
+            "year": 2022,
+            "value": 95
+          },
+          {
+            "year": 2023,
+            "value": 95
+          },
+          {
+            "year": 2024,
+            "value": 95
+          },
+          {
+            "year": 2025,
+            "value": 95
+          }
+        ],
+        "national": [
+          {
+            "year": 2019,
+            "value": 58.2
+          },
+          {
+            "year": 2020,
+            "value": 59.1
+          },
+          {
+            "year": 2021,
+            "value": 60.4
+          },
+          {
+            "year": 2022,
+            "value": 62.2
+          },
+          {
+            "year": 2023,
+            "value": 64.5
+          },
+          {
+            "year": 2024,
+            "value": 66.1
+          },
+          {
+            "year": 2025,
+            "value": 68.4
+          }
+        ]
+      },
+      "history_source": "regional_metrics.development_index",
+      "history_is_observed": true,
+      "ai_insight": {
+        "text": "Infrastructure is the lowest scoring domain in Central Capital at 80/100, 15 points below the regional index. This is a descriptive comparison of stored values, not a validated forecast.",
+        "arabic_text": "البنية التحتية هو أدنى قطاع في العاصمة المركزية بمقدار 80/100، أي أقل بـ 15 نقطة عن مؤشر المنطقة. هذا وصف مقارن للقيم المخزنة وليس توقعاً معتمداً."
+      },
+      "data_quality": {
+        "score": 97.6,
+        "updated_at": "2026-11-06T11:52:46.870Z",
+        "source": "dataset_metadata.completeness_pct",
+        "is_official": false
+      }
+    }
+  }
+}

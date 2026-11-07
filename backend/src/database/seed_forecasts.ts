@@ -4,7 +4,7 @@ import { logger } from '../utils/logger.js';
 import { ForecastRepository, UpsertForecastInput } from '../repositories/forecast.repository.js';
 
 export const AUTHORITATIVE_FORECASTS: UpsertForecastInput[] = [
-  // 1. Validated national trajectory (official planning targets)
+  // 1. Simulated national scenario (assumption-based reference trajectory, not an official plan)
   {
     regionId: null,
     indicatorId: 'development_index',
@@ -15,10 +15,10 @@ export const AUTHORITATIVE_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.95,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
   {
     regionId: null,
@@ -30,10 +30,10 @@ export const AUTHORITATIVE_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.91,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
   {
     regionId: null,
@@ -45,10 +45,10 @@ export const AUTHORITATIVE_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.87,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
   {
     regionId: null,
@@ -60,10 +60,10 @@ export const AUTHORITATIVE_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.84,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
   {
     regionId: null,
@@ -75,10 +75,10 @@ export const AUTHORITATIVE_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.81,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
 
   // 2. Experimental ML model predictions (reconstructed from contemporaneous indicators, uncalibrated)
@@ -128,7 +128,7 @@ export const AUTHORITATIVE_FORECASTS: UpsertForecastInput[] = [
     isCalibrated: false,
   },
 
-  // 3. Validated regional forecasts for top improvers (target year 2028)
+  // 3. Simulated regional scenarios for illustrative top improvers (target year 2028)
   {
     regionId: 'central_capital',
     indicatorId: 'development_index',
@@ -139,10 +139,10 @@ export const AUTHORITATIVE_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.88,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
   {
     regionId: 'lakeside',
@@ -154,10 +154,10 @@ export const AUTHORITATIVE_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.85,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
   {
     regionId: 'western_coast',
@@ -169,10 +169,10 @@ export const AUTHORITATIVE_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.86,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
 ];
 

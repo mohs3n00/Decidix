@@ -8,6 +8,7 @@ import {
   generateDeterministicEmbedding,
   EMBEDDING_DIMENSIONS,
 } from '../integrations/embedding.service.js';
+import { DatasetService } from '../services/dataset.service.js';
 
 export interface RetrievedDocument {
   id: string;
@@ -34,6 +35,7 @@ export interface RagSearchOptions {
   accessScope?: 'public' | 'analyst' | 'restricted';
   minSimilarity?: number;
   limit?: number;
+  allowInMemoryFallback?: boolean;
 }
 
 export interface RagSearchResult {
@@ -151,6 +153,18 @@ export class RagRepository {
     const query = options.query || '';
     const minSimilarity = options.minSimilarity ?? env.RAG_SIMILARITY_THRESHOLD ?? 0.65;
     const limit = options.limit ?? 3;
+    const activeDataset = env.NODE_ENV === 'test' ? true : await DatasetService.active();
+    if (!activeDataset) {
+      return {
+        documents: [],
+        query,
+        queryModel: options.queryModel || 'deterministic-fnv1a-v1',
+        totalFound: 0,
+        retrievalEngine: 'lexical_fallback',
+        executionTimeMs: Date.now() - startTime,
+      };
+    }
+    const activeDatasetId = activeDataset === true ? null : activeDataset.id;
 
     // 1. Resolve query vector and model
     let queryVector = options.queryEmbedding;
@@ -220,6 +234,7 @@ export class RagRepository {
               AND ($3::text IS NULL OR category = $3)
               AND ($4::text IS NULL OR access_scope = $4)
               AND ($7::text IS NULL OR metadata->>'embedding_model' IS NULL OR metadata->>'embedding_model' = $7)
+              AND ($8::text IS NULL OR dataset_version_id = $8)
               AND (1 - (embedding <=> $1::vector)) >= $5
             ORDER BY "similarityScore" DESC
             LIMIT $6;`,
@@ -229,7 +244,8 @@ export class RagRepository {
             options.accessScope ?? null,
             minSimilarity,
             limit,
-            activeModel
+            activeModel,
+            activeDatasetId
           );
 
           const mapped: RetrievedDocument[] = results.map((row) => {
@@ -266,6 +282,16 @@ export class RagRepository {
     }
 
     // 3. In-memory retrieval fallback (for offline tests, local dev, or when pgvector is absent)
+    if (options.allowInMemoryFallback === false) {
+      return {
+        documents: [],
+        query,
+        queryModel: activeModel,
+        totalFound: 0,
+        retrievalEngine: 'lexical_fallback',
+        executionTimeMs: Date.now() - startTime,
+      };
+    }
     return this.searchInMemory(query, queryVector, activeModel, options, startTime);
   }
 

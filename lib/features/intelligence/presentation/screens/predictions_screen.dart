@@ -17,9 +17,6 @@ import '../widgets/intelligence_chip_bar.dart';
 class PredictionsScreen extends ConsumerWidget {
   const PredictionsScreen({super.key});
 
-  /// Shown until the server says which years it can forecast.
-  static const _defaultYears = [2027, 2028, 2030];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final predictions = ref.watch(predictionsProvider);
@@ -27,8 +24,8 @@ class PredictionsScreen extends ConsumerWidget {
     final fmt = context.fmt;
     final locale = Localizations.localeOf(context);
 
-    final years = predictions.value?.availableYears ?? _defaultYears;
-    final year = chosenYear ?? predictions.value?.targetYear ?? years.first;
+    final years = predictions.value?.availableYears ?? const <int>[];
+    final year = chosenYear ?? predictions.value?.targetYear;
 
     return DecidixPage(
       tabs: const IntelligenceChipBar(selectedIndex: 0),
@@ -36,12 +33,13 @@ class PredictionsScreen extends ConsumerWidget {
       title: fmt.tr('ai_title_predictions'),
       onRefresh: () => refreshFuture(ref, predictionsProvider),
       children: [
-        ChipScrollRow(
-          labels: [for (final y in years) '$y'],
-          selectedIndex: years.indexOf(year).clamp(0, years.length - 1),
-          onSelected: (i) =>
-              ref.read(predictionYearProvider.notifier).select(years[i]),
-        ),
+        if (years.isNotEmpty && year != null)
+          ChipScrollRow(
+            labels: [for (final y in years) '$y'],
+            selectedIndex: years.indexOf(year).clamp(0, years.length - 1),
+            onSelected: (i) =>
+                ref.read(predictionYearProvider.notifier).select(years[i]),
+          ),
         ...asyncSections(
           predictions,
           skeletonRows: 4,
@@ -57,8 +55,10 @@ class PredictionsScreen extends ConsumerWidget {
                       if (i > 0) const SizedBox(height: 14),
                       ProgressRow(
                         label: model.name.resolve(locale),
-                        valueLabel: 'R² ${fmt.number(model.r2, decimals: 2)}',
-                        progress: model.r2,
+                        valueLabel: model.r2 == null
+                            ? fmt.tr('pred_metric_unavailable')
+                            : 'R² ${fmt.number(model.r2!, decimals: 2)}',
+                        progress: model.r2 ?? 0,
                       ),
                     ],
                   ],
@@ -183,6 +183,35 @@ class _ForecastCard extends StatelessWidget {
             fmt.tr('pred_note'),
             style: AppTypography.microRegular.copyWith(color: AppColors.ink),
           ),
+          if (data.classification.isSimulated) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.accentWarning),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    fmt.tr('pred_simulated_title'),
+                    style: AppTypography.captionRegular.copyWith(
+                      color: AppColors.accentWarning,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    data.classification.disclaimer.resolve(Localizations.localeOf(context)),
+                    style: AppTypography.microRegular.copyWith(
+                      color: AppColors.ink,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -1,0 +1,14 @@
+{
+  "path": "/insights/comparison",
+  "status": 422,
+  "body": {
+    "error": {
+      "code": "VALIDATION_ERROR",
+      "message": "Validation failed for one or more fields",
+      "fields": {
+        "a": "Required",
+        "b": "Required"
+      }
+    }
+  }
+}

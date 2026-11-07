@@ -5,6 +5,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_typography.dart';
 import 'section_header.dart';
 import 'state_views.dart';
+import '../../core/errors/app_exception.dart';
 
 /// The layout every screen shares: tabs, eyebrow, big title, then sections
 /// 20px apart, with pull to refresh. The shell already draws the top bar.
@@ -193,7 +194,10 @@ List<Widget> asyncSections<T>(
       skipLoadingOnReload: true,
       skipLoadingOnRefresh: true,
       loading: () => LoadingSkeleton(rows: skeletonRows),
-      error: (error, _) => ErrorView(onRetry: onRetry),
+      error: (error, _) => ErrorView(
+        datasetUnavailable: error is DatasetUnavailableException,
+        onRetry: onRetry,
+      ),
       data: (data) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

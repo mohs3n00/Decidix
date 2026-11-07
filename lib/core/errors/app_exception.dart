@@ -24,6 +24,11 @@ class ServerException extends AppException {
   ]);
 }
 
+class DatasetUnavailableException extends ServerException {
+  const DatasetUnavailableException()
+    : super('No approved dataset is connected', 503);
+}
+
 /// 401: the request needs a sign-in, or the token expired.
 class UnauthorizedException extends AppException {
   const UnauthorizedException([String message = 'Not signed in'])

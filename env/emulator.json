@@ -1,0 +1,5 @@
+{
+  "USE_MOCK": false,
+  "API_BASE_URL": "http://10.0.2.2:5000/v1",
+  "GOOGLE_SERVER_CLIENT_ID": "50086376748-676lft8efht29skofqs9ouk3ic8nldue.apps.googleusercontent.com"
+}

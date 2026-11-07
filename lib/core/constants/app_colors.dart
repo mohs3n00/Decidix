@@ -14,6 +14,9 @@ class AppColors {
   static const Color danger = Color(0xFFE5484D);
   static const Color warning = Color(0xFFF5A524);
 
+  /// Amber accent for tinted warning surfaces (alias of [warning]).
+  static const Color accentWarning = Color(0xFFF5A524);
+
   /// Text on top of a warning-tinted background (amber badge text).
   static const Color warningText = Color(0xFFA56A00);
 

@@ -12,6 +12,7 @@ import { intelligenceRouter } from './modules/intelligence/intelligence.router.j
 import { decisionsRouter } from './modules/decisions/decisions.router.js';
 import { adminRouter } from './modules/admin/admin.router.js';
 import { notificationsRouter } from './modules/notifications/notifications.router.js';
+import { datasetsRouter } from './modules/datasets/datasets.router.js';
 
 export function createApp(): Express {
   const app = express();
@@ -72,6 +73,7 @@ export function createApp(): Express {
   });
 
   v1.use('/auth', authRouter);
+  v1.use('/datasets', datasetsRouter);
   v1.use(overviewRouter);
   v1.use(insightsRouter);
   v1.use(intelligenceRouter);
@@ -96,4 +98,3 @@ export function createApp(): Express {
 
   return app;
 }
-

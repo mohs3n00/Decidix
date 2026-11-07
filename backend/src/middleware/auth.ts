@@ -76,6 +76,7 @@ export interface AuthenticatedUser {
   email: string;
   role: UserRole;
   name: string;
+  email_verified?: boolean;
 }
 
 declare global {
@@ -166,4 +167,23 @@ export function requirePermission(permission: Permission) {
     }
     next();
   };
+}
+
+
+/**
+ * Email Verification Guard: verifies that the authenticated user has verified their email address.
+ */
+export function requireVerifiedEmail(req: Request, _res: Response, next: NextFunction): void {
+  if (!req.user) {
+    return next(AppError.unauthorized('Authentication required.', 'UNAUTHORIZED'));
+  }
+  if (req.user.email_verified === false) {
+    return next(
+      AppError.forbidden(
+        'Email verification is required to perform this action. Please check your inbox or request a new verification link.',
+        'EMAIL_NOT_VERIFIED'
+      )
+    );
+  }
+  next();
 }

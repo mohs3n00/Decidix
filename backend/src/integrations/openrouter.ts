@@ -1,7 +1,25 @@
 import { env, isZeroCostModel } from '../config/env.js';
 import { logger } from '../utils/logger.js';
 import { RetrievedDocument } from './rag.js';
-import { SEED_REGIONS } from '../database/seed_data.js';
+
+/**
+ * How the reply text was produced.
+ * - `model`: an actual OpenRouter (:free) completion that passed grounded-citation validation.
+ * - `deterministic_fallback`: the offline, evidence-grounded extractive answer.
+ * - `refusal`: no sufficient evidence was retrieved, so the assistant refused.
+ *
+ * The API exposes this so the client never has to guess whether a human-visible
+ * answer came from a model or from local deterministic reasoning.
+ */
+export type AnswerSource = 'model' | 'deterministic_fallback' | 'refusal';
+
+export type ProviderStatus =
+  | 'rate_limited'
+  | 'payment_required'
+  | 'timeout'
+  | 'unavailable'
+  | 'citations_rejected'
+  | 'not_configured';
 
 export interface AssistantChatResult {
   reply: {
@@ -22,6 +40,8 @@ export interface AssistantChatResult {
     }>;
   };
   suggested_prompts: string[];
+  answer_source: AnswerSource;
+  provider_status: ProviderStatus | null;
 }
 
 export interface GenerateAnswerOptions {
@@ -34,7 +54,50 @@ export interface GenerateAnswerOptions {
 
 export type MockFetchHandler = (url: string, init: RequestInit) => Promise<Response>;
 
+interface GatewayOutcome {
+  text: string | null;
+  status: ProviderStatus | null;
+}
+
 let customMockFetch: MockFetchHandler | null = null;
+
+/** Free-tier 429 without a usable `Retry-After`: wait this long before trying again. */
+const DEFAULT_RATE_LIMIT_COOLDOWN_MS = 60_000;
+/**
+ * A provider-supplied `Retry-After` longer than this is not waited for inside a
+ * request (a mobile user would time out); the cooldown is recorded instead and
+ * the deterministic answer is returned immediately.
+ */
+const MAX_HONOURED_RETRY_AFTER_MS = 5_000;
+/** Delay before the single retry of a transient failure (5xx / network error). */
+const TRANSIENT_RETRY_DELAY_MS = 300;
+const MAX_ATTEMPTS = 2;
+
+/**
+ * Timestamp until which remote calls are suppressed after a 429. Free-tier
+ * quota is shared by the whole deployment, so retrying per request would spend
+ * the remaining allowance (and still fail). Process-local by design: the
+ * authoritative limit is the provider's.
+ */
+let rateLimitedUntil = 0;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Parses a `Retry-After` header (delta-seconds or HTTP-date) into milliseconds.
+ * Returns null when absent or unparseable.
+ */
+export function parseRetryAfterMs(header: string | null | undefined): number | null {
+  if (!header) return null;
+  const value = header.trim();
+  if (value.length === 0) return null;
+  if (/^\d+$/.test(value)) return Number(value) * 1000;
+  const date = Date.parse(value);
+  if (Number.isNaN(date)) return null;
+  return Math.max(0, date - Date.now());
+}
 
 export class OpenRouterService {
   /**
@@ -42,6 +105,16 @@ export class OpenRouterService {
    */
   static setMockFetchHandler(handler: MockFetchHandler | null): void {
     customMockFetch = handler;
+  }
+
+  /** Clears the 429 cooldown. Tests must call this between cases. */
+  static resetProviderState(): void {
+    rateLimitedUntil = 0;
+  }
+
+  /** Milliseconds left before remote calls are attempted again (0 when clear). */
+  static rateLimitCooldownRemainingMs(): number {
+    return Math.max(0, rateLimitedUntil - Date.now());
   }
 
   /**
@@ -87,81 +160,118 @@ export class OpenRouterService {
     }
     const sources = Array.from(sourcesMap.values());
 
-    // 3. Determine Table Inclusion based on query intent
-    const lower = message.toLowerCase();
-    const isComparisonOrPriority =
-      lower.includes('compare') ||
-      lower.includes('priority') ||
-      lower.includes('rank') ||
-      lower.includes('help most') ||
-      lower.includes('مقارنة') ||
-      lower.includes('أولويات') ||
-      lower.includes('أولوية') ||
-      lower.includes('ترتيب') ||
-      lower.includes('الأكثر حاجة');
+    // Structured tables require a typed, dataset-backed aggregation. Never
+    // derive one from seed regions or query keywords.
+    const table: AssistantChatResult['reply']['table'] = null;
 
-    let table: AssistantChatResult['reply']['table'] = null;
-    if (isComparisonOrPriority) {
-      const priorityRegions = SEED_REGIONS.filter((r) => r.priority === 'high' || r.priority === 'critical').map((r) => ({
-        region_id: r.id,
-        name: r.name,
-        arabic_name: r.arabic_name,
-        score: r.score,
-        change: r.change,
-      }));
-      table = { rows: priorityRegions };
-    }
-
-    // 4. Free LLM Gateway Execution
+    // 3. Free LLM Gateway Execution
     const activeModel = options.modelOverride || env.OPENROUTER_MODEL;
     const hasApiKey = Boolean(customMockFetch) ||
                       Boolean(process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY.trim().length > 0) ||
                       Boolean(env.OPENROUTER_API_KEY && env.OPENROUTER_API_KEY.trim().length > 0);
     const isFree = isZeroCostModel(activeModel);
 
-    if (hasApiKey) {
-      if (env.ZERO_COST_ENFORCEMENT && !isFree) {
-        logger.warn(
-          `[Zero-Cost Policy Enforcement] Model "${activeModel}" is not a verified zero-cost (:free) model. ` +
-          `Decidix prohibits paid model consumption. Skipping remote call and using deterministic fallback.`
-        );
-      } else {
-        const text = await this.callOpenRouterGateway({
-          message,
-          language: langKey,
-          retrievedDocs,
-          conversationHistory,
-          model: activeModel,
-        });
+    let providerStatus: ProviderStatus | null = null;
 
-        if (text) {
-          return {
-            reply: {
-              text,
-              table,
-              sources,
-            },
-            suggested_prompts: this.getSuggestedPrompts(langKey, message),
-          };
+    if (!hasApiKey) {
+      providerStatus = 'not_configured';
+    } else if (env.ZERO_COST_ENFORCEMENT && !isFree) {
+      logger.warn(
+        `[Zero-Cost Policy Enforcement] Model "${activeModel}" is not a verified zero-cost (:free) model. ` +
+        `Decidix prohibits paid model consumption. Skipping remote call and using deterministic fallback.`
+      );
+    } else {
+      const outcome = await this.callOpenRouterGateway({
+        message,
+        language: langKey,
+        retrievedDocs,
+        conversationHistory,
+        model: activeModel,
+      });
+
+      if (outcome.text) {
+        const groundedText = this.validateGroundedResponse(outcome.text, retrievedDocs);
+        if (groundedText) {
+          return this.buildResult(groundedText, table, sources, langKey, message, 'model', null);
         }
+        logger.warn('[OpenRouter] Rejected response with missing or fabricated evidence citations.');
+        providerStatus = 'citations_rejected';
+      } else {
+        providerStatus = outcome.status;
       }
     }
 
-    // 5. Grounded Deterministic Fallback (Offline / Error / Unconfigured)
+    // 4. Grounded Deterministic Fallback (Offline / Error / Rate limited / Unconfigured)
     const fallbackText = this.buildDeterministicAnswer(message, langKey, retrievedDocs);
 
+    return this.buildResult(
+      fallbackText,
+      table,
+      sources,
+      langKey,
+      message,
+      'deterministic_fallback',
+      providerStatus
+    );
+  }
+
+  private static buildResult(
+    text: string,
+    table: AssistantChatResult['reply']['table'],
+    sources: AssistantChatResult['reply']['sources'],
+    language: 'en' | 'ar',
+    message: string,
+    answerSource: AnswerSource,
+    providerStatus: ProviderStatus | null
+  ): AssistantChatResult {
     return {
-      reply: {
-        text: fallbackText,
-        table,
-        sources,
-      },
-      suggested_prompts: this.getSuggestedPrompts(langKey, message),
+      reply: { text, table, sources },
+      suggested_prompts: this.getSuggestedPrompts(language, message),
+      answer_source: answerSource,
+      provider_status: providerStatus,
     };
   }
 
+  private static validateGroundedResponse(
+    text: string,
+    retrievedDocs: RetrievedDocument[]
+  ): string | null {
+    const allowedCitations = new Set(
+      retrievedDocs.flatMap((doc) => [
+        doc.citation,
+        `[Source: ${doc.title} (${doc.period})]`,
+        `[Source: ${doc.arabicTitle} (${doc.period})]`,
+      ])
+    );
+    const citations = text.match(/\[Source: [^\]]+\]/g) ?? [];
+    if (citations.length === 0 || citations.some((citation) => !allowedCitations.has(citation))) {
+      return null;
+    }
+    const evidenceNumbers = new Set(
+      retrievedDocs.flatMap((doc) =>
+        `${doc.title} ${doc.arabicTitle} ${doc.period} ${doc.content} ${doc.arabicContent}`
+          .match(/\b\d+(?:[.,]\d+)?\b/g)
+          ?.map((value) => value.replace(',', '.')) ?? []
+      )
+    );
+    const responseNumbers = text.match(/\b\d+(?:[.,]\d+)?\b/g) ?? [];
+    if (responseNumbers.some((value) => !evidenceNumbers.has(value.replace(',', '.')))) {
+      return null;
+    }
+    return text;
+  }
+
   /**
-   * Calls OpenRouter with anti-injection system prompt, bounded history, and timeout.
+   * Calls OpenRouter with anti-injection system prompt, bounded history, timeout,
+   * and quota-aware retry policy:
+   *
+   * - HTTP 429 is NOT retried: it means the free-tier allowance is exhausted, so
+   *   a retry would spend what is left and still fail. The cooldown is recorded
+   *   (from `Retry-After` when present) and later requests answer locally
+   *   without touching the network.
+   * - HTTP 402 is never retried and never triggers a paid fallback.
+   * - Timeouts are not retried (the request already consumed the full budget).
+   * - Transient 5xx / network errors are retried exactly once.
    */
   private static async callOpenRouterGateway(params: {
     message: string;
@@ -169,9 +279,13 @@ export class OpenRouterService {
     retrievedDocs: RetrievedDocument[];
     conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>;
     model: string;
-  }): Promise<string | null> {
+  }): Promise<GatewayOutcome> {
     const { message, language, retrievedDocs, conversationHistory, model } = params;
     const isArabic = language === 'ar';
+
+    if (Date.now() < rateLimitedUntil) {
+      return { text: null, status: 'rate_limited' };
+    }
 
     const systemPrompt = `You are the Decidix National Development Decision Intelligence Assistant.
 Core Directives:
@@ -203,52 +317,82 @@ ${retrievedDocs.map((d) => `[Source: ${d.title} (${d.period})]\n${isArabic ? d.a
 
     const apiKey = process.env.OPENROUTER_API_KEY || env.OPENROUTER_API_KEY;
     const timeoutMs = env.OPENROUTER_REQUEST_TIMEOUT_MS || 10000;
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
     const executeFetch = customMockFetch || fetch;
 
-    try {
-      const response = await executeFetch(`${env.OPENROUTER_BASE_URL}/chat/completions`, {
-        method: 'POST',
-        signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://decidix.gov',
-          'X-Title': 'Decidix Mobile API',
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          temperature: 0.2,
-          max_tokens: 800,
-        }),
-      }).finally(() => clearTimeout(timeoutId));
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-      if (response.ok) {
-        const json = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
-        const content = json.choices?.[0]?.message?.content?.trim();
-        if (content) {
-          return content;
+      try {
+        const response = await executeFetch(`${env.OPENROUTER_BASE_URL}/chat/completions`, {
+          method: 'POST',
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+            'HTTP-Referer': 'https://decidix.gov',
+            'X-Title': 'Decidix Mobile API',
+          },
+          body: JSON.stringify({
+            model,
+            messages,
+            temperature: 0.2,
+            max_tokens: 800,
+          }),
+        });
+
+        if (response.ok) {
+          const json = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
+          const content = json.choices?.[0]?.message?.content?.trim();
+          if (content) return { text: content, status: null };
+          logger.warn('[OpenRouter] Response contained no completion content. Engaging grounded deterministic fallback.');
+          return { text: null, status: 'unavailable' };
         }
-      } else if (response.status === 429) {
-        logger.warn('[OpenRouter] Free-tier rate limit reached (HTTP 429). Engaging grounded deterministic fallback.');
-      } else if (response.status === 402) {
-        logger.error('[OpenRouter] HTTP 402 Payment Required. Paid credits forbidden under Zero-Cost Policy.');
-      } else {
+
+        if (response.status === 429) {
+          const retryAfterMs = parseRetryAfterMs(response.headers?.get?.('retry-after') ?? null);
+          const cooldownMs = retryAfterMs !== null && retryAfterMs <= MAX_HONOURED_RETRY_AFTER_MS
+            ? retryAfterMs
+            : DEFAULT_RATE_LIMIT_COOLDOWN_MS;
+          rateLimitedUntil = Date.now() + (retryAfterMs ?? cooldownMs);
+          logger.warn(
+            `[OpenRouter] Free-tier rate limit reached (HTTP 429). Suppressing remote calls for ` +
+            `${Math.round((retryAfterMs ?? cooldownMs) / 1000)}s and engaging grounded deterministic fallback.`
+          );
+          return { text: null, status: 'rate_limited' };
+        }
+
+        if (response.status === 402) {
+          logger.error('[OpenRouter] HTTP 402 Payment Required. Paid credits forbidden under Zero-Cost Policy.');
+          return { text: null, status: 'payment_required' };
+        }
+
+        if (response.status >= 500 && attempt < MAX_ATTEMPTS) {
+          logger.warn(`[OpenRouter] HTTP ${response.status} ${response.statusText}. Retrying once.`);
+          await sleep(TRANSIENT_RETRY_DELAY_MS);
+          continue;
+        }
+
         logger.warn(`[OpenRouter] HTTP ${response.status} ${response.statusText}. Engaging grounded deterministic fallback.`);
-      }
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
-        logger.warn(`[OpenRouter] Request timed out after ${timeoutMs}ms. Engaging grounded deterministic fallback.`);
-      } else {
-        logger.warn('[OpenRouter] Request failed, engaging grounded deterministic fallback', { error: err.message });
+        return { text: null, status: 'unavailable' };
+      } catch (err: any) {
+        if (err?.name === 'AbortError') {
+          logger.warn(`[OpenRouter] Request timed out after ${timeoutMs}ms. Engaging grounded deterministic fallback.`);
+          return { text: null, status: 'timeout' };
+        }
+        if (attempt < MAX_ATTEMPTS) {
+          logger.warn('[OpenRouter] Request failed, retrying once', { error: err?.message });
+          await sleep(TRANSIENT_RETRY_DELAY_MS);
+          continue;
+        }
+        logger.warn('[OpenRouter] Request failed, engaging grounded deterministic fallback', { error: err?.message });
+        return { text: null, status: 'unavailable' };
+      } finally {
+        clearTimeout(timeoutId);
       }
     }
 
-    return null;
+    return { text: null, status: 'unavailable' };
   }
 
   /**
@@ -256,8 +400,8 @@ ${retrievedDocs.map((d) => `[Source: ${d.title} (${d.period})]\n${isArabic ? d.a
    */
   private static buildRefusalResponse(language: 'en' | 'ar'): AssistantChatResult {
     const text = language === 'ar'
-      ? 'بناءً على السجلات المعتمدة في منصة ديسيديكس، فإن البيانات المؤكدة غير كافية للإجابة على هذا الاستفسار بدقة. على وجه التحديد، لم يتم العثور على مؤشرات إحصائية معتمدة لهذا الموضوع. يُرجى توجيه استفسار أكثر تحديداً حول المؤشرات الإقليمية المعتمدة (مثل الرعاية الصحية في الحدود، أو البنية التحتية للمياه في الدلتا، أو العمالة في السهوب).'
-      : 'Based on available Decidix records, verified data is insufficient to answer this inquiry. Specifically, no verified statistical records were found for this topic. Please ask a more specific question regarding regional indicators (such as healthcare in Frontier, water infrastructure in Delta, or employment in Steppe).';
+      ? 'لا تتوفر أدلة معتمدة كافية للإجابة على هذا الاستفسار بدقة. يرجى توفير سؤال مرتبط بسجلات موثقة متاحة.'
+      : 'There is not enough verified evidence to answer this inquiry accurately. Please ask about a topic covered by the available authoritative records.';
 
     return {
       reply: {
@@ -266,8 +410,10 @@ ${retrievedDocs.map((d) => `[Source: ${d.title} (${d.period})]\n${isArabic ? d.a
         sources: [],
       },
       suggested_prompts: language === 'ar'
-        ? ['ما هي فوارق الرعاية الصحية في الحدود؟', 'ما هو وضع شبكات المياه في الدلتا؟', 'لخص مؤشرات العمالة في السهوب']
-        : ['What is the healthcare gap in Frontier?', 'What is the water sanitation status in Delta?', 'Summarise employment in Steppe'],
+        ? ['لخص السجل الموثق المتاح', 'ما هي مصادر البيانات المتاحة؟', 'ما هي الفترات المغطاة؟']
+        : ['Summarise the available verified record', 'What data sources are available?', 'Which periods are covered?'],
+      answer_source: 'refusal',
+      provider_status: null,
     };
   }
 
@@ -280,54 +426,26 @@ ${retrievedDocs.map((d) => `[Source: ${d.title} (${d.period})]\n${isArabic ? d.a
     retrievedDocs: RetrievedDocument[]
   ): string {
     const isArabic = language === 'ar';
-    const lower = message.toLowerCase();
-
-    // 1. Synthesize from first retrieved document if available
-    const topDoc = retrievedDocs[0];
-    const docCitation = topDoc.citation || `[Source: ${topDoc.title} (${topDoc.period})]`;
-    const docText = isArabic ? topDoc.arabicContent : topDoc.content;
-
-    if (lower.includes('compare') || lower.includes('مقارنة')) {
-      return isArabic
-        ? `تتصدر العاصمة المركزية بمؤشر 86 مقارنة بـ 47 لمنطقة السهوب، والفجوة الأوسع تكمن في تنويع القطاع الاقتصادي وفرص العمل. ${docCitation}`
-        : `Central Capital leads with index 86 versus 47 for Steppe, with the widest gap concentrated in economic diversification and job generation. ${docCitation}`;
-    }
-
-    if (lower.includes('education') || lower.includes('تعليم')) {
-      return isArabic
-        ? `سجل قطاع التعليم نمواً بمقدار 1.8 نقطة ليصل إلى 74.2، وتصل نسبة إتمام الابتدائي إلى 94%، بينما تتركز الحاجة في خريجي التخصصات العلمية بالمرتفعات. ${docCitation}`
-        : `The education sector advanced 1.8 points to 74.2, with primary completion at 94%, while technical and STEM graduate shortages persist in Highlands. ${docCitation}`;
-    }
-
-    if (topDoc.id === 'doc_health_frontier' || lower.includes('frontier') || lower.includes('حدود')) {
-      return isArabic
-        ? `تحتاج المنطقة الحدودية والسهوب إلى التدخل التنموي الأولوية. سجلت الحدود مؤشراً قدره 44 مع تراجع 1.7 نقطة، ونقص حاد في عيادات الرعاية الأولية بنسبة 38% مقارنة بالمعدل الوطني. ${docCitation}`
-        : `Frontier and Steppe need intervention most. Frontier has an index of 44, down 1.7 points, with a severe clinic shortage 38% below national average. ${docCitation}`;
-    }
-
-    // Generic synthesis from top retrieved evidence
+    const documents = retrievedDocs.slice(0, 3);
+    const body = documents
+      .map((document) => {
+        const citation = document.citation || `[Source: ${document.title} (${document.period})]`;
+        const text = isArabic ? document.arabicContent : document.content;
+        return `${text} ${citation}`;
+      })
+      .join(isArabic ? ' ' : ' ');
     return isArabic
-      ? `بناءً على السجلات الرسمية: ${docText} ${docCitation}`
-      : `According to official verified records: ${docText} ${docCitation}`;
+      ? `بناءً على السجلات المسترجعة: ${body}`
+      : `Based on the retrieved Decidix records: ${body}`;
   }
 
   /**
    * Returns relevant suggested prompts based on language and topic.
    */
   private static getSuggestedPrompts(language: 'en' | 'ar', message: string): string[] {
-    const lower = message.toLowerCase();
-
     if (language === 'ar') {
-      if (lower.includes('delta') || lower.includes('دلتا') || lower.includes('ماء') || lower.includes('water')) {
-        return ['ما هي أهداف تبطين الترع في الدلتا؟', 'قارن مؤشرات البنية التحتية بين الدلتا والسهوب', 'ما هي فوارق الرعاية الصحية بالحدود؟'];
-      }
-      return ['قارن بين الدلتا وضفاف البحيرة', 'لماذا تراجع مؤشر الدلتا؟', 'لخص اتجاهات التعليم'];
+      return ['لخص السجل الموثق المتاح', 'ما هي مصادر البيانات المتاحة؟', 'ما هي الفترات المغطاة؟'];
     }
-
-    if (lower.includes('delta') || lower.includes('water') || lower.includes('infrastructure')) {
-      return ['What are the canal lining targets in Delta?', 'Compare infrastructure between Delta and Steppe', 'What is the healthcare gap in Frontier?'];
-    }
-
-    return ['Compare Delta and Lakeside', 'Why did Delta decline?', 'Summarise education trends'];
+    return ['Summarise the available verified record', 'What data sources are available?', 'Which periods are covered?'];
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/config/app_config.dart';
 import 'core/config/provider_retry.dart';
 import 'core/localization/app_localizations.dart';
 import 'core/localization/locale_controller.dart';
@@ -33,6 +34,7 @@ const double maxTextScale = 1.3;
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   _registerFontLicenses();
+  AppConfig.logStartupDiagnostics();
   runApp(ProviderScope(retry: noAutomaticRetry, child: const DecidixApp()));
 }
 

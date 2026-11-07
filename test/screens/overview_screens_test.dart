@@ -74,6 +74,9 @@ void main() {
       await tester.tap(_chip('Map'));
       await tester.pumpAndSettle();
 
+      // The map is also where we left it, scrolled down to the profile link,
+      // so its title has to be scrolled back into view before asserting.
+      await scrollToTop(tester);
       expect(find.text('Interactive Map'), findsOneWidget);
       // Every tile provider requires its credit on the map.
       expect(find.text('© OpenStreetMap contributors'), findsOneWidget);
@@ -199,6 +202,9 @@ void main() {
       expect(find.text('Rank #1 of 12'), findsOneWidget);
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
+      // The map is also where we left it, scrolled down to the profile link,
+      // so its title has to be scrolled back into view before asserting.
+      await scrollToTop(tester);
       expect(find.text('Interactive Map'), findsOneWidget);
     });
   });

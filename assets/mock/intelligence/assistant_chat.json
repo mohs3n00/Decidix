@@ -11,7 +11,7 @@
         ]
       },
       "sources": [
-        { "name": "Ministry of Health registry", "arabic_name": "سجل وزارة الصحة", "period": "2025-Q4" }
+        { "name": "Synthetic health indicators (demo)", "arabic_name": "مؤشرات صحية اصطناعية (عرض توضيحي)", "period": "2025-Q4" }
       ]
     },
     "suggested_prompts": [

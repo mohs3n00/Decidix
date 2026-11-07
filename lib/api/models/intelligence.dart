@@ -30,14 +30,14 @@ class ForecastPoint {
 class ModelScore {
   final String id;
   final LocalizedText name;
-  final double r2;
+  final double? r2;
 
   const ModelScore({required this.id, required this.name, required this.r2});
 
   factory ModelScore.fromJson(JsonMap json) => ModelScore(
     id: json.string('id'),
     name: LocalizedText.read(json, 'name'),
-    r2: json.number('r2'),
+    r2: json.maybeNumber('r2'),
   );
 }
 
@@ -61,6 +61,61 @@ class RegionDelta {
   );
 }
 
+/// How a predictions response was produced. Every Decidix forecast is a
+/// simulated scenario, never an official government projection.
+class ForecastClassification {
+  final String source;
+  final bool isSimulated;
+  final bool isOfficial;
+  final bool isCalibrated;
+  final String validationStatus;
+  final LocalizedText disclaimer;
+
+  const ForecastClassification({
+    required this.source,
+    required this.isSimulated,
+    required this.isOfficial,
+    required this.isCalibrated,
+    required this.validationStatus,
+    required this.disclaimer,
+  });
+
+  /// Used when a server omits the block. Decidix forecasts are simulations, so
+  /// the app assumes the conservative case rather than implying official status.
+  static const simulated = ForecastClassification(
+    source: 'simulated_scenario',
+    isSimulated: true,
+    isOfficial: false,
+    isCalibrated: false,
+    validationStatus: 'simulated',
+    disclaimer: LocalizedText(
+      'Simulated forecast: these values are modelled scenarios built on stated assumptions. They are not official government projections and have not been empirically validated.',
+      'توقع محاكاة: هذه القيم سيناريوهات مبنية على افتراضات معلنة. وهي ليست توقعات حكومية رسمية ولم يتم التحقق منها تجريبياً.',
+    ),
+  );
+
+  factory ForecastClassification.fromJson(JsonMap json) {
+    final disclaimerEn = json.maybeString('disclaimer_en');
+    final disclaimerAr = json.maybeString('disclaimer_ar');
+    return ForecastClassification(
+      source: json.maybeString('source') ?? simulated.source,
+      isSimulated: json['is_simulated'] == null
+          ? true
+          : json.flag('is_simulated'),
+      isOfficial: json['is_official'] == null
+          ? false
+          : json.flag('is_official'),
+      isCalibrated: json['is_calibrated'] == null
+          ? false
+          : json.flag('is_calibrated'),
+      validationStatus: json.maybeString('validation_status') ?? 'simulated',
+      disclaimer: disclaimerEn == null
+          ? simulated.disclaimer
+          : LocalizedText(disclaimerEn, disclaimerAr),
+    );
+  }
+}
+
 class Predictions {
   final int targetYear;
   final List<int> availableYears;
@@ -72,6 +127,9 @@ class Predictions {
   final List<ModelScore> models;
   final List<RegionDelta> topImprovers;
 
+  /// Provenance and the disclaimer the UI must show.
+  final ForecastClassification classification;
+
   const Predictions({
     required this.targetYear,
     required this.availableYears,
@@ -80,6 +138,7 @@ class Predictions {
     required this.series,
     required this.models,
     required this.topImprovers,
+    this.classification = ForecastClassification.simulated,
   });
 
   factory Predictions.fromJson(JsonMap json) {
@@ -94,6 +153,11 @@ class Predictions {
       series: json.listOf('series', ForecastPoint.fromJson),
       models: json.listOf('models', ModelScore.fromJson),
       topImprovers: json.listOf('top_improvers', RegionDelta.fromJson),
+      classification: json['forecast_classification'] == null
+          ? ForecastClassification.simulated
+          : ForecastClassification.fromJson(
+              json.object('forecast_classification'),
+            ),
     );
   }
 }
@@ -131,6 +195,26 @@ class ChatSource {
   );
 }
 
+/// Where an assistant answer came from, as reported by the backend.
+///
+/// [deterministicFallback] means the free model was unavailable (quota, timeout,
+/// outage) and the text was extracted from verified records locally. The UI must
+/// say so rather than passing it off as a model answer.
+enum AnswerSource { model, deterministicFallback, refusal, unknown }
+
+AnswerSource parseAnswerSource(String? raw) {
+  switch (raw) {
+    case 'model':
+      return AnswerSource.model;
+    case 'deterministic_fallback':
+      return AnswerSource.deterministicFallback;
+    case 'refusal':
+      return AnswerSource.refusal;
+    default:
+      return AnswerSource.unknown;
+  }
+}
+
 /// The assistant's answer. [text] is already in the language the app asked for.
 class ChatReply {
   final String conversationId;
@@ -141,12 +225,21 @@ class ChatReply {
   final List<ChatSource> sources;
   final List<String> suggestedPrompts;
 
+  /// Model answer, deterministic fallback, or refusal.
+  final AnswerSource answerSource;
+
+  /// Provider reason for a fallback (`rate_limited`, `timeout`, ...); null when
+  /// the model answered. Never shown verbatim to the user.
+  final String? providerStatus;
+
   const ChatReply({
     required this.conversationId,
     required this.text,
     required this.table,
     required this.sources,
     required this.suggestedPrompts,
+    this.answerSource = AnswerSource.unknown,
+    this.providerStatus,
   });
 
   factory ChatReply.fromJson(JsonMap json) {
@@ -163,6 +256,8 @@ class ChatReply {
         if (prompts is List)
           for (final p in prompts) '$p',
       ],
+      answerSource: parseAnswerSource(json.maybeString('answer_source')),
+      providerStatus: json.maybeString('provider_status'),
     );
   }
 }
@@ -184,6 +279,7 @@ class Recommendation {
   /// 0 to 100.
   final double confidence;
   final RecommendationStatus status;
+  final DatasetProvenance? provenance;
 
   const Recommendation({
     required this.id,
@@ -196,6 +292,7 @@ class Recommendation {
     required this.estimatedCost,
     required this.confidence,
     required this.status,
+    this.provenance,
   });
 
   factory Recommendation.fromJson(JsonMap json) => Recommendation(
@@ -213,6 +310,9 @@ class Recommendation {
       json['status'],
       RecommendationStatus.unknown,
     ),
+    provenance: json['provenance'] is Map
+        ? DatasetProvenance.fromJson(json.object('provenance'))
+        : null,
   );
 }
 

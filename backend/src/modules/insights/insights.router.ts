@@ -75,10 +75,10 @@ const historicalQuerySchema = z.object({
 insightsRouter.get(
   '/insights/historical',
   validateRequest({ query: historicalQuerySchema }),
-  (req: Request, res: Response, next: NextFunction): void => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { sector, range } = req.query as { sector: string; range: '3Y' | '5Y' | '7Y' };
-      const response = InsightsRepository.getHistorical(sector, range);
+      const response = await InsightsRepository.getHistorical(sector, range);
       sendSuccess(res, response);
     } catch (error) {
       next(error);

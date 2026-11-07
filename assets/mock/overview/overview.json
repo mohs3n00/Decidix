@@ -37,6 +37,16 @@
     "ai_insight": {
       "text": "Delta, Steppe and Frontier have declined for three consecutive periods. Healthcare access is the shared bottleneck, with clinic density 38% below the national mean.",
       "arabic_text": "تراجعت الدلتا والسهوب والمنطقة الحدودية لثلاث فترات متتالية. الوصول إلى الرعاية الصحية هو الاختناق المشترك، إذ تقل كثافة العيادات بنسبة 38% عن المتوسط الوطني."
+    },
+    "provenance": {
+      "data_classification": "synthetic_demonstration",
+      "source": "Decidix development fixtures",
+      "dataset_version": "synthetic-v2.0.0",
+      "observation_period": "2019-2025",
+      "method": "Algorithmically generated development fixtures; not an observed statistical series.",
+      "verification_status": "unverified",
+      "disclaimer_en": "Synthetic demonstration data. It is not an official measurement and must not be used as evidence of national or regional performance.",
+      "disclaimer_ar": "بيانات توضيحية اصطناعية. ليست قياسات رسمية ولا يجوز استخدامها دليلاً على الأداء الوطني أو الإقليمي."
     }
   }
 }

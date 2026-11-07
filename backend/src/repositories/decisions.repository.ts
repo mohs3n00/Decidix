@@ -1,9 +1,10 @@
 import { prisma, testPrismaConnection } from '../database/prisma.js';
 import { SEED_REGIONS } from '../database/seed_data.js';
 import { toNumber } from '../utils/decimal.js';
-import { env } from '../config/env.js';
+import { env, syntheticDataAllowed } from '../config/env.js';
 import { AppError } from '../utils/response.js';
 import { SimulatorService, SectorDomain } from '../services/simulator.service.js';
+import { DatasetService } from '../services/dataset.service.js';
 
 interface StoredCitizenReport {
   id: string;
@@ -144,6 +145,12 @@ export class DecisionsRepository {
     regionId: string,
     allocations: Record<SectorDomain, number>
   ) {
+    if (!syntheticDataAllowed() && !(await DatasetService.hasApprovedActiveDataset())) {
+      throw AppError.unavailable(
+        'No approved dataset is connected. Connect and validate a dataset before running simulations.',
+        'DATASET_NOT_CONNECTED'
+      );
+    }
     return SimulatorService.simulate(regionId, allocations);
   }
 
@@ -151,9 +158,18 @@ export class DecisionsRepository {
    * Fetches development projects portfolio with status filtering and pagination.
    */
   static async getProjects(params: { status: string; page: number; per_page: number }) {
+    if (!syntheticDataAllowed() && !(await DatasetService.hasApprovedActiveDataset())) {
+      throw AppError.unavailable(
+        'No approved dataset is connected. Connect and validate a dataset before viewing development records.',
+        'DATASET_NOT_CONNECTED'
+      );
+    }
     const isDbReady = await testPrismaConnection();
 
     if (!isDbReady) {
+      if (!syntheticDataAllowed()) {
+        throw AppError.internal('Database connection unavailable for development projects.');
+      }
       return this.getFallbackProjects(params);
     }
 
@@ -223,9 +239,18 @@ export class DecisionsRepository {
     per_page: number;
     userIdentifier: string;
   }) {
+    if (!syntheticDataAllowed() && !(await DatasetService.hasApprovedActiveDataset())) {
+      throw AppError.unavailable(
+        'No approved dataset is connected. Connect and validate a dataset before viewing citizen reports.',
+        'DATASET_NOT_CONNECTED'
+      );
+    }
     const isDbReady = await testPrismaConnection();
 
     if (!isDbReady) {
+      if (!syntheticDataAllowed()) {
+        throw AppError.internal('Database connection unavailable for citizen reports.');
+      }
       return this.getFallbackCitizenReports(params);
     }
 
@@ -239,6 +264,12 @@ export class DecisionsRepository {
       }
 
       const total = await prisma.citizenReport.count({ where });
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const openThisWeek = await prisma.citizenReport.count({
+        where: { createdAt: { gte: weekAgo }, status: { not: 'resolved' } },
+      });
+      const resolvedCount = await prisma.citizenReport.count({ where: { status: 'resolved' } });
+      const resolvedRate = total > 0 ? Math.round((resolvedCount / total) * 100) : 0;
       const reports = await prisma.citizenReport.findMany({
         where,
         include: { region: true, likes: { where: { userId: params.userIdentifier } } },
@@ -270,8 +301,8 @@ export class DecisionsRepository {
 
       return {
         summary: {
-          open_this_week: { value: 1284, change: 6.2, higher_is_better: false },
-          resolved_rate: { value: 73, change: 3.4, higher_is_better: true },
+          open_this_week: { value: openThisWeek, change: 0, higher_is_better: false },
+          resolved_rate: { value: resolvedRate, change: 0, higher_is_better: true },
         },
         items,
         total,
@@ -289,6 +320,12 @@ export class DecisionsRepository {
     const isDbReady = await testPrismaConnection();
 
     if (!isDbReady) {
+      if (!syntheticDataAllowed()) {
+        throw AppError.unavailable(
+          'Citizen report interactions are unavailable until the database is connected.',
+          'DATABASE_NOT_CONNECTED'
+        );
+      }
       const report = fallbackReports.find((r) => r.id === reportId);
       if (!report) {
         throw AppError.notFound(`Citizen report '${reportId}' not found`);
@@ -409,6 +446,14 @@ export class DecisionsRepository {
 
     const total = items.length;
     const startIndex = (params.page - 1) * params.per_page;
+    const weekAgoFallback = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const openThisWeek = items.filter(
+      (r) => r.status !== 'resolved' && new Date(r.created_at).getTime() >= weekAgoFallback.getTime()
+    ).length;
+    const resolvedRate =
+      items.length > 0
+        ? Math.round((items.filter((r) => r.status === 'resolved').length / items.length) * 100)
+        : 0;
     const paginatedItems = items.slice(startIndex, startIndex + params.per_page).map((r) => {
       const likeKey = `${params.userIdentifier}:${r.id}`;
       return {
@@ -419,8 +464,8 @@ export class DecisionsRepository {
 
     return {
       summary: {
-        open_this_week: { value: 1284, change: 6.2, higher_is_better: false },
-        resolved_rate: { value: 73, change: 3.4, higher_is_better: true },
+        open_this_week: { value: openThisWeek, change: 0, higher_is_better: false },
+        resolved_rate: { value: resolvedRate, change: 0, higher_is_better: true },
       },
       items: paginatedItems,
       total,
@@ -451,4 +496,3 @@ export class DecisionsRepository {
     };
   }
 }
-

@@ -26,6 +26,39 @@ class Money {
       Money(json.number('amount'), json.string('currency'));
 }
 
+class DatasetProvenance {
+  final String? datasetVersion;
+  final String? source;
+  final String? sourceFile;
+  final String? license;
+  final String? geographicCoverage;
+  final String? observationPeriod;
+  final String? dataClassification;
+  final String? verificationStatus;
+
+  const DatasetProvenance({
+    this.datasetVersion,
+    this.source,
+    this.sourceFile,
+    this.license,
+    this.geographicCoverage,
+    this.observationPeriod,
+    this.dataClassification,
+    this.verificationStatus,
+  });
+
+  factory DatasetProvenance.fromJson(JsonMap json) => DatasetProvenance(
+    datasetVersion: json.maybeString('dataset_version'),
+    source: json.maybeString('source'),
+    sourceFile: json.maybeString('source_file'),
+    license: json.maybeString('license'),
+    geographicCoverage: json.maybeString('geographic_coverage'),
+    observationPeriod: json.maybeString('observation_period'),
+    dataClassification: json.maybeString('data_classification'),
+    verificationStatus: json.maybeString('verification_status'),
+  );
+}
+
 class TrendPoint {
   final int year;
   final double value;

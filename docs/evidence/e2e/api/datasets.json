@@ -1,0 +1,10 @@
+{
+  "path": "/datasets",
+  "status": 404,
+  "body": {
+    "error": {
+      "code": "NOT_FOUND",
+      "message": "Endpoint does not exist"
+    }
+  }
+}

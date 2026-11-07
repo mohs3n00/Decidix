@@ -55,14 +55,14 @@ void main() {
         'coverage': '12 / 12 regions',
         'sources': [
           {
-            'name': 'Ministry of Health Registry',
-            'arabic_name': 'سجل وزارة الصحة',
+            'name': 'Synthetic health indicators (demo)',
+            'arabic_name': 'مؤشرات صحية اصطناعية (عرض توضيحي)',
             'frequency': 'Quarterly',
             'status': 'synced',
             'age_days': 12
           },
           {
-            'name': 'Ministry of Education EMIS',
+            'name': 'Synthetic education indicators (demo)',
             'arabic_name': 'نظام معلومات إدارة التعليم',
             'frequency': 'Bi-annual',
             'status': 'synced',
@@ -78,7 +78,7 @@ void main() {
       expect(parsed.timeliness, 94.0);
       expect(parsed.accuracy, 96.0);
       expect(parsed.sources, hasLength(2));
-      expect(parsed.sources.first.name.en, 'Ministry of Health Registry');
+      expect(parsed.sources.first.name.en, 'Synthetic health indicators (demo)');
       expect(parsed.sources.first.status, SourceStatus.synced);
       expect(parsed.sources.first.ageDays, 12);
     });

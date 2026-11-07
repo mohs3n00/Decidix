@@ -49,13 +49,15 @@ Future<void> openIntelligence(
 void main() {
   group('Predictions', () {
     testWidgets(
-      'shows the projected index, forecast, models and top improvers',
+      'shows the projected index, forecast and unavailable model metrics',
       (tester) async {
         await openIntelligence(tester);
 
         expect(find.text('ML Predictions'), findsOneWidget);
         expect(find.text('Projected index · 2028'), findsOneWidget);
         expect(find.text('73.5'), findsOneWidget);
+        expect(find.text('Simulation disclaimer'), findsOneWidget);
+        expect(find.textContaining('Simulated forecast'), findsOneWidget);
         expect(find.text('87% confidence'), findsOneWidget);
         expect(find.text("'25"), findsOneWidget);
         expect(find.text("'28"), findsOneWidget);
@@ -66,10 +68,10 @@ void main() {
 
         await scrollTo(tester, find.text('Model performance'));
         expect(find.text('Gradient boosting'), findsOneWidget);
-        expect(find.text('R² 0.91'), findsOneWidget);
+        expect(find.text('Unavailable'), findsNWidgets(3));
 
         await scrollTo(tester, find.text('Regions most likely to improve'));
-        expect(find.text('+8.4 by 2028'), findsOneWidget);
+        expect(find.text('+8.4 by 2028'), findsNothing);
       },
     );
 
@@ -128,7 +130,7 @@ void main() {
           findsOneWidget,
         ); // a row of the answer table
         expect(
-          find.text('Source: Ministry of Health registry · 2025 Q4'),
+          find.text('Source: Synthetic health indicators (demo) · 2025 Q4'),
           findsOneWidget,
         );
         // The server's follow-up questions replace the starting ones.

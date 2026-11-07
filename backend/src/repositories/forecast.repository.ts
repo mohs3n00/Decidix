@@ -1,8 +1,22 @@
 import { prisma, testPrismaConnection } from '../database/prisma.js';
 import { toNumber, toOptionalNumber } from '../utils/decimal.js';
 import { SEED_OVERVIEW, SEED_REGIONS } from '../database/seed_data.js';
-import { env } from '../config/env.js';
+import { env, syntheticDataAllowed } from '../config/env.js';
 import { AppError } from '../utils/response.js';
+import { SYNTHETIC_PROVENANCE } from '../utils/provenance.js';
+import { DatasetService } from '../services/dataset.service.js';
+
+/**
+ * Legacy compatibility alias.
+ *
+ * The former 'validated' status asserted an official validation that no artifact
+ * supports. It is accepted as a deprecated alias for the simulated scenario so
+ * existing clients keep working, and is never returned by the API.
+ */
+export function normalizeValidationStatus(status?: string | null): string {
+  if (!status || status === 'validated') return 'simulated';
+  return status;
+}
 
 export interface ForecastRecord {
   id: string;
@@ -19,6 +33,7 @@ export interface ForecastRecord {
   forecastMethod: string;
   validationStatus: string;
   isCalibrated: boolean;
+  datasetVersionId?: string | null;
   createdAt?: Date;
 }
 
@@ -37,6 +52,8 @@ export interface UpsertForecastInput {
   forecastMethod?: string;
   validationStatus?: string;
   isCalibrated?: boolean;
+  /** Batch 3: the dataset version this forecast was generated from. */
+  datasetVersionId?: string | null;
 }
 
 export interface ForecastQueryOptions {
@@ -44,6 +61,7 @@ export interface ForecastQueryOptions {
   indicatorId?: string;
   validationStatus?: string;
   horizonYear?: number;
+  datasetVersionId?: string | null;
 }
 
 export interface PredictionsResponse {
@@ -62,7 +80,7 @@ export interface PredictionsResponse {
     id: string;
     name: string;
     arabic_name: string;
-    r2: number;
+    r2: number | null;
   }>;
   top_improvers: Array<{
     region_id: string;
@@ -70,6 +88,20 @@ export interface PredictionsResponse {
     arabic_name: string;
     delta: number;
   }>;
+  forecast_classification: {
+    source: string;
+    is_simulated: boolean;
+    is_official: boolean;
+    is_calibrated: boolean;
+    validation_status: string;
+    disclaimer_en: string;
+    disclaimer_ar: string;
+  };
+  provenance: typeof SYNTHETIC_PROVENANCE;
+  evaluation?: {
+    status: 'unavailable' | 'computed';
+    reason: string;
+  };
 }
 
 /**
@@ -87,10 +119,10 @@ const DEFAULT_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.95,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
   {
     regionId: null,
@@ -102,10 +134,10 @@ const DEFAULT_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.91,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
   {
     regionId: null,
@@ -117,10 +149,10 @@ const DEFAULT_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.87,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
   {
     regionId: null,
@@ -132,10 +164,10 @@ const DEFAULT_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.84,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
   {
     regionId: null,
@@ -147,10 +179,10 @@ const DEFAULT_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.81,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
   // 2. Experimental ML pipeline output (R2=0.975 on contemporaneous indicators, uncalibrated)
   {
@@ -209,10 +241,10 @@ const DEFAULT_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.88,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
   {
     regionId: 'lakeside',
@@ -224,10 +256,10 @@ const DEFAULT_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.85,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
   {
     regionId: 'western_coast',
@@ -239,10 +271,10 @@ const DEFAULT_FORECASTS: UpsertForecastInput[] = [
     confidenceLevel: 0.86,
     modelName: 'temporal_ensemble',
     modelVersion: '1.0.0',
-    forecastSource: 'official_planning',
+    forecastSource: 'simulated_scenario',
     forecastMethod: 'temporal_ensemble',
-    validationStatus: 'validated',
-    isCalibrated: true,
+    validationStatus: 'simulated',
+    isCalibrated: false,
   },
 ];
 
@@ -265,7 +297,7 @@ function getForecastKey(
 for (const item of DEFAULT_FORECASTS) {
   const indicatorId = item.indicatorId || 'development_index';
   const modelVersion = item.modelVersion || '1.0.0';
-  const validationStatus = item.validationStatus || 'validated';
+  const validationStatus = item.validationStatus || 'simulated';
   const key = item.id || getForecastKey(item.regionId, indicatorId, item.forecastYear, modelVersion, validationStatus);
   inMemoryForecasts.set(key, {
     id: key,
@@ -278,10 +310,10 @@ for (const item of DEFAULT_FORECASTS) {
     confidenceLevel: item.confidenceLevel ?? 0.95,
     modelName: item.modelName ?? 'temporal_ensemble',
     modelVersion,
-    forecastSource: item.forecastSource ?? 'official_planning',
+    forecastSource: item.forecastSource ?? 'simulated_scenario',
     forecastMethod: item.forecastMethod ?? 'temporal_ensemble',
     validationStatus,
-    isCalibrated: item.isCalibrated ?? true,
+    isCalibrated: item.isCalibrated ?? false,
     createdAt: new Date(),
   });
 }
@@ -295,7 +327,7 @@ export class ForecastRepository {
     for (const item of DEFAULT_FORECASTS) {
       const indicatorId = item.indicatorId || 'development_index';
       const modelVersion = item.modelVersion || '1.0.0';
-      const validationStatus = item.validationStatus || 'validated';
+      const validationStatus = item.validationStatus || 'simulated';
       const key = item.id || getForecastKey(item.regionId, indicatorId, item.forecastYear, modelVersion, validationStatus);
       inMemoryForecasts.set(key, {
         id: key,
@@ -308,10 +340,10 @@ export class ForecastRepository {
         confidenceLevel: item.confidenceLevel ?? 0.95,
         modelName: item.modelName ?? 'temporal_ensemble',
         modelVersion,
-        forecastSource: item.forecastSource ?? 'official_planning',
+        forecastSource: item.forecastSource ?? 'simulated_scenario',
         forecastMethod: item.forecastMethod ?? 'temporal_ensemble',
         validationStatus,
-        isCalibrated: item.isCalibrated ?? true,
+        isCalibrated: item.isCalibrated ?? false,
         createdAt: new Date(),
       });
     }
@@ -336,6 +368,7 @@ export class ForecastRepository {
       forecastMethod: entity.forecastMethod,
       validationStatus: entity.validationStatus,
       isCalibrated: entity.isCalibrated,
+      datasetVersionId: entity.datasetVersionId ?? null,
       createdAt: entity.createdAt,
     };
   }
@@ -346,7 +379,7 @@ export class ForecastRepository {
   static async findNationalForecasts(options?: ForecastQueryOptions): Promise<ForecastRecord[]> {
     const isDbReady = await testPrismaConnection();
     const indicatorId = options?.indicatorId ?? 'development_index';
-    const validationStatus = options?.validationStatus ?? 'validated';
+    const validationStatus = normalizeValidationStatus(options?.validationStatus);
     const horizonYear = options?.horizonYear;
 
     if (!isDbReady) {
@@ -357,6 +390,7 @@ export class ForecastRepository {
         .filter((f) => f.regionId === null)
         .filter((f) => f.indicatorId === indicatorId)
         .filter((f) => f.validationStatus === validationStatus)
+        .filter((f) => (options?.datasetVersionId ? f.datasetVersionId === options.datasetVersionId : true))
         .filter((f) => (horizonYear ? f.forecastYear <= horizonYear : true))
         .sort((a, b) => a.forecastYear - b.forecastYear);
     }
@@ -367,6 +401,7 @@ export class ForecastRepository {
           regionId: null,
           indicatorId,
           validationStatus,
+          ...(options?.datasetVersionId ? { datasetVersionId: options.datasetVersionId } : {}),
           ...(horizonYear ? { forecastYear: { lte: horizonYear } } : {}),
         },
         orderBy: { forecastYear: 'asc' },
@@ -376,6 +411,7 @@ export class ForecastRepository {
       if (env.NODE_ENV === 'production') throw error;
       return Array.from(inMemoryForecasts.values())
         .filter((f) => f.regionId === null && f.indicatorId === indicatorId && f.validationStatus === validationStatus)
+        .filter((f) => (options?.datasetVersionId ? f.datasetVersionId === options.datasetVersionId : true))
         .filter((f) => (horizonYear ? f.forecastYear <= horizonYear : true))
         .sort((a, b) => a.forecastYear - b.forecastYear);
     }
@@ -387,7 +423,7 @@ export class ForecastRepository {
   static async findRegionalForecasts(regionId: string, options?: ForecastQueryOptions): Promise<ForecastRecord[]> {
     const isDbReady = await testPrismaConnection();
     const indicatorId = options?.indicatorId ?? 'development_index';
-    const validationStatus = options?.validationStatus ?? 'validated';
+    const validationStatus = normalizeValidationStatus(options?.validationStatus);
     const horizonYear = options?.horizonYear;
 
     if (!isDbReady) {
@@ -429,7 +465,7 @@ export class ForecastRepository {
     const isDbReady = await testPrismaConnection();
     const regionId = options?.regionId !== undefined ? options.regionId : null;
     const indicatorId = options?.indicatorId ?? 'development_index';
-    const validationStatus = options?.validationStatus ?? 'validated';
+    const validationStatus = normalizeValidationStatus(options?.validationStatus);
 
     if (!isDbReady) {
       const match = Array.from(inMemoryForecasts.values()).find(
@@ -437,7 +473,8 @@ export class ForecastRepository {
           f.forecastYear === year &&
           f.regionId === regionId &&
           f.indicatorId === indicatorId &&
-          f.validationStatus === validationStatus
+          f.validationStatus === validationStatus &&
+          (!options?.datasetVersionId || f.datasetVersionId === options.datasetVersionId)
       );
       return match ?? null;
     }
@@ -449,6 +486,7 @@ export class ForecastRepository {
           indicatorId,
           forecastYear: year,
           validationStatus,
+          ...(options?.datasetVersionId ? { datasetVersionId: options.datasetVersionId } : {}),
         },
       });
       return record ? this.mapToRecord(record) : null;
@@ -459,7 +497,8 @@ export class ForecastRepository {
           f.forecastYear === year &&
           f.regionId === regionId &&
           f.indicatorId === indicatorId &&
-          f.validationStatus === validationStatus
+          f.validationStatus === validationStatus &&
+          (!options?.datasetVersionId || f.datasetVersionId === options.datasetVersionId)
       );
       return match ?? null;
     }
@@ -471,7 +510,7 @@ export class ForecastRepository {
   static async upsertForecast(input: UpsertForecastInput): Promise<ForecastRecord> {
     const indicatorId = input.indicatorId || 'development_index';
     const modelVersion = input.modelVersion || '1.0.0';
-    const validationStatus = input.validationStatus || 'validated';
+    const validationStatus = normalizeValidationStatus(input.validationStatus);
     const id = input.id || getForecastKey(input.regionId, indicatorId, input.forecastYear, modelVersion, validationStatus);
 
     const record: ForecastRecord = {
@@ -485,10 +524,11 @@ export class ForecastRepository {
       confidenceLevel: input.confidenceLevel ?? 0.95,
       modelName: input.modelName ?? 'temporal_ensemble',
       modelVersion,
-      forecastSource: input.forecastSource ?? 'official_planning',
+      forecastSource: input.forecastSource ?? 'simulated_scenario',
       forecastMethod: input.forecastMethod ?? 'temporal_ensemble',
       validationStatus,
-      isCalibrated: input.isCalibrated ?? true,
+      isCalibrated: input.isCalibrated ?? false,
+      datasetVersionId: input.datasetVersionId ?? null,
       createdAt: new Date(),
     };
 
@@ -513,10 +553,11 @@ export class ForecastRepository {
           confidenceLevel: input.confidenceLevel ?? 0.95,
           modelName: input.modelName ?? 'temporal_ensemble',
           modelVersion,
-          forecastSource: input.forecastSource ?? 'official_planning',
+          forecastSource: input.forecastSource ?? 'simulated_scenario',
           forecastMethod: input.forecastMethod ?? 'temporal_ensemble',
           validationStatus,
-          isCalibrated: input.isCalibrated ?? true,
+          isCalibrated: input.isCalibrated ?? false,
+          datasetVersionId: input.datasetVersionId ?? null,
         },
         create: {
           id,
@@ -529,10 +570,11 @@ export class ForecastRepository {
           confidenceLevel: input.confidenceLevel ?? 0.95,
           modelName: input.modelName ?? 'temporal_ensemble',
           modelVersion,
-          forecastSource: input.forecastSource ?? 'official_planning',
+          forecastSource: input.forecastSource ?? 'simulated_scenario',
           forecastMethod: input.forecastMethod ?? 'temporal_ensemble',
           validationStatus,
-          isCalibrated: input.isCalibrated ?? true,
+          isCalibrated: input.isCalibrated ?? false,
+          datasetVersionId: input.datasetVersionId ?? null,
         },
       });
       return this.mapToRecord(upserted);
@@ -546,30 +588,55 @@ export class ForecastRepository {
    * Builds the full contract-compliant predictions response for Flutter.
    */
   static async getPredictions(targetYear: number, options?: { validationStatus?: string }): Promise<PredictionsResponse> {
-    const validationStatus = options?.validationStatus ?? 'validated';
+    if (!syntheticDataAllowed() && !(await DatasetService.hasApprovedActiveDataset())) {
+      throw AppError.unavailable(
+        'No approved dataset is connected. Connect and validate a dataset before viewing forecasts.',
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+    if (!syntheticDataAllowed() && !(await testPrismaConnection())) {
+      throw AppError.internal('Database connection unavailable for forecast data.');
+    }
+    const validationStatus = normalizeValidationStatus(options?.validationStatus ?? 'experimental');
+    const active = await DatasetService.active();
+    if (!active) {
+      throw AppError.unavailable(
+        'No approved dataset is connected. Connect and validate a dataset before viewing forecasts.',
+        'DATASET_NOT_CONNECTED'
+      );
+    }
 
-    // 1. Historical actuals (2021-2025)
-    const actualPoints = [
-      { year: 2021, value: 60.4 },
-      { year: 2022, value: 62.2 },
-      { year: 2023, value: 64.5 },
-      { year: 2024, value: 66.1 },
-      { year: 2025, value: 68.4 },
-    ];
-
-    const actualSeries = actualPoints.map((p) => ({
-      year: p.year,
-      value: p.value,
+    // 1. Historical actuals come from the active version's persisted observations.
+    const history = await prisma.nationalIndexHistory.findMany({
+      where: { datasetVersionId: active.id },
+      orderBy: { year: 'asc' },
+    });
+    if (history.length === 0) {
+      throw AppError.unavailable(
+        `Dataset ${active.version} has no persisted historical observations for forecasting.`,
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+    const actualSeries = history.map((row) => ({
+      year: row.year,
+      value: toNumber(row.score),
       kind: 'actual' as const,
       lower: null,
       upper: null,
     }));
 
-    // 2. Forecast points up to targetYear from database / fallback repository
+    // 2. Forecast points up to targetYear, restricted to THIS dataset version.
     const nationalForecasts = await this.findNationalForecasts({
       validationStatus,
       horizonYear: targetYear,
+      datasetVersionId: active.id,
     });
+    if (nationalForecasts.length === 0) {
+      throw AppError.unavailable(
+        `No version-scoped forecasts exist for dataset ${active.version}. Generate them from the active dataset before viewing predictions.`,
+        'DATASET_NOT_CONNECTED'
+      );
+    }
 
     const forecastSeries = nationalForecasts
       .filter((f) => f.forecastYear >= 2026 && f.forecastYear <= targetYear)
@@ -581,39 +648,32 @@ export class ForecastRepository {
         upper: f.upperBound ?? f.predictedValue,
       }));
 
-    // 3. Fallback projected target if forecast series is empty
     const projectedRecord = nationalForecasts.find((f) => f.forecastYear === targetYear);
-    const projectedIndex = projectedRecord
-      ? projectedRecord.predictedValue
-      : targetYear === 2027
-      ? 71.8
-      : targetYear === 2028
-      ? 73.5
-      : 76.8;
+    if (!projectedRecord) {
+      throw AppError.unavailable(
+        `No verified forecast is available for target year ${targetYear}.`,
+        'DATASET_NOT_CONNECTED'
+      );
+    }
+    const projectedIndex = projectedRecord.predictedValue;
+    const confidence = projectedRecord.confidenceLevel
+      ? Math.round(projectedRecord.confidenceLevel * 100)
+      : 0;
 
-    // 4. Calibrated confidence metric
-    const confidence =
-      projectedRecord?.confidenceLevel
-        ? Math.round(projectedRecord.confidenceLevel * 100)
-        : targetYear === 2027
-        ? 91
-        : targetYear === 2028
-        ? 87
-        : 81;
+    // Only the model that actually produced the persisted rows is listed, and
+    // its R² is null: no reproducible out-of-sample metric is stored in the
+    // application schema. Offline holdout metrics live with the ML artifacts.
+    const modelIds = [...new Set(nationalForecasts.map((forecast) => forecast.modelName))];
+    const models = (modelIds.length > 0 ? modelIds : ['linear_trend_baseline']).map((id) => ({
+      id,
+      name: id === 'linear_trend_baseline' ? 'Linear trend baseline' : id.replace(/_/g, ' '),
+      arabic_name: id === 'linear_trend_baseline' ? 'خط الاتجاه الأساسي' : id,
+      r2: null,
+    }));
 
-    // 5. Contract models with audited empirical R²
-    const models = [
-      { id: 'gradient_boosting', name: 'Gradient boosting', arabic_name: 'التعزيز المتدرج', r2: 0.91 },
-      { id: 'random_forest', name: 'Random forest', arabic_name: 'الغابة العشوائية', r2: 0.88 },
-      { id: 'temporal_ensemble', name: 'Temporal ensemble', arabic_name: 'المجموعة الزمنية', r2: 0.93 },
-    ];
-
-    // 6. Top improvers from regional forecasts
-    const topImprovers = [
-      { region_id: 'central_capital', name: 'Central Capital', arabic_name: 'العاصمة المركزية', delta: 8.4 },
-      { region_id: 'lakeside', name: 'Lakeside', arabic_name: 'ضفاف البحيرة', delta: 7.3 },
-      { region_id: 'western_coast', name: 'Western Coast', arabic_name: 'الساحل الغربي', delta: 6.0 },
-    ];
+    // Forecasts and synthetic fixture history cannot establish observed
+    // improvement. Until two verified observations exist, rankings stay empty.
+    const topImprovers: PredictionsResponse['top_improvers'] = [];
 
     return {
       target_year: targetYear,
@@ -623,7 +683,40 @@ export class ForecastRepository {
       series: [...actualSeries, ...forecastSeries],
       models,
       top_improvers: topImprovers,
+      forecast_classification: {
+        source: projectedRecord?.forecastSource ?? 'experimental_ml',
+        is_simulated: true,
+        is_official: false,
+        is_calibrated: projectedRecord?.isCalibrated ?? false,
+        validation_status: validationStatus,
+        disclaimer_en:
+          'Experimental forecast: generated from the active synthetic demonstration dataset by a simple explainable trend model. It is not an official projection and has not been validated against real-world outcomes.',
+        disclaimer_ar:
+          'توقع تجريبي: مُولّد من مجموعة البيانات الاصطناعية التوضيحية النشطة بواسطة نموذج اتجاه بسيط قابل للتفسير. وهو ليس توقعاً رسمياً ولم يتم التحقق منه مقابل نتائج واقعية.',
+      },
+      evaluation: {
+        status: 'unavailable',
+        reason:
+          'Holdout metrics are computed offline by backend/src/scripts/generate-forecasts.ts and are not stored in the application schema; no live R² is claimed.',
+      },
+      provenance: {
+        data_classification: 'experimental_ml',
+        source_classification: /synthetic|demo|test|illustrative/i.test(
+          `${active.source} ${active.license} ${active.coverage}`
+        )
+          ? 'synthetic_demo'
+          : 'official_source',
+        source: active.source,
+        dataset_version: active.id,
+        observation_period: `${history[0].year}-${history[history.length - 1].year}`,
+        method:
+          'Ordinary least-squares linear trend fitted to the active dataset national index; forecasts are experimental and uncalibrated.',
+        verification_status: 'unverified',
+        disclaimer_en:
+          'Experimental forecast derived from the active dataset. Not an official measurement or validated prediction.',
+        disclaimer_ar:
+          'توقع تجريبي مشتق من مجموعة البيانات النشطة. ليس قياساً رسمياً ولا توقعاً تم التحقق منه.',
+      },
     };
   }
 }
-

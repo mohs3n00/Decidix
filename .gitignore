@@ -95,9 +95,13 @@ GoogleService-Info*.plist
 # Root Internal Docs & Trackers
 /AGENTS.md
 /decidix_execution_tracker.md
+/DECIDIX_PHASE_*.md
 
-# Agent Skills
+# Agent Skills & Tooling
 /.codex/
+/.agents/
+/.vscode/
+/.freebuff/
 
 # Internal Architecture, Audits, Plans & Deployment Runbooks
 /docs/PROJECT_MASTER_STATUS.md

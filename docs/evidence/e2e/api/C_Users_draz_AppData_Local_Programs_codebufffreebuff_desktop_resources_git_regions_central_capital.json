@@ -1,0 +1,10 @@
+{
+  "path": "C:/Users/draz/AppData/Local/Programs/@codebufffreebuff-desktop/resources/git/regions/central_capital",
+  "status": 404,
+  "body": {
+    "error": {
+      "code": "NOT_FOUND",
+      "message": "Endpoint does not exist"
+    }
+  }
+}

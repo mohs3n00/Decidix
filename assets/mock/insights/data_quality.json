@@ -1,5 +1,7 @@
 {
   "data": {
+    "data_classification": "synthetic",
+    "is_official": false,
     "overall": { "score": 82, "band": "good" },
     "dimensions": { "completeness": 91, "timeliness": 78, "accuracy": 86 },
     "lowest_coverage_regions": [
@@ -11,9 +13,9 @@
       { "region_id": "southern_basin", "name": "Southern Basin", "arabic_name": "الحوض الجنوبي", "coverage": 77 }
     ],
     "sources": [
-      { "id": "national_statistics_bureau", "name": "National Statistics Bureau", "arabic_name": "مكتب الإحصاء الوطني", "status": "synced", "age_days": 0 },
-      { "id": "ministry_of_health_registry", "name": "Ministry of Health registry", "arabic_name": "سجل وزارة الصحة", "status": "synced", "age_days": 2 },
-      { "id": "education_census", "name": "Education census", "arabic_name": "التعداد التعليمي", "status": "overdue", "age_days": 41 }
+      { "id": "synthetic_health_model", "name": "Synthetic Health Sector Model", "arabic_name": "نموذج محاكاة قطاع الصحة", "status": "synced", "age_days": 0 },
+      { "id": "synthetic_education_model", "name": "Synthetic Education Sector Model", "arabic_name": "نموذج محاكاة قطاع التعليم", "status": "synced", "age_days": 0 },
+      { "id": "synthetic_labor_model", "name": "Synthetic Labor & Economy Model", "arabic_name": "نموذج محاكاة قطاع العمل والاقتصاد", "status": "overdue", "age_days": 41 }
     ]
   }
 }

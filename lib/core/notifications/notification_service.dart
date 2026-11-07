@@ -141,6 +141,7 @@ class NotificationService {
       // 5. Listen to registration stream for device token updates
       _tokenRefreshSub = messaging.onRegistered.listen((token) async {
         _currentToken = token;
+        debugPrint('[NotificationService] FCM device token updated.');
         if (await _isAuthenticated()) {
           await _syncTokenWithBackend(token);
         } else {
@@ -153,7 +154,7 @@ class NotificationService {
         }
       });
 
-      // 6. Trigger device registration with FCM
+      // 6. Request device registration
       try {
         await messaging.register();
       } catch (e) {
@@ -222,23 +223,32 @@ class NotificationService {
       final platform = defaultTargetPlatform == TargetPlatform.iOS
           ? 'ios'
           : 'android';
+      debugPrint('[NotificationService] Registering token with backend ($platform)...');
       await _api.registerDeviceToken(token: token, platform: platform);
       _isSynced = true;
+      debugPrint('[NotificationService] Successfully registered token with backend!');
     } catch (e) {
       _isSynced = false;
-      if (kDebugMode) {
-        debugPrint(
-          '[NotificationService] Could not register token with API: $e',
-        );
-      }
+      debugPrint('[NotificationService] Could not register token with API: $e');
     }
   }
 
   /// Called after successful login, or when an existing valid session is restored at startup.
   /// Syncs any buffered device token with the backend.
   Future<void> onUserAuthenticated() async {
-    if (_currentToken != null) {
-      await _syncTokenWithBackend(_currentToken!);
+    if (_currentToken == null) {
+      try {
+        await FirebaseMessaging.instance.register();
+      } catch (e) {
+        debugPrint('[NotificationService] onUserAuthenticated() register error: $e');
+      }
+    }
+    final token = _currentToken;
+    if (token != null) {
+      debugPrint('[NotificationService] onUserAuthenticated() syncing device token.');
+      await _syncTokenWithBackend(token);
+    } else {
+      debugPrint('[NotificationService] onUserAuthenticated() called but token is null');
     }
   }
 

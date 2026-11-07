@@ -40,6 +40,9 @@ AppException _fromResponse(Response<dynamic>? response) {
     return ValidationException(message ?? 'Invalid request', fields);
   }
   if (status >= 500) {
+    if (error?['code'] == 'DATASET_NOT_CONNECTED') {
+      return const DatasetUnavailableException();
+    }
     return ServerException(message ?? 'Server error occurred', status);
   }
   return AppException(message ?? 'Request failed', status);
