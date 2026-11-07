@@ -527,11 +527,21 @@ export class DatasetParserService {
       .map(([yr, vals]) => {
         const mean = vals.reduce((a, b) => a + b, 0) / (vals.length || 1);
         const score = Math.round(mean * 10) / 10;
+        const band =
+          score >= 80
+            ? 'high'
+            : score >= 65
+            ? 'moderate_high'
+            : score >= 50
+            ? 'moderate'
+            : score >= 35
+            ? 'moderate_low'
+            : 'low';
         return {
           period: String(yr),
           year: yr,
           score,
-          band: score >= 75 ? 'High' : score >= 60 ? 'Medium' : 'Needs attention',
+          band,
           population: 39600000,
           regions_count: regions.length,
           at_risk_count: 0,
