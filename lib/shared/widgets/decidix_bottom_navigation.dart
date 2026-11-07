@@ -126,41 +126,64 @@ class _NavTab extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: Center(
-          child: active
-              ? SvgPicture.asset(
-                  item.iconAsset,
-                  width: 24,
-                  height: 24,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.blue,
-                    BlendMode.srcIn,
+        child: SizedBox(
+          height: DecidixBottomNavigation._barHeight,
+          child: Center(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(
+                    scale: Tween<double>(begin: 0.88, end: 1.0).animate(animation),
+                    child: child,
                   ),
-                )
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SvgPicture.asset(
-                      item.iconAsset,
-                      width: 22,
-                      height: 22,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.fadedInk,
-                        BlendMode.srcIn,
+                );
+              },
+              child: active
+                  ? KeyedSubtree(
+                      key: ValueKey('active_${item.labelKey}'),
+                      child: SvgPicture.asset(
+                        item.iconAsset,
+                        width: 24,
+                        height: 24,
+                        colorFilter: const ColorFilter.mode(
+                          AppColors.blue,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    )
+                  : KeyedSubtree(
+                      key: ValueKey('inactive_${item.labelKey}'),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SvgPicture.asset(
+                            item.iconAsset,
+                            width: 22,
+                            height: 22,
+                            colorFilter: const ColorFilter.mode(
+                              AppColors.fadedInk,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.captionRegular.copyWith(
+                              color: AppColors.fadedInk,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.captionRegular.copyWith(
-                        color: AppColors.fadedInk,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
+            ),
+          ),
         ),
       ),
     );

@@ -17,10 +17,14 @@ class AppShell extends ConsumerWidget {
   final Widget child;
   final String location;
 
-  const AppShell({super.key, required this.child, required this.location});
+  const AppShell({
+    super.key,
+    required this.child,
+    required this.location,
+  });
 
   int get _currentIndex {
-    if (location.startsWith('/insights')) return 1;
+    if (location.startsWith('/insights') || location.startsWith('/datasets')) return 1;
     if (location.startsWith('/intelligence')) return 2;
     if (location.startsWith('/decisions')) return 3;
     return 0; // /overview or default
@@ -49,6 +53,23 @@ class AppShell extends ConsumerWidget {
         context.go('/decisions/simulator');
         break;
     }
+  }
+
+  VoidCallback? _resolveBackButton(BuildContext context) {
+    if (_isRegionProfile) {
+      return () => context.canPop()
+          ? context.pop()
+          : context.go('/overview/regions');
+    }
+    if (location == '/datasets/upload') {
+      return () => context.canPop()
+          ? context.pop()
+          : context.go('/insights/data-quality');
+    }
+    if (context.canPop()) {
+      return () => context.pop();
+    }
+    return null;
   }
 
   @override
@@ -88,14 +109,9 @@ class AppShell extends ConsumerWidget {
                 DecidixTopBar(
                   languageLabel: languageLabel,
                   onAvatarTap: () => _showAccountSheet(context, ref),
-                  // The profile is pushed on top of the screen it was opened from
-                  // (list, map, priority queue), so back returns there. With no
-                  // history (opened from a link) it goes to the regions list.
-                  onBack: _isRegionProfile
-                      ? () => context.canPop()
-                            ? context.pop()
-                            : context.go('/overview/regions')
-                      : null,
+                  // Consistent back button handling: pops nested screen if canPop,
+                  // or navigates to logical parent if deep-linked without history.
+                  onBack: _resolveBackButton(context),
                   onLanguageTap: () {
                     ref.read(localeNotifierProvider.notifier).toggleLocale();
                   },

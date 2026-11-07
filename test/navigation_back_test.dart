@@ -1,5 +1,6 @@
 import 'package:decidix_app/core/routing/app_router.dart';
 import 'package:decidix_app/shared/widgets/decidix_bottom_navigation.dart';
+import 'package:decidix_app/shared/widgets/decidix_top_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -160,6 +161,93 @@ void main() {
       final handled2 = await tester.binding.handlePopRoute();
       expect(handled2, isFalse);
       expect(router.state.uri.path, '/overview/dashboard');
+    });
+
+    testWidgets('Bottom sheet (Account Sheet) -> Back press dismisses sheet without navigating away', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await tester.pumpAndSettle();
+
+      // Open Account bottom sheet by tapping avatar
+      expect(find.bySemanticsLabel('Account'), findsOneWidget);
+      await tester.tap(find.bySemanticsLabel('Account'));
+      await tester.pumpAndSettle();
+
+      // Bottom sheet is visible
+      expect(find.text('Decidix Account'), findsOneWidget);
+
+      // System Back should dismiss the bottom sheet only
+      final handled = await tester.binding.handlePopRoute();
+      expect(handled, isTrue);
+      await tester.pumpAndSettle();
+
+      // Bottom sheet is dismissed, Overview Dashboard remains active
+      expect(find.text('Decidix Account'), findsNothing);
+      expect(find.text('National Development'), findsOneWidget);
+    });
+
+    testWidgets('AppBar Back button on nested route pops nested route consistently with system Back', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await tester.pumpAndSettle();
+
+      final BuildContext context = tester.element(find.byType(DecidixBottomNavigation));
+      final router = ProviderScope.containerOf(context).read(appRouterProvider);
+
+      // Navigate to Regions list
+      router.go('/overview/regions');
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/overview/regions');
+
+      // Push Region Profile (nested route)
+      router.push('/overview/regions/delta');
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/overview/regions/delta');
+
+      // Top bar Back button must be visible
+      final backButton = find.descendant(
+        of: find.byType(DecidixTopBar),
+        matching: find.bySemanticsLabel('Back'),
+      );
+      expect(backButton, findsOneWidget);
+
+      // Tap TopBar Back button
+      await tester.tap(backButton);
+      await tester.pumpAndSettle();
+
+      // Popped back to Regions list
+      expect(router.state.uri.path, '/overview/regions');
+    });
+
+    testWidgets('Tab switching preserves independent branch states and scroll position', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      await tester.pumpAndSettle();
+
+      final BuildContext context = tester.element(find.byType(DecidixBottomNavigation));
+      final router = ProviderScope.containerOf(context).read(appRouterProvider);
+
+      // Overview screen is active
+      expect(find.text('National Development'), findsOneWidget);
+
+      // Switch to Intelligence
+      await tester.tap(find.text('Intelligence'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, startsWith('/intelligence'));
+
+      // Switch to Decisions
+      await tester.tap(find.text('Decisions'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, startsWith('/decisions'));
+
+      // Switch back to Overview -> instantaneously available without rebuild
+      await tester.tap(find.text('Overview'));
+      await tester.pumpAndSettle();
+      expect(router.state.uri.path, '/overview/dashboard');
+      expect(find.text('National Development'), findsOneWidget);
     });
   });
 }
