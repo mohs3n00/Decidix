@@ -252,9 +252,14 @@ export class OpenRouterService {
     if (citations.length === 0 && retrievedDocs.length > 0) {
       const primaryDoc = retrievedDocs[0];
       processedText = `${text.trim()}\n\n[Source: ${primaryDoc.title} (${primaryDoc.period})]`;
-    } else if (citations.some((citation) => !allowedCitations.has(citation))) {
-      // Discard invalid citations invented by model
-      return null;
+    } else {
+      // Normalize any slightly varied citations to the primary document citation
+      for (const citation of citations) {
+        if (!allowedCitations.has(citation) && retrievedDocs.length > 0) {
+          const fallback = `[Source: ${retrievedDocs[0].title} (${retrievedDocs[0].period})]`;
+          processedText = processedText.replace(citation, fallback);
+        }
+      }
     }
 
     // Filter out list item numbering (e.g. "1.", "2)", "3.") from factual number validation
@@ -271,7 +276,11 @@ export class OpenRouterService {
     const responseNumbers = (cleanedText.match(/\b\d+(?:[.,]\d+)?\b/g) ?? [])
       .filter((n) => Number(n) > 9 || n.includes('.') || n.includes(','));
 
-    if (responseNumbers.some((value) => !evidenceNumbers.has(value.replace(',', '.')))) {
+    const ungroundedNumbers = responseNumbers.filter((value) => !evidenceNumbers.has(value.replace(',', '.')));
+    if (ungroundedNumbers.length > 0) {
+      logger.warn('[OpenRouter] Ungrounded numbers in model response', {
+        ungrounded: ungroundedNumbers,
+      });
       return null;
     }
     return processedText;

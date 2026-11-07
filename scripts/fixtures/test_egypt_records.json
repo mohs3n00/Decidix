@@ -1,0 +1,56 @@
+[
+  {
+    "region": "Cairo",
+    "indicator": "broadband_coverage",
+    "year": 2022,
+    "value": 76
+  },
+  {
+    "region": "Cairo",
+    "indicator": "broadband_coverage",
+    "year": 2023,
+    "value": 79.5
+  },
+  {
+    "region": "Cairo",
+    "indicator": "broadband_coverage",
+    "year": 2024,
+    "value": 82.5
+  },
+  {
+    "region": "Alexandria",
+    "indicator": "broadband_coverage",
+    "year": 2022,
+    "value": 72
+  },
+  {
+    "region": "Alexandria",
+    "indicator": "broadband_coverage",
+    "year": 2023,
+    "value": 75.1
+  },
+  {
+    "region": "Alexandria",
+    "indicator": "broadband_coverage",
+    "year": 2024,
+    "value": 78.3
+  },
+  {
+    "region": "Giza",
+    "indicator": "broadband_coverage",
+    "year": 2022,
+    "value": 65
+  },
+  {
+    "region": "Giza",
+    "indicator": "broadband_coverage",
+    "year": 2023,
+    "value": 68.2
+  },
+  {
+    "region": "Giza",
+    "indicator": "broadband_coverage",
+    "year": 2024,
+    "value": 71
+  }
+]
