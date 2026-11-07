@@ -102,8 +102,13 @@ export const apiClient = {
 
             if (refreshRes.ok) {
               const refreshData = await refreshRes.json();
-              const newAccessToken = refreshData.data?.access_token || refreshData.access_token;
-              const newRefreshToken = refreshData.data?.refresh_token || refreshData.refresh_token;
+              const newAccessToken =
+                refreshData.data?.access_token ||
+                refreshData.data?.token ||
+                refreshData.access_token ||
+                refreshData.token;
+              const newRefreshToken =
+                refreshData.data?.refresh_token || refreshData.refresh_token;
               this.setTokens(newAccessToken, newRefreshToken);
               onRefreshed(newAccessToken);
               isRefreshing = false;

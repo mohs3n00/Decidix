@@ -213,47 +213,81 @@ export const SimulatorScreen: React.FC = () => {
             </div>
 
             {simulation ? (
-              <>
-                <div className="space-y-3">
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-5xl font-black text-navy tracking-tight">
-                      {simulation.projected_score.toFixed(1)}
-                    </span>
-                    <span className="text-sm font-semibold text-faded-ink">/ 100</span>
+              (() => {
+                const netGain = (simulation as any).gain ?? simulation.net_gain ?? 0;
+                const baseline = (simulation as any).today_score ?? simulation.current_score ?? 0;
+                const levers = (simulation as any).levers;
 
-                    <span className="text-sm font-bold px-2.5 py-1 rounded-pill bg-emerald-50 text-emerald-600">
-                      +{simulation.net_gain.toFixed(1)} pts
-                    </span>
-                  </div>
+                return (
+                  <>
+                    <div className="space-y-3">
+                      <div className="flex items-baseline gap-3">
+                        <span className="text-5xl font-black text-navy tracking-tight">
+                          {simulation.projected_score.toFixed(1)}
+                        </span>
+                        <span className="text-sm font-semibold text-faded-ink">/ 100</span>
 
-                  <div className="text-xs text-ink">
-                    {isRTL ? 'المستوى الحالي: ' : 'Baseline Score: '}
-                    <strong className="text-navy">{simulation.current_score.toFixed(1)}</strong>
-                  </div>
-                </div>
+                        <span className="text-sm font-bold px-2.5 py-1 rounded-pill bg-emerald-50 text-emerald-600">
+                          +{netGain.toFixed(1)} pts
+                        </span>
+                      </div>
 
-                {/* Domain Impacts Breakdown */}
-                {simulation.domain_impacts && (
-                  <div className="space-y-3 pt-4 border-t border-line">
-                    <div className="text-xs font-bold text-navy">
-                      {isRTL ? 'مكاسب القطاعات التفصيلية:' : 'Sector-Specific Gains:'}
+                      <div className="text-xs text-ink">
+                        {isRTL ? 'المستوى الحالي: ' : 'Baseline Score: '}
+                        <strong className="text-navy">{baseline.toFixed(1)}</strong>
+                      </div>
                     </div>
 
-                    {Object.entries(simulation.domain_impacts).map(([dom, impact]) => (
-                      <div key={dom} className="flex items-center justify-between text-xs">
-                        <span className="text-ink capitalize">{dom}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-faded-ink">{impact.before.toFixed(1)} →</span>
-                          <span className="font-bold text-navy">{impact.after.toFixed(1)}</span>
-                          <span className="text-emerald-600 font-semibold">
-                            (+{impact.delta.toFixed(1)})
-                          </span>
+                    {/* Levers or Domain Impacts */}
+                    {levers && Array.isArray(levers) ? (
+                      <div className="space-y-3 pt-4 border-t border-line">
+                        <div className="text-xs font-bold text-navy">
+                          {isRTL ? 'عائد الروافع القطاعية:' : 'Sectoral Marginal Yields:'}
                         </div>
+                        {levers.map((lev: any) => (
+                          <div key={lev.domain} className="flex items-center justify-between text-xs">
+                            <span className="text-ink capitalize">{lev.domain}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-navy">
+                                +{lev.gain.toFixed(1)} pts
+                              </span>
+                              <span className="text-emerald-600 text-[10px]">
+                                ({lev.yield_per_million.toFixed(3)}/M$)
+                              </span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </>
+                    ) : simulation.domain_impacts ? (
+                      <div className="space-y-3 pt-4 border-t border-line">
+                        <div className="text-xs font-bold text-navy">
+                          {isRTL ? 'مكاسب القطاعات التفصيلية:' : 'Sector-Specific Gains:'}
+                        </div>
+
+                        {Object.entries(simulation.domain_impacts).map(([dom, impact]) => (
+                          <div key={dom} className="flex items-center justify-between text-xs">
+                            <span className="text-ink capitalize">{dom}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-faded-ink">{impact.before.toFixed(1)} →</span>
+                              <span className="font-bold text-navy">{impact.after.toFixed(1)}</span>
+                              <span className="text-emerald-600 font-semibold">
+                                (+{impact.delta.toFixed(1)})
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    {(simulation as any).best_lever && (
+                      <div className="p-3 rounded-well bg-blue/10 text-xs text-blue font-semibold">
+                        ★ {isRTL ? 'الرافعة الأعلى عائداً: ' : 'Optimal Marginal Lever: '}
+                        <span className="capitalize">{(simulation as any).best_lever.domain}</span>
+                      </div>
+                    )}
+                  </>
+                );
+              })()
             ) : (
               <div className="py-12 text-center text-ink text-sm">
                 {isRTL ? 'قم بتحريك أشرطة التخصيص لبدء المحاكاة' : 'Adjust sliders to simulate return'}

@@ -121,56 +121,59 @@ export const RegionsListScreen: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {regions.map((r) => (
-                  <tr key={r.region_id} className="hover:bg-well/50 transition">
-                    <td className="py-4 px-4 font-bold text-navy">
-                      <span className="w-7 h-7 rounded-full bg-well flex items-center justify-center border border-line text-xs font-black">
-                        #{r.rank}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <Link
-                        to={`/regions/${r.region_id}`}
-                        className="font-bold text-navy hover:text-blue hover:underline text-base"
-                      >
-                        {t(r, 'name')}
-                      </Link>
-                    </td>
-                    <td className="py-4 px-4 font-black text-navy text-base">
-                      {r.score.toFixed(1)}
-                    </td>
-                    <td className="py-4 px-4">
-                      <span
-                        className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-pill ${
-                          r.change >= 0
-                            ? 'bg-emerald-50 text-emerald-600'
-                            : 'bg-rose-50 text-rose-600'
-                        }`}
-                      >
-                        <DecidixIcon
-                          name={r.change >= 0 ? 'trend_up' : 'trend_down'}
-                          size={12}
-                          color={r.change >= 0 ? '#059669' : '#DC2626'}
-                        />
-                        <span>{r.change >= 0 ? '+' : ''}{r.change.toFixed(1)}</span>
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-xs font-semibold text-ink">
-                      {r.population ? (r.population / 1_000_000).toFixed(1) + 'M' : 'N/A'}
-                    </td>
-                    <td className="py-4 px-4">
-                      <PriorityBadge priority={r.priority} isArabic={isRTL} />
-                    </td>
-                    <td className="py-4 px-4 text-right">
-                      <Link
-                        to={`/regions/${r.region_id}`}
-                        className="decidix-btn-secondary text-xs py-1.5 px-3"
-                      >
-                        {isRTL ? 'تفاصيل' : 'Profile'} →
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                {regions.map((r) => {
+                  const rId = r.region_id || (r as any).id;
+                  return (
+                    <tr key={rId} className="hover:bg-well/50 transition">
+                      <td className="py-4 px-4 font-bold text-navy">
+                        <span className="w-7 h-7 rounded-full bg-well flex items-center justify-center border border-line text-xs font-black">
+                          #{r.rank}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <Link
+                          to={`/regions/${rId}`}
+                          className="font-bold text-navy hover:text-blue hover:underline text-base"
+                        >
+                          {t(r, 'name')}
+                        </Link>
+                      </td>
+                      <td className="py-4 px-4 font-black text-navy text-base">
+                        {r.score.toFixed(1)}
+                      </td>
+                      <td className="py-4 px-4">
+                        <span
+                          className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-pill ${
+                            r.change >= 0
+                              ? 'bg-emerald-50 text-emerald-600'
+                              : 'bg-rose-50 text-rose-600'
+                          }`}
+                        >
+                          <DecidixIcon
+                            name={r.change >= 0 ? 'trend_up' : 'trend_down'}
+                            size={12}
+                            color={r.change >= 0 ? '#059669' : '#DC2626'}
+                          />
+                          <span>{r.change >= 0 ? '+' : ''}{r.change.toFixed(1)}</span>
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-xs font-semibold text-ink">
+                        {r.population ? (r.population / 1_000_000).toFixed(1) + 'M' : 'N/A'}
+                      </td>
+                      <td className="py-4 px-4">
+                        <PriorityBadge priority={r.priority} isArabic={isRTL} />
+                      </td>
+                      <td className="py-4 px-4 text-right">
+                        <Link
+                          to={`/regions/${rId}`}
+                          className="decidix-btn-secondary text-xs py-1.5 px-3"
+                        >
+                          {isRTL ? 'تفاصيل' : 'Profile'} →
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

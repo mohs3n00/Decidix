@@ -113,12 +113,13 @@ export const InteractiveMapScreen: React.FC = () => {
             {/* Region Pins on Vector Surface */}
             <div className="relative w-full h-[450px]">
               {points.map((pt) => {
+                const rId = pt.region_id || (pt as any).id;
                 const { x, y } = projectCoords(pt.latitude, pt.longitude);
-                const isSelected = selectedPoint?.region_id === pt.region_id;
+                const isSelected = (selectedPoint?.region_id || (selectedPoint as any)?.id) === rId;
 
                 return (
                   <button
-                    key={pt.region_id}
+                    key={rId}
                     onClick={() => setSelectedPoint(pt)}
                     style={{ left: `${x}%`, top: `${y}%` }}
                     className={`absolute transform -translate-x-1/2 -translate-y-1/2 group transition-all duration-200 z-10 focus:outline-none`}
@@ -219,7 +220,7 @@ export const InteractiveMapScreen: React.FC = () => {
 
                 <div className="pt-4">
                   <Link
-                    to={`/regions/${selectedPoint.region_id}`}
+                    to={`/regions/${selectedPoint.region_id || (selectedPoint as any).id}`}
                     className="decidix-btn-primary w-full text-xs font-bold"
                   >
                     {isRTL ? 'فتح الملف التنموي الكامل للمنطقة ←' : 'View Full Region Dossier →'}

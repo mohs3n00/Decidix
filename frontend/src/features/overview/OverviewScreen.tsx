@@ -122,7 +122,7 @@ export const OverviewScreen: React.FC = () => {
 
               <div className="flex items-baseline gap-4">
                 <span className="text-5xl md:text-6xl font-black text-navy tracking-tight">
-                  {data.index.current.toFixed(1)}
+                  {(data.index.current ?? (data.index as any).score ?? 0).toFixed(1)}
                 </span>
                 <span className="text-sm font-semibold text-faded-ink">/ 100</span>
 
@@ -188,28 +188,32 @@ export const OverviewScreen: React.FC = () => {
       )}
 
       {/* Key Indicators Grid */}
-      {data?.key_indicators && data.key_indicators.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-navy">
-              {isRTL ? 'المؤشرات القطاعية الأساسية' : 'Key Core Indicators'}
-            </h2>
-            <Link to="/insights" className="text-xs font-semibold text-blue hover:underline">
-              {isRTL ? 'عرض تفاصيل القطاعات ←' : 'View all sector details →'}
-            </Link>
-          </div>
+      {(() => {
+        const indicators = data?.key_indicators || (data as any)?.kpis || [];
+        if (indicators.length === 0) return null;
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-navy">
+                {isRTL ? 'المؤشرات القطاعية الأساسية' : 'Key Core Indicators'}
+              </h2>
+              <Link to="/insights" className="text-xs font-semibold text-blue hover:underline">
+                {isRTL ? 'عرض تفاصيل القطاعات ←' : 'View all sector details →'}
+              </Link>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {data.key_indicators.map((indicator) => (
-              <MetricCard
-                key={indicator.key}
-                metric={indicator}
-                isArabic={isRTL}
-              />
-            ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {indicators.map((indicator: any) => (
+                <MetricCard
+                  key={indicator.key}
+                  metric={indicator}
+                  isArabic={isRTL}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Dual Panel: Needs Attention & Top Improvers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -3,12 +3,14 @@ import { User, AuthResponse } from '../types';
 
 export const authService = {
   async login(email: string, password: string): Promise<AuthResponse> {
-    const res = await apiClient.post<AuthResponse>('/auth/login', { email, password });
-    if (res.data.access_token) {
-      apiClient.setTokens(res.data.access_token, res.data.refresh_token);
-      localStorage.setItem('decidix_user', JSON.stringify(res.data.user));
+    const res = await apiClient.post<any>('/auth/login', { email, password });
+    const payload = res.data;
+    const token = payload.access_token || payload.token;
+    if (token) {
+      apiClient.setTokens(token, payload.refresh_token);
+      localStorage.setItem('decidix_user', JSON.stringify(payload.user));
     }
-    return res.data;
+    return payload as AuthResponse;
   },
 
   async register(data: {
@@ -18,12 +20,14 @@ export const authService = {
     role?: string;
     arabic_name?: string;
   }): Promise<AuthResponse> {
-    const res = await apiClient.post<AuthResponse>('/auth/register', data);
-    if (res.data.access_token) {
-      apiClient.setTokens(res.data.access_token, res.data.refresh_token);
-      localStorage.setItem('decidix_user', JSON.stringify(res.data.user));
+    const res = await apiClient.post<any>('/auth/register', data);
+    const payload = res.data;
+    const token = payload.access_token || payload.token;
+    if (token) {
+      apiClient.setTokens(token, payload.refresh_token);
+      localStorage.setItem('decidix_user', JSON.stringify(payload.user));
     }
-    return res.data;
+    return payload as AuthResponse;
   },
 
   async me(): Promise<User> {
