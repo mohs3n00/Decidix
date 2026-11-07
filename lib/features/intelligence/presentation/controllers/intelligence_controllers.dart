@@ -114,7 +114,7 @@ class AssistantController extends Notifier<AssistantState> {
         conversationId: reply.conversationId,
         suggestedPrompts: reply.suggestedPrompts,
       );
-    } on AppException {
+    } catch (_) {
       state = state.copyWith(
         messages: [...state.messages, ChatBubble.error(errorText)],
         waiting: false,

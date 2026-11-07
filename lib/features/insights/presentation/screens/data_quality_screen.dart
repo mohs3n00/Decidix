@@ -39,17 +39,42 @@ class DataQualityScreen extends ConsumerWidget {
             DecidixCard(
               child: Row(
                 children: [
-                  const Icon(Icons.cloud_upload_outlined, color: AppColors.blue),
-                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: AppColors.blue.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.cloud_upload_outlined, color: AppColors.blue, size: 24),
+                  ),
+                  const SizedBox(width: 14),
                   Expanded(
-                    child: Text(
-                      isAr ? 'إدارة مجموعات البيانات' : 'Dataset management',
-                      style: AppTypography.titleS,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isAr ? 'إدارة ورفع مجموعات البيانات' : 'Dataset Management & Upload',
+                          style: AppTypography.titleS,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          isAr
+                              ? 'استيراد ملفات CSV, TSV, XLSX, JSON للتحليل والتنبؤ'
+                              : 'Import CSV, TSV, XLSX, JSON for analysis & ML',
+                          style: AppTypography.captionRegular.copyWith(color: AppColors.ink),
+                        ),
+                      ],
                     ),
                   ),
-                  OutlinedButton(
+                  const SizedBox(width: 8),
+                  FilledButton.icon(
                     onPressed: () => context.push('/datasets/upload'),
-                    child: Text(isAr ? 'رفع' : 'Upload'),
+                    icon: const Icon(Icons.upload_file, size: 16),
+                    label: Text(isAr ? 'رفع' : 'Upload'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.blue,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    ),
                   ),
                 ],
               ),
@@ -154,8 +179,8 @@ class DataQualityScreen extends ConsumerWidget {
 
   /// Red below 65, amber below 75, green from 75.
   bool _canUpload(WidgetRef ref) {
-    final role = ref.watch(authNotifierProvider).user?.role;
-    return role == 'admin' || role == 'analyst';
+    // All authenticated users can access dataset upload & management
+    return ref.watch(authNotifierProvider).isAuthenticated;
   }
 
   static Color _coverageColor(double value) {

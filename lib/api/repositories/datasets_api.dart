@@ -75,4 +75,17 @@ class DatasetsApi {
     final response = await _client.post('/datasets/upload-direct', data: body);
     return _unwrap(response.data);
   }
+
+  Future<Map<String, dynamic>> getRecords(String id, {int page = 1, int limit = 50}) async {
+    final response = await _client.get(
+      '/datasets/$id/records',
+      queryParameters: {'page': page.toString(), 'limit': limit.toString()},
+    );
+    return _unwrap(response.data);
+  }
+
+  Future<Map<String, dynamic>> getReport(String id) async {
+    final response = await _client.get('/datasets/$id/report');
+    return _unwrap(response.data);
+  }
 }

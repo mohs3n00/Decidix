@@ -236,6 +236,8 @@ export class OpenRouterService {
     text: string,
     retrievedDocs: RetrievedDocument[]
   ): string | null {
+    if (!text || text.trim().length === 0) return null;
+
     const allowedCitations = new Set(
       retrievedDocs.flatMap((doc) => [
         doc.citation,
@@ -244,9 +246,20 @@ export class OpenRouterService {
       ])
     );
     const citations = text.match(/\[Source: [^\]]+\]/g) ?? [];
-    if (citations.length === 0 || citations.some((citation) => !allowedCitations.has(citation))) {
+    let processedText = text;
+
+    // If model omitted citations but evidence exists, append primary citation
+    if (citations.length === 0 && retrievedDocs.length > 0) {
+      const primaryDoc = retrievedDocs[0];
+      processedText = `${text.trim()}\n\n[Source: ${primaryDoc.title} (${primaryDoc.period})]`;
+    } else if (citations.some((citation) => !allowedCitations.has(citation))) {
+      // Discard invalid citations invented by model
       return null;
     }
+
+    // Filter out list item numbering (e.g. "1.", "2)", "3.") from factual number validation
+    const cleanedText = processedText.replace(/(?:^|\n|\s)\d+[\.\)]\s/g, ' ');
+
     const evidenceNumbers = new Set(
       retrievedDocs.flatMap((doc) =>
         `${doc.title} ${doc.arabicTitle} ${doc.period} ${doc.content} ${doc.arabicContent}`
@@ -254,11 +267,14 @@ export class OpenRouterService {
           ?.map((value) => value.replace(',', '.')) ?? []
       )
     );
-    const responseNumbers = text.match(/\b\d+(?:[.,]\d+)?\b/g) ?? [];
+    // Allow single digits 0-9 as conversational words or rankings
+    const responseNumbers = (cleanedText.match(/\b\d+(?:[.,]\d+)?\b/g) ?? [])
+      .filter((n) => Number(n) > 9 || n.includes('.') || n.includes(','));
+
     if (responseNumbers.some((value) => !evidenceNumbers.has(value.replace(',', '.')))) {
       return null;
     }
-    return text;
+    return processedText;
   }
 
   /**

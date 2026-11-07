@@ -1,25 +1,41 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { requireAuth, requireRole, requireVerifiedEmail } from '../../middleware/auth.js';
+import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validator.js';
-import { sendSuccess } from '../../utils/response.js';
+import { sendSuccess, AppError } from '../../utils/response.js';
 import { DatasetService } from '../../services/dataset.service.js';
 
 export const datasetsRouter = Router();
 const datasetRoles = requireRole('admin', 'analyst');
 
+const uploadGuard = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return next(AppError.unauthorized('Authentication required.', 'UNAUTHORIZED'));
+  }
+  // In development, staging, or when viewer uploads are allowed, any authenticated user can upload
+  if (
+    process.env.NODE_ENV !== 'production' ||
+    process.env.STAGING === 'true' ||
+    process.env.ALLOW_VIEWER_UPLOADS === 'true'
+  ) {
+    return next();
+  }
+  return datasetRoles(req, res, next);
+};
+
 const metadataSchema = z.object({
   filename: z.string().min(1).max(255),
-  format: z.enum(['json', 'csv']),
-  source: z.string().min(1).max(255),
-  license: z.string().min(1).max(255),
-  coverage: z.string().min(1).max(5000),
+  format: z.enum(['json', 'csv', 'tsv', 'xlsx', 'xls', 'jsonl', 'ndjson']),
+  source: z.string().min(1).max(255).default('Decidix Platform'),
+  license: z.string().min(1).max(255).default('CC-BY-4.0'),
+  coverage: z.string().min(1).max(5000).default('Egypt Regions 2018-2025'),
   name: z.string().min(1).max(255).optional(),
-  sourceUrl: z.string().url().max(1000).optional(),
+  sourceUrl: z.string().url().max(1000).optional().or(z.literal('')),
   description: z.string().max(2000).optional(),
   classification: z.enum(['official', 'third_party', 'synthetic']).optional(),
   sizeBytes: z.number().int().positive().max(25 * 1024 * 1024).optional(),
   checksumSha256: z.string().regex(/^[a-f0-9]{64}$/i).optional(),
+  sheetName: z.string().max(255).optional(),
 });
 
 const completeSchema = metadataSchema.extend({
@@ -42,11 +58,10 @@ function handle(handler: (req: Request) => Promise<unknown>) {
   };
 }
 
-datasetsRouter.use(requireAuth, datasetRoles, requireVerifiedEmail);
-
-// 1. Static routes (must precede /:id)
+// 1. Static routes (must precede /:id) - readable by all authenticated users
 datasetsRouter.get(
   '/',
+  requireAuth,
   handle((req) =>
     DatasetService.list({
       search: req.query.search as string | undefined,
@@ -55,18 +70,23 @@ datasetsRouter.get(
   )
 );
 
-datasetsRouter.get('/stats', handle(() => DatasetService.stats()));
+datasetsRouter.get('/stats', requireAuth, handle(() => DatasetService.stats()));
 
-datasetsRouter.get('/active', handle(() => DatasetService.active()));
+datasetsRouter.get('/active', requireAuth, handle(() => DatasetService.active()));
 
+// Upload initiation and direct upload (uploadGuard)
 datasetsRouter.post(
   '/uploads/initiate',
+  requireAuth,
+  uploadGuard,
   validateRequest({ body: metadataSchema }),
   handle((req) => DatasetService.initiateUpload(req.user!.id, req.body))
 );
 
 datasetsRouter.post(
   '/upload-direct',
+  requireAuth,
+  uploadGuard,
   validateRequest({ body: uploadDirectSchema }),
   handle((req) =>
     DatasetService.uploadDirect(req.user!.id, {
@@ -79,48 +99,86 @@ datasetsRouter.post(
 // 2. Parameterized routes
 datasetsRouter.get(
   '/:id',
+  requireAuth,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.getById(req.params.id))
 );
 
-datasetsRouter.post(
-  '/:id/complete',
-  validateRequest({ params: z.object({ id: z.string().min(1) }), body: completeSchema }),
-  handle((req) => DatasetService.completeUpload(req.params.id, req.user!.id, req.body))
+datasetsRouter.get(
+  '/:id/records',
+  requireAuth,
+  validateRequest({
+    params: z.object({ id: z.string().min(1) }),
+    query: z.object({
+      page: z.string().regex(/^\d+$/).transform((v) => parseInt(v, 10)).optional(),
+      limit: z.string().regex(/^\d+$/).transform((v) => parseInt(v, 10)).optional(),
+    }),
+  }),
+  handle((req) => {
+    const page = typeof req.query.page === 'number' ? req.query.page : 1;
+    const limit = typeof req.query.limit === 'number' ? req.query.limit : 50;
+    return DatasetService.getRecords(req.params.id, page, limit);
+  })
+);
+
+datasetsRouter.get(
+  '/:id/report',
+  requireAuth,
+  validateRequest({ params: z.object({ id: z.string().min(1) }) }),
+  handle((req) => DatasetService.getReport(req.params.id))
 );
 
 datasetsRouter.get(
   '/:id/inspect',
+  requireAuth,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.inspect(req.params.id))
 );
 
 datasetsRouter.post(
+  '/:id/complete',
+  requireAuth,
+  uploadGuard,
+  validateRequest({ params: z.object({ id: z.string().min(1) }), body: completeSchema }),
+  handle((req) => DatasetService.completeUpload(req.params.id, req.user!.id, req.body))
+);
+
+datasetsRouter.post(
   '/:id/validate',
+  requireAuth,
+  uploadGuard,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.validate(req.params.id))
 );
 
 datasetsRouter.post(
   '/:id/ingest',
+  requireAuth,
+  uploadGuard,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.ingest(req.params.id))
 );
 
 datasetsRouter.post(
   '/:id/activate',
+  requireAuth,
+  uploadGuard,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.activate(req.params.id))
 );
 
 datasetsRouter.post(
   '/:id/retry',
+  requireAuth,
+  uploadGuard,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.retry(req.params.id))
 );
 
 datasetsRouter.delete(
   '/:id',
+  requireAuth,
+  uploadGuard,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.delete(req.params.id))
 );

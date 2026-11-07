@@ -74,7 +74,7 @@ export class EvidenceService {
     );
     const provenanceLabel = synthetic ? 'synthetic_demo' : 'official_source';
 
-    const [latestHistory, history, regions, indicators, forecasts] = await Promise.all([
+    const [latestHistory, history, regions, indicators, forecasts, allDatasets] = await Promise.all([
       prisma.nationalIndexHistory.findFirst({
         where: { datasetVersionId: active.id },
         orderBy: { year: 'desc' },
@@ -89,34 +89,59 @@ export class EvidenceService {
         where: { datasetVersionId: active.id, regionId: null, indicatorId: 'development_index' },
         orderBy: { forecastYear: 'asc' },
       }),
+      prisma.datasetVersion.findMany({
+        orderBy: { uploadedAt: 'desc' },
+        take: 5,
+      }),
     ]);
 
     if (!latestHistory) return [];
 
     const docs: RetrievedDocument[] = [];
     const latestYear = latestHistory.year;
-    const asksProvenance = /source|official|synthetic|provenance|licen|مصدر|رسمي|بيانات/.test(query);
+    const asksProvenance = /source|official|synthetic|provenance|licen|مصدر|رسمي|بيانات|مجموعة بيانات|dataset|datasets|upload|ملف/.test(query);
     const asksForecast = /forecast|predict|projection|future|توقع|تنبؤ|مستقبل/.test(query);
     const asksIndex = /index|national|overall|score|مؤشر|وطني|درجة/.test(query);
     const asksHistory = /history|historical|trend|over time|تاريخ|اتجاه|سنوات/.test(query);
+    const asksComparison = /compare|difference|versus|vs|مقارنة|فرق|أفضل|أعلى|أقل/.test(query);
     const yearMatch = query.match(/\b(19|20)\d{2}\b/);
     const matchedSectors = Object.entries(SECTOR_KEYWORDS)
       .filter(([, words]) => words.some((word) => query.includes(word)))
       .map(([sector]) => sector);
     const matchedRegions = regions.filter(
       (region) =>
-        query.includes(region.name.toLowerCase()) || query.includes(region.id.replace(/_/g, ' '))
+        query.includes(region.name.toLowerCase()) ||
+        query.includes(region.id.replace(/_/g, ' ')) ||
+        (region.arabicName && query.includes(region.arabicName))
     );
     const matchedIndicators = indicators.filter(
       (indicator) =>
         query.includes(indicator.key.toLowerCase()) ||
-        query.includes(indicator.label.toLowerCase())
+        query.includes(indicator.label.toLowerCase()) ||
+        (indicator.arabicLabel && query.includes(indicator.arabicLabel))
     );
 
-    // Unsupported geography must refuse rather than answer with national data.
+    // Unsupported geography filter - only restrict clearly external non-domestic regions
     const FOREIGN_PLACES =
-      /\b(germany|france|spain|italy|united states|usa|uk|britain|china|india|japan|egypt|saudi|uae|qatar|kuwait|jordan|turkey|brazil|canada|australia)\b/i;
+      /\b(germany|france|spain|italy|united states|usa|uk|britain|china|india|japan|brazil|canada|australia)\b/i;
     if (FOREIGN_PLACES.test(query) && matchedRegions.length === 0) return [];
+
+    // Datasets catalog evidence (when asked about uploaded datasets or sources)
+    if (asksProvenance || /dataset|upload|ملف|مجموعات/i.test(query)) {
+      docs.push(
+        doc({
+          id: `evidence:datasets_catalog:${active.id}`,
+          title: 'Decidix Ingested Datasets',
+          arabicTitle: 'مجموعات البيانات في منصة ديسيدكس',
+          content:
+            `Decidix ingested datasets: ${allDatasets.map((d) => `${d.filename} (Version: ${d.version}, Format: ${d.format}, Status: ${d.validationStatus}, Records: ${d.recordCount}, Active: ${d.isActive ? 'Yes' : 'No'})`).join('; ')}. Active dataset is ${active.version} with source ${active.source}.`,
+          arabicContent:
+            `مجموعات البيانات المسجلة في ديسيدكس: ${allDatasets.map((d) => `${d.filename} (الإصدار: ${d.version}، الصيغة: ${d.format}، الحالة: ${d.validationStatus}، السجلات: ${d.recordCount}، نشط: ${d.isActive ? 'نعم' : 'لا'})`).join('؛ ')}. مجموعة البيانات النشطة: ${active.version}.`,
+          period: active.version,
+          source: 'Decidix Dataset Registry',
+        })
+      );
+    }
 
     // National index (latest observation) only for index/history/year questions.
     if (asksIndex || asksHistory || yearMatch) {
@@ -272,6 +297,24 @@ export class EvidenceService {
       );
     }
 
+    // Regional comparative evidence
+    if ((matchedRegions.length >= 2 || (asksComparison && regions.length >= 2)) && docs.length < 5) {
+      const compRegions = matchedRegions.length >= 2 ? matchedRegions.slice(0, 3) : regions.slice(0, 3);
+      docs.push(
+        doc({
+          id: `evidence:region_comparison:${active.id}`,
+          title: `Regional Comparison (${compRegions.map((r) => r.name).join(' vs ')})`,
+          arabicTitle: `مقارنة إقليمية بين المناطق`,
+          content:
+            `Regional comparison for ${latestYear}: ${compRegions.map((r) => `${r.name}: Score ${round(toNumber(r.score))}/100, Rank ${r.rank}, Priority ${r.priority}, Population ${r.population}`).join(' | ')}.`,
+          arabicContent:
+            `مقارنة إقليمية لعام ${latestYear}: ${compRegions.map((r) => `${r.arabicName}: الدرجة ${round(toNumber(r.score))}/100، الترتيب ${r.rank}`).join(' | ')}.`,
+          period: String(latestYear),
+          source: active.source,
+        })
+      );
+    }
+
     // Provenance only when explicitly asked; otherwise unmatched questions refuse.
     if (asksProvenance) {
       docs.push(
@@ -285,6 +328,21 @@ export class EvidenceService {
             `Observations cover the persisted national and regional tables only.`,
           arabicContent: `تصنيف المصدر: ${provenanceLabel}. النسخة ${active.id}.`,
           period: `${history[0]?.year ?? latestYear}-${latestYear}`,
+          source: active.source,
+        })
+      );
+    }
+
+    // General platform and indicators fallback if no specific keywords matched
+    if (docs.length === 0) {
+      docs.push(
+        doc({
+          id: `evidence:platform_summary:${active.id}`,
+          title: `Decidix Platform & Indicators Overview`,
+          arabicTitle: `نظرة عامة على منصة ومؤشرات ديسيدكس`,
+          content: `Decidix platform monitors ${regions.length} regions with national development score of ${round(toNumber(latestHistory.score))}/100 for ${latestHistory.period}. Tracked regions include: ${regions.slice(0, 6).map((r) => `${r.name} (${round(toNumber(r.score))})`).join(', ')}. Active dataset: ${active.version}.`,
+          arabicContent: `منصة ديسيدكس تتابع ${regions.length} منطقة بمتوسط مؤشر تنموي وطني ${round(toNumber(latestHistory.score))}/100 لعام ${latestHistory.period}. المناطق تشمل: ${regions.slice(0, 6).map((r) => `${r.arabicName} (${round(toNumber(r.score))})`).join('، ')}. مجموعة البيانات النشطة: ${active.version}.`,
+          period: latestHistory.period,
           source: active.source,
         })
       );
