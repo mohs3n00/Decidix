@@ -70,7 +70,16 @@ adminRouter.get(
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20;
 
       const result = await AdminService.listUsers({ search, status, page, limit });
-      sendSuccess(res, result.users, { page: result.page, per_page: result.limit, total: result.total });
+      sendSuccess(
+        res,
+        {
+          users: result.users,
+          total: result.total,
+          page: result.page,
+          limit: result.limit,
+        },
+        { page: result.page, per_page: result.limit, total: result.total }
+      );
     } catch (error) {
       next(error);
     }

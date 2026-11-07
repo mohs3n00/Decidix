@@ -74,7 +74,7 @@ export class EvidenceService {
     );
     const provenanceLabel = synthetic ? 'synthetic_demo' : 'official_source';
 
-    const [latestHistory, history, regions, indicators, forecasts, allDatasets] = await Promise.all([
+    let [latestHistory, history, regions, indicators, forecasts, allDatasets] = await Promise.all([
       prisma.nationalIndexHistory.findFirst({
         where: { datasetVersionId: active.id },
         orderBy: { year: 'desc' },
@@ -83,8 +83,13 @@ export class EvidenceService {
         where: { datasetVersionId: active.id },
         orderBy: { year: 'asc' },
       }),
-      prisma.region.findMany({ where: { datasetVersionId: active.id }, orderBy: { rank: 'asc' } }),
-      prisma.indicator.findMany({ where: { datasetVersionId: active.id } }),
+      prisma.region.findMany({
+        where: { datasetVersionId: active.id },
+        orderBy: { rank: 'asc' },
+      }),
+      prisma.indicator.findMany({
+        where: { datasetVersionId: active.id },
+      }),
       prisma.mlForecast.findMany({
         where: { datasetVersionId: active.id, regionId: null, indicatorId: 'development_index' },
         orderBy: { forecastYear: 'asc' },
@@ -94,6 +99,18 @@ export class EvidenceService {
         take: 5,
       }),
     ]);
+
+    if (regions.length === 0) {
+      regions = await prisma.region.findMany({
+        where: { metrics: { some: { datasetVersionId: active.id } } },
+        orderBy: { rank: 'asc' },
+      });
+    }
+    if (indicators.length === 0) {
+      indicators = await prisma.indicator.findMany({
+        where: { metrics: { some: { datasetVersionId: active.id } } },
+      });
+    }
 
     if (!latestHistory) return [];
 

@@ -138,6 +138,13 @@ export class DatasetParserService {
         try {
           const parsed = JSON.parse(text);
           if (Array.isArray(parsed)) {
+            if (parsed.length === 1 && parsed[0]?.canonical) {
+              return {
+                records: [{ canonical: parsed[0].canonical }],
+                report: this.buildCanonicalQualityReport(datasetId, filename, parsed[0].canonical),
+                canonical: parsed[0].canonical,
+              };
+            }
             rawRows = parsed;
           } else if (parsed && typeof parsed === 'object') {
             if (parsed.canonical) {
@@ -573,7 +580,7 @@ export class DatasetParserService {
     };
   }
 
-  private static buildCanonicalQualityReport(
+  public static buildCanonicalQualityReport(
     datasetId: string,
     filename: string,
     canonical: any

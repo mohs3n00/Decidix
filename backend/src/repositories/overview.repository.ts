@@ -98,11 +98,18 @@ export class OverviewRepository {
       }));
 
       // 3. Fetch lowest scoring regions (needs_attention: 3 lowest)
-      const lowestRegions = await prisma.region.findMany({
+      let lowestRegions = await prisma.region.findMany({
         where: { datasetVersionId: active.id },
         take: 3,
         orderBy: { score: 'asc' },
       });
+      if (lowestRegions.length === 0) {
+        lowestRegions = await prisma.region.findMany({
+          where: { metrics: { some: { datasetVersionId: active.id } } },
+          take: 3,
+          orderBy: { score: 'asc' },
+        });
+      }
 
       const needsAttention = lowestRegions.map((r) => ({
         id: r.id,
@@ -129,7 +136,7 @@ export class OverviewRepository {
       //  - tracked_indicators     : count of indicators tagged to this version
       //  - data_completeness      : dataset_metadata.completeness_pct for this version
       // Units: score_100, score_100, count, count, percent.
-      const [allRegions, indicatorCount, metadataRow] = await Promise.all([
+      let [allRegions, indicatorCount, metadataRow] = await Promise.all([
         prisma.region.findMany({
           where: { datasetVersionId: active.id },
           select: { score: true, change: true },
@@ -137,6 +144,17 @@ export class OverviewRepository {
         prisma.indicator.count({ where: { datasetVersionId: active.id } }),
         prisma.datasetMetadata.findFirst({ where: { datasetVersionId: active.id } }),
       ]);
+      if (allRegions.length === 0) {
+        allRegions = await prisma.region.findMany({
+          where: { metrics: { some: { datasetVersionId: active.id } } },
+          select: { score: true, change: true },
+        });
+      }
+      if (indicatorCount === 0) {
+        indicatorCount = await prisma.indicator.count({
+          where: { metrics: { some: { datasetVersionId: active.id } } },
+        });
+      }
       const regionScores = allRegions.map((region) => toNumber(region.score));
       const averageRegionScore = regionScores.length
         ? regionScores.reduce((sum, value) => sum + value, 0) / regionScores.length

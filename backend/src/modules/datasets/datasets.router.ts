@@ -1,23 +1,20 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { requireAuth, requireRole } from '../../middleware/auth.js';
+import { requireAuth, requireRole, requireVerifiedEmail } from '../../middleware/auth.js';
 import { validateRequest } from '../../middleware/validator.js';
 import { sendSuccess, AppError } from '../../utils/response.js';
 import { DatasetService } from '../../services/dataset.service.js';
 
 export const datasetsRouter = Router();
 const datasetRoles = requireRole('admin', 'analyst');
+const adminOnly = requireRole('admin');
 
 const uploadGuard = (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) {
     return next(AppError.unauthorized('Authentication required.', 'UNAUTHORIZED'));
   }
-  // In development, staging, or when viewer uploads are allowed, any authenticated user can upload
-  if (
-    process.env.NODE_ENV !== 'production' ||
-    process.env.STAGING === 'true' ||
-    process.env.ALLOW_VIEWER_UPLOADS === 'true'
-  ) {
+  // When viewer uploads are explicitly enabled (e.g. dev/staging configuration), allow viewers to upload
+  if (process.env.ALLOW_VIEWER_UPLOADS === 'true') {
     return next();
   }
   return datasetRoles(req, res, next);
@@ -62,6 +59,8 @@ function handle(handler: (req: Request) => Promise<unknown>) {
 datasetsRouter.get(
   '/',
   requireAuth,
+  requireVerifiedEmail,
+  datasetRoles,
   handle((req) =>
     DatasetService.list({
       search: req.query.search as string | undefined,
@@ -101,7 +100,7 @@ datasetsRouter.get(
   '/:id',
   requireAuth,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
-  handle((req) => DatasetService.getById(req.params.id))
+  handle((req) => DatasetService.getById(req.params.id, req.user))
 );
 
 datasetsRouter.get(
@@ -117,7 +116,7 @@ datasetsRouter.get(
   handle((req) => {
     const page = typeof req.query.page === 'number' ? req.query.page : 1;
     const limit = typeof req.query.limit === 'number' ? req.query.limit : 50;
-    return DatasetService.getRecords(req.params.id, page, limit);
+    return DatasetService.getRecords(req.params.id, page, limit, req.user);
   })
 );
 
@@ -125,14 +124,14 @@ datasetsRouter.get(
   '/:id/report',
   requireAuth,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
-  handle((req) => DatasetService.getReport(req.params.id))
+  handle((req) => DatasetService.getReport(req.params.id, req.user))
 );
 
 datasetsRouter.get(
   '/:id/inspect',
   requireAuth,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
-  handle((req) => DatasetService.inspect(req.params.id))
+  handle((req) => DatasetService.inspect(req.params.id, req.user))
 );
 
 datasetsRouter.post(
@@ -154,7 +153,7 @@ datasetsRouter.post(
 datasetsRouter.post(
   '/:id/ingest',
   requireAuth,
-  uploadGuard,
+  datasetRoles,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.ingest(req.params.id))
 );
@@ -162,7 +161,7 @@ datasetsRouter.post(
 datasetsRouter.post(
   '/:id/activate',
   requireAuth,
-  uploadGuard,
+  datasetRoles,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.activate(req.params.id))
 );
@@ -170,7 +169,7 @@ datasetsRouter.post(
 datasetsRouter.post(
   '/:id/retry',
   requireAuth,
-  uploadGuard,
+  datasetRoles,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.retry(req.params.id))
 );
@@ -178,7 +177,7 @@ datasetsRouter.post(
 datasetsRouter.delete(
   '/:id',
   requireAuth,
-  uploadGuard,
+  adminOnly,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.delete(req.params.id))
 );
