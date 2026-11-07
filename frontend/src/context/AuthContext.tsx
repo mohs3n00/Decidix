@@ -11,8 +11,11 @@ interface AuthContextType {
   isAnalyst: boolean;
   login: (email: string, pass: string) => Promise<AuthResponse>;
   register: (data: { name: string; email: string; password: string; role?: string; arabic_name?: string }) => Promise<AuthResponse>;
+  googleLogin: (idToken: string) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  resendVerification: (email: string) => Promise<{ message: string }>;
+  changePassword: (current_password: string, new_password: string) => Promise<{ message: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -71,6 +74,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return res;
   };
 
+  const googleLogin = async (idToken: string): Promise<AuthResponse> => {
+    const res = await authService.googleLogin(idToken);
+    setUser(res.user);
+    return res;
+  };
+
   const logout = async (): Promise<void> => {
     await authService.logout();
     setUser(null);
@@ -78,6 +87,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshProfile = async (): Promise<void> => {
     await fetchProfile();
+  };
+
+  const resendVerification = async (email: string): Promise<{ message: string }> => {
+    return await authService.resendVerification(email);
+  };
+
+  const changePassword = async (current_password: string, new_password: string): Promise<{ message: string }> => {
+    return await authService.changePassword(current_password, new_password);
   };
 
   const isAdmin = user?.role === 'admin';
@@ -94,8 +111,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAnalyst,
         login,
         register,
+        googleLogin,
         logout,
         refreshProfile,
+        resendVerification,
+        changePassword,
       }}
     >
       {children}

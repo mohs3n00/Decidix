@@ -30,6 +30,17 @@ export const authService = {
     return payload as AuthResponse;
   },
 
+  async googleLogin(id_token: string): Promise<AuthResponse> {
+    const res = await apiClient.post<any>('/auth/google', { id_token });
+    const payload = res.data;
+    const token = payload.access_token || payload.token;
+    if (token) {
+      apiClient.setTokens(token, payload.refresh_token);
+      localStorage.setItem('decidix_user', JSON.stringify(payload.user));
+    }
+    return payload as AuthResponse;
+  },
+
   async me(): Promise<User> {
     const res = await apiClient.get<{ user: User }>('/auth/me');
     const user = res.data.user || (res.data as unknown as User);
@@ -37,8 +48,38 @@ export const authService = {
     return user;
   },
 
-  async changePassword(current_password: string, new_password: string): Promise<void> {
-    await apiClient.post('/auth/change-password', { current_password, new_password });
+  async changePassword(current_password: string, new_password: string): Promise<{ message: string }> {
+    const res = await apiClient.post<{ message: string }>('/auth/change-password', {
+      current_password,
+      new_password,
+    });
+    return res.data;
+  },
+
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    const res = await apiClient.post<{ message: string }>('/auth/forgot-password', { email });
+    return res.data;
+  },
+
+  async resetPassword(token: string, password: string): Promise<{ message: string }> {
+    const res = await apiClient.post<{ message: string }>('/auth/reset-password', {
+      token,
+      password,
+    });
+    return res.data;
+  },
+
+  async verifyEmail(token: string): Promise<{ message: string; email_verified: boolean; user: any }> {
+    const res = await apiClient.post<{ message: string; email_verified: boolean; user: any }>(
+      '/auth/verify-email',
+      { token }
+    );
+    return res.data;
+  },
+
+  async resendVerification(email: string): Promise<{ message: string }> {
+    const res = await apiClient.post<{ message: string }>('/auth/resend-verification', { email });
+    return res.data;
   },
 
   async logout(): Promise<void> {

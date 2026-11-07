@@ -4,6 +4,11 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { LoginScreen } from './features/auth/LoginScreen';
+import { RegisterScreen } from './features/auth/RegisterScreen';
+import { ForgotPasswordScreen } from './features/auth/ForgotPasswordScreen';
+import { ResetPasswordScreen } from './features/auth/ResetPasswordScreen';
+import { VerifyEmailScreen } from './features/auth/VerifyEmailScreen';
+import { AccountScreen } from './features/account/AccountScreen';
 import { OverviewScreen } from './features/overview/OverviewScreen';
 import { InsightsScreen } from './features/insights/InsightsScreen';
 import { IntelligenceScreen } from './features/intelligence/IntelligenceScreen';
@@ -73,8 +78,12 @@ export const App: React.FC = () => {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* Public Auth Route */}
+            {/* Public Auth Routes */}
             <Route path="/login" element={<LoginScreen />} />
+            <Route path="/register" element={<RegisterScreen />} />
+            <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+            <Route path="/reset-password" element={<ResetPasswordScreen />} />
+            <Route path="/verify-email" element={<VerifyEmailScreen />} />
 
             {/* Protected App Routes */}
             <Route
@@ -112,6 +121,9 @@ export const App: React.FC = () => {
               <Route path="decisions/simulator" element={<SimulatorScreen />} />
               <Route path="decisions/projects" element={<ProjectsScreen />} />
               <Route path="decisions/citizen-reports" element={<CitizenReportsScreen />} />
+
+              {/* Account Management & Security */}
+              <Route path="account" element={<AccountScreen />} />
 
               {/* Admin Portal (Admin Guarded) */}
               <Route

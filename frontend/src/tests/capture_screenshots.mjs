@@ -23,6 +23,10 @@ console.log(`====================================================\n`);
 
 const ROUTES = [
   { id: '01_login', path: '/login', requiresAuth: false },
+  { id: '01b_register', path: '/register', requiresAuth: false },
+  { id: '01c_forgot_password', path: '/forgot-password', requiresAuth: false },
+  { id: '01d_reset_password', path: '/reset-password?token=sample_demo_token', requiresAuth: false },
+  { id: '01e_verify_email', path: '/verify-email', requiresAuth: false },
   { id: '02_overview', path: '/', requiresAuth: true },
   { id: '03_insights', path: '/insights', requiresAuth: true },
   { id: '04_intelligence', path: '/intelligence', requiresAuth: true },
@@ -32,6 +36,7 @@ const ROUTES = [
   { id: '08_map', path: '/map', requiresAuth: true },
   { id: '09_regions_list', path: '/regions', requiresAuth: true },
   { id: '10_region_profile', path: '/regions/central_capital', requiresAuth: true },
+  { id: '10b_account', path: '/account', requiresAuth: true },
   { id: '11_comparison', path: '/insights/comparison', requiresAuth: true },
   { id: '12_historical', path: '/insights/historical', requiresAuth: true },
   { id: '13_priority', path: '/insights/priority', requiresAuth: true },
@@ -119,7 +124,7 @@ async function main() {
     process.stdout.write(`Capturing [${item.id}] ${item.path}... `);
 
     try {
-      if (item.id === '01_login') {
+      if (!item.requiresAuth) {
         await page.evaluate(() => {
           localStorage.removeItem('decidix_access_token');
           localStorage.removeItem('decidix_user');
