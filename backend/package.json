@@ -5,7 +5,7 @@
   "description": "Decidix Smart National Development Decision Support System - Independent Backend API",
   "main": "dist/server.js",
   "scripts": {
-    "build": "prisma generate && tsc",
+    "build": "prisma generate && tsc && node -e \"import('fs').then(fs => { import('path').then(path => { const src='src/database/migrations'; const dst='dist/database/migrations'; if(fs.existsSync(src)){fs.mkdirSync(dst,{recursive:true}); fs.readdirSync(src).forEach(f=>fs.copyFileSync(path.join(src,f),path.join(dst,f)));} }); })\"",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "migrate": "tsx src/database/migrate.ts",

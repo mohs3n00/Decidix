@@ -21,6 +21,9 @@ model User {
   role         String          @default("viewer") @db.VarChar(32)
   department   String?         @db.VarChar(100)
   isActive     Boolean         @default(true) @map("is_active")
+  status       String          @default("active") @db.VarChar(32)
+  mustChangePassword Boolean     @default(false) @map("must_change_password")
+  lastActiveAt DateTime?       @map("last_active_at") @db.Timestamptz
   emailVerified Boolean        @default(false) @map("email_verified")
   emailVerifiedAt DateTime?    @map("email_verified_at") @db.Timestamptz
   createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamptz
@@ -32,7 +35,11 @@ model User {
   deviceTokens DeviceToken[]
   emailVerificationTokens EmailVerificationToken[]
   passwordResetTokens     PasswordResetToken[]
+  activityLogs ActivityLog[]
+  notificationCampaigns NotificationCampaign[]
 
+  @@index([status], map: "idx_users_status")
+  @@index([lastActiveAt], map: "idx_users_last_active_at")
   @@map("users")
 }
 
@@ -402,6 +409,7 @@ model DatasetVersion {
   validationStatus String  @default("uploaded") @map("validation_status") @db.VarChar(32)
   validationError String?  @map("validation_error") @db.Text
   recordCount     Int      @default(0) @map("record_count")
+  sizeBytes       BigInt?  @default(0) @map("size_bytes")
   isActive        Boolean  @default(false) @map("is_active")
   createdBy       String   @map("created_by") @db.VarChar(64)
 
@@ -470,5 +478,47 @@ model MlForecast {
   @@index([validationStatus], map: "idx_ml_forecasts_status")
   @@index([indicatorId], map: "idx_ml_forecasts_indicator")
   @@map("ml_forecasts")
+}
+
+// 15. Activity Logs for Privacy-Preserving Platform Analytics
+model ActivityLog {
+  id         BigInt   @id @default(autoincrement())
+  userId     String?  @map("user_id") @db.VarChar(64)
+  module     String   @db.VarChar(64)
+  eventType  String   @map("event_type") @db.VarChar(64)
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId], map: "idx_activity_logs_user_id")
+  @@index([module], map: "idx_activity_logs_module")
+  @@index([eventType], map: "idx_activity_logs_event_type")
+  @@index([createdAt(sort: Desc)], map: "idx_activity_logs_created_at")
+  @@map("activity_logs")
+}
+
+// 16. Notification Campaigns & Broadcast History
+model NotificationCampaign {
+  id             String   @id @default(uuid()) @db.VarChar(64)
+  title          String   @db.VarChar(255)
+  body           String   @db.Text
+  arabicTitle    String?  @map("arabic_title") @db.VarChar(255)
+  arabicBody     String?  @map("arabic_body") @db.Text
+  targetAudience String   @default("all") @map("target_audience") @db.VarChar(32)
+  targetUserId   String?  @map("target_user_id") @db.VarChar(64)
+  status         String   @default("sent") @db.VarChar(32)
+  targetedCount  Int      @default(0) @map("targeted_count")
+  deliveredCount Int      @default(0) @map("delivered_count")
+  failedCount    Int      @default(0) @map("failed_count")
+  sentBy         String   @map("sent_by") @db.VarChar(64)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  sender         User     @relation(fields: [sentBy], references: [id], onDelete: Cascade)
+
+  @@index([sentBy], map: "idx_notification_campaigns_sent_by")
+  @@index([createdAt(sort: Desc)], map: "idx_notification_campaigns_created_at")
+  @@index([targetAudience], map: "idx_notification_campaigns_target")
+  @@map("notification_campaigns")
 }
 

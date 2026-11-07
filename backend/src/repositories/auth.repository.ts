@@ -10,8 +10,13 @@ export interface UserEntity {
   password_hash: string;
   google_subject?: string | null;
   role: string;
+  status?: string;
+  must_change_password?: boolean;
+  last_active_at?: Date | null;
+  is_active?: boolean;
   email_verified: boolean;
   email_verified_at?: Date | null;
+  created_at?: Date;
 }
 
 export interface SessionEntity {
@@ -135,8 +140,13 @@ export class AuthRepository {
         password_hash: user.passwordHash,
         google_subject: user.googleSubject,
         role: user.role,
+        status: (user as any).status ?? (user.isActive ? 'active' : 'suspended'),
+        must_change_password: (user as any).mustChangePassword ?? false,
+        last_active_at: (user as any).lastActiveAt,
+        is_active: user.isActive,
         email_verified: user.emailVerified,
         email_verified_at: user.emailVerifiedAt,
+        created_at: user.createdAt,
       };
     } catch (err) {
       if (env.NODE_ENV !== 'test') throw err;
@@ -231,8 +241,13 @@ export class AuthRepository {
         password_hash: user.passwordHash,
         google_subject: user.googleSubject,
         role: user.role,
+        status: (user as any).status ?? (user.isActive ? 'active' : 'suspended'),
+        must_change_password: (user as any).mustChangePassword ?? false,
+        last_active_at: (user as any).lastActiveAt,
+        is_active: user.isActive,
         email_verified: user.emailVerified,
         email_verified_at: user.emailVerifiedAt,
+        created_at: user.createdAt,
       };
     } catch (err) {
       if (env.NODE_ENV !== 'test') throw err;
@@ -314,8 +329,13 @@ export class AuthRepository {
         password_hash: user.passwordHash,
         google_subject: user.googleSubject,
         role: user.role,
+        status: (user as any).status ?? (user.isActive ? 'active' : 'suspended'),
+        must_change_password: (user as any).mustChangePassword ?? false,
+        last_active_at: (user as any).lastActiveAt,
+        is_active: user.isActive,
         email_verified: user.emailVerified,
         email_verified_at: user.emailVerifiedAt,
+        created_at: user.createdAt,
       };
     } catch (err: any) {
       if (err instanceof AppError) throw err;
@@ -609,6 +629,7 @@ export class AuthRepository {
       for (const u of localUsers.values()) {
         if (u.id === userId) {
           u.password_hash = newPasswordHash;
+          u.must_change_password = false;
         }
       }
     }
@@ -617,7 +638,10 @@ export class AuthRepository {
       try {
         await prisma.user.update({
           where: { id: userId },
-          data: { passwordHash: newPasswordHash },
+          data: {
+            passwordHash: newPasswordHash,
+            mustChangePassword: false,
+          },
         });
       } catch (err) {
         if (env.NODE_ENV !== 'test') throw err;
@@ -906,4 +930,87 @@ export class AuthRepository {
       throw err;
     }
   }
+
+  /**
+   * Updates a user's status (active, suspended, deleted) and syncs is_active.
+   */
+  static async updateUserStatus(userId: string, status: 'active' | 'suspended' | 'deleted'): Promise<void> {
+    const isDbReady = await testPrismaConnection();
+    const isActive = status === 'active';
+
+    if (env.NODE_ENV === 'test') {
+      for (const u of localUsers.values()) {
+        if (u.id === userId) {
+          u.status = status;
+          u.is_active = isActive;
+        }
+      }
+    }
+
+    if (isDbReady) {
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            status,
+            isActive,
+          },
+        });
+      } catch (err) {
+        if (env.NODE_ENV !== 'test') throw err;
+      }
+    }
+  }
+
+  /**
+   * Counts active administrators to protect against locking out the platform.
+   */
+  static async countActiveAdmins(): Promise<number> {
+    const isDbReady = await testPrismaConnection();
+    if (!isDbReady && env.NODE_ENV === 'test') {
+      return Array.from(localUsers.values()).filter(
+        (u) => u.role === 'admin' && (u.status === 'active' || u.is_active !== false)
+      ).length;
+    }
+
+    try {
+      return await prisma.user.count({
+        where: {
+          role: 'admin',
+          isActive: true,
+          status: 'active',
+        },
+      });
+    } catch {
+      return 1;
+    }
+  }
+
+  /**
+   * Updates a user's last_active_at timestamp.
+   */
+  static async updateLastActive(userId: string): Promise<void> {
+    const isDbReady = await testPrismaConnection();
+    const now = new Date();
+
+    if (env.NODE_ENV === 'test') {
+      for (const u of localUsers.values()) {
+        if (u.id === userId) {
+          u.last_active_at = now;
+        }
+      }
+    }
+
+    if (isDbReady) {
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { lastActiveAt: now },
+        });
+      } catch {
+        // Silently continue if update fails
+      }
+    }
+  }
 }
+

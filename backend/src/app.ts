@@ -11,6 +11,7 @@ import { insightsRouter } from './modules/insights/insights.router.js';
 import { intelligenceRouter } from './modules/intelligence/intelligence.router.js';
 import { decisionsRouter } from './modules/decisions/decisions.router.js';
 import { adminRouter } from './modules/admin/admin.router.js';
+import { analyticsRouter } from './modules/analytics/analytics.router.js';
 import { notificationsRouter } from './modules/notifications/notifications.router.js';
 import { datasetsRouter } from './modules/datasets/datasets.router.js';
 
@@ -78,7 +79,8 @@ export function createApp(): Express {
   v1.use(insightsRouter);
   v1.use(intelligenceRouter);
   v1.use(decisionsRouter);
-  v1.use(adminRouter);
+  v1.use('/admin', adminRouter);
+  v1.use('/analytics', analyticsRouter);
   v1.use(notificationsRouter);
 
   app.use(env.API_PREFIX, v1);

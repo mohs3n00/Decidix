@@ -68,6 +68,8 @@ export interface AuthResponseData extends AuthTokens {
 
 
     role: string;
+    status?: string;
+    must_change_password?: boolean;
     email_verified: boolean;
   };
 
@@ -810,51 +812,27 @@ export class AuthService {
 
 
     if (!isMatch) {
-
-
-
       throw AppError.unauthorized('Invalid email or password', 'INVALID_CREDENTIALS');
-
-
-
     }
 
-
-
-
-
-
+    if (user.status === 'suspended' || user.is_active === false) {
+      throw AppError.forbidden('Your account has been suspended. Please contact the administrator.', 'ACCOUNT_SUSPENDED');
+    }
+    if (user.status === 'deleted') {
+      throw AppError.forbidden('This account has been deleted.', 'ACCOUNT_DELETED');
+    }
 
     const tokens = await this.createSessionAndTokens(user, meta);
 
-
-
-
-
-
-
     return {
-
-
-
       user: {
-
-
-
         id: user.id,
-
-
-
         name: user.name,
-
-
-
         arabic_name: user.arabic_name,
-
-
-
         email: user.email,
         role: user.role,
+        status: user.status || 'active',
+        must_change_password: user.must_change_password ?? false,
         email_verified: user.email_verified,
       },
 
