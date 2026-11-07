@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { DecidixIcon, DecidixIconName } from '../components/DecidixIcon';
@@ -54,6 +54,7 @@ export const DashboardLayout: React.FC = () => {
   const { user, isAdmin, logout } = useAuth();
   const { language, isRTL, toggleLanguage } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
 
@@ -64,11 +65,11 @@ export const DashboardLayout: React.FC = () => {
 
   const renderNavGroup = (titleEn: string, titleAr: string, items: NavItem[]) => {
     return (
-      <div className="mb-6">
-        <div className="px-4 mb-2 text-xs font-semibold tracking-wider uppercase text-faded-ink/80">
+      <div className="mb-5">
+        <div className="px-3 mb-2 text-[11px] font-semibold tracking-wider uppercase text-faded-ink">
           {isRTL ? titleAr : titleEn}
         </div>
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {items.map((item) => (
             <NavLink
               key={item.to}
@@ -77,28 +78,28 @@ export const DashboardLayout: React.FC = () => {
               onClick={() => setMobileMenuOpen(false)}
               className={({ isActive }) =>
                 clsx(
-                  'flex items-center justify-between px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-150',
+                  'flex items-center justify-between px-3.5 py-2 rounded-2xl text-xs font-medium transition-all duration-180',
                   isActive
-                    ? 'bg-blue text-white shadow-sm font-semibold'
-                    : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    ? 'bg-white text-navy font-bold shadow-decidix-tab'
+                    : 'text-white/75 hover:bg-white/10 hover:text-white'
                 )
               }
             >
               {({ isActive }) => (
                 <>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <DecidixIcon
                       name={item.icon}
-                      size={18}
-                      color={isActive ? '#FFFFFF' : 'currentColor'}
+                      size={17}
+                      color={isActive ? 'var(--color-navy)' : '#A5B4CB'}
                     />
-                    <span>{isRTL ? item.labelAr : item.labelEn}</span>
+                    <span className="truncate">{isRTL ? item.labelAr : item.labelEn}</span>
                   </div>
                   {item.badge && (
                     <span
                       className={clsx(
-                        'text-[10px] font-bold px-1.5 py-0.5 rounded-pill',
-                        isActive ? 'bg-white text-blue' : 'bg-cyan text-navy'
+                        'text-[10px] font-bold px-1.5 py-0.5 rounded-pill leading-none',
+                        isActive ? 'bg-navy text-white' : 'bg-cyan text-navy'
                       )}
                     >
                       {item.badge}
@@ -114,23 +115,23 @@ export const DashboardLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-mist">
+    <div className="min-h-screen flex flex-col md:flex-row bg-mist selection:bg-blue selection:text-white">
       {/* Mobile Header Bar */}
-      <div className="md:hidden flex items-center justify-between bg-navy px-4 py-3 text-white border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <DecidixIcon name="logo_white" size={28} />
-          <span className="font-bold tracking-tight text-lg">DECIDIX</span>
+      <div className="md:hidden flex items-center justify-between bg-navy px-4 py-3 text-white border-b border-white/10 z-50">
+        <div className="flex items-center gap-2.5">
+          <DecidixIcon name="logo_white" size={26} />
+          <span className="font-bold tracking-tight text-base">DECIDIX</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={toggleLanguage}
-            className="px-2.5 py-1 text-xs font-semibold rounded-pill bg-white/10 hover:bg-white/20"
+            className="px-2.5 py-1 text-xs font-semibold rounded-pill bg-white/10 hover:bg-white/20 transition"
           >
             {language === 'en' ? 'العربية' : 'EN'}
           </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg bg-white/10 hover:bg-white/20"
+            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20"
             aria-label="Toggle Navigation"
           >
             {mobileMenuOpen ? '✕' : '☰'}
@@ -141,27 +142,31 @@ export const DashboardLayout: React.FC = () => {
       {/* Main Sidebar (Desktop & Mobile Drawer) */}
       <aside
         className={clsx(
-          'fixed inset-y-0 z-40 w-72 bg-navy text-white flex flex-col justify-between transition-transform duration-300 md:static md:translate-x-0',
-          isRTL ? 'right-0' : 'left-0',
-          mobileMenuOpen ? 'translate-x-0' : isRTL ? 'translate-x-full md:translate-x-0' : '-translate-x-full md:translate-x-0'
+          'fixed inset-y-0 z-40 w-64 bg-navy text-white flex flex-col justify-between transition-transform duration-300 md:static md:translate-x-0 shrink-0 border-r border-white/5',
+          isRTL ? 'right-0 border-l border-r-0' : 'left-0',
+          mobileMenuOpen
+            ? 'translate-x-0'
+            : isRTL
+            ? 'translate-x-full md:translate-x-0'
+            : '-translate-x-full md:translate-x-0'
         )}
       >
         {/* Brand Header */}
         <div>
-          <div className="p-6 flex items-center gap-3 border-b border-white/10">
-            <DecidixIcon name="logo_white" size={36} />
+          <div className="p-5 flex items-center gap-3 border-b border-white/10">
+            <DecidixIcon name="logo_white" size={32} />
             <div>
-              <div className="font-extrabold text-xl tracking-tight leading-none text-white">
+              <div className="font-black text-lg tracking-tight leading-none text-white">
                 DECIDIX
               </div>
-              <div className="text-[11px] text-faded-ink tracking-wide font-medium mt-1">
+              <div className="text-[10px] text-faded-ink tracking-wide font-medium mt-1">
                 {isRTL ? 'منصة دعم القرار الإقليمي' : 'Decision Intelligence'}
               </div>
             </div>
           </div>
 
           {/* Navigation Links Scrollable Area */}
-          <nav className="p-4 overflow-y-auto max-h-[calc(100vh-170px)]">
+          <nav className="p-3.5 overflow-y-auto max-h-[calc(100vh-175px)]">
             {renderNavGroup('Core Navigation', 'التنقل الرئيسي', PRIMARY_NAV)}
             {renderNavGroup('Data & Assistant', 'البيانات والمساعد', TOOLS_NAV)}
             {renderNavGroup('Analytical Deep Dives', 'التحليلات العميقة', ANALYTICS_NAV)}
@@ -171,17 +176,17 @@ export const DashboardLayout: React.FC = () => {
         </div>
 
         {/* User Account / Session Footer */}
-        <div className="p-4 border-t border-white/10 bg-black/20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-9 h-9 rounded-full bg-blue text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
+        <div className="p-3.5 border-t border-white/10 bg-black/25">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div className="w-8 h-8 rounded-full bg-blue text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-decidix-pill">
                 {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div className="overflow-hidden">
-                <div className="text-sm font-semibold text-white truncate">
+                <div className="text-xs font-bold text-white truncate">
                   {user?.name || (isRTL ? 'مستخدم المنصة' : 'Decidix User')}
                 </div>
-                <div className="text-xs text-cyan uppercase font-bold tracking-wider">
+                <div className="text-[10px] text-cyan font-bold uppercase tracking-wider">
                   {user?.role || 'VIEWER'}
                 </div>
               </div>
@@ -193,14 +198,14 @@ export const DashboardLayout: React.FC = () => {
                 title={isRTL ? 'تغيير كلمة المرور' : 'Change Password'}
                 className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition"
               >
-                ⚙
+                <DecidixIcon name="account" size={14} color="#A5B4CB" />
               </button>
               <button
                 onClick={handleLogout}
                 title={isRTL ? 'تسجيل الخروج' : 'Sign Out'}
-                className="p-1.5 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-white/10 transition"
+                className="p-1.5 rounded-lg text-rose-300 hover:text-rose-200 hover:bg-white/10 transition"
               >
-                ⎋
+                <DecidixIcon name="back" size={14} color="#F87171" />
               </button>
             </div>
           </div>
@@ -208,46 +213,49 @@ export const DashboardLayout: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 decidix-brand-backdrop">
         {/* Top Desktop Bar */}
-        <header className="hidden md:flex items-center justify-between px-8 py-4 bg-white border-b border-line shadow-sm">
+        <header className="hidden md:flex items-center justify-between px-8 py-3.5 bg-white border-b border-hairline shadow-sm relative z-20">
           <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-xs font-semibold text-ink uppercase tracking-wider">
-              {isRTL ? 'المنظومة متصلة — سحابة Heroku Staging & R2' : 'Decidix Platform Active — Heroku Staging & Cloudflare R2'}
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-medium text-ink">
+              {isRTL
+                ? 'المنظومة متصلة — سحابة Heroku Staging وقاعدة البيانات المكانية'
+                : 'Platform Connected — Heroku Staging & Cloudflare R2'}
             </span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <NavLink
               to="/datasets"
-              className="text-xs font-semibold px-3 py-1.5 rounded-pill bg-blue/10 text-blue hover:bg-blue/20 transition flex items-center gap-1.5"
+              className="decidix-chip text-xs font-semibold bg-white border border-hairline hover:bg-well transition"
             >
-              <span>+</span>
-              <span>{isRTL ? 'رفع بيانات R2' : 'Upload Dataset'}</span>
+              <DecidixIcon name="economy" size={14} color="var(--color-blue)" />
+              <span>{isRTL ? 'إدارة البيانات R2' : 'R2 Data Platform'}</span>
             </NavLink>
 
             <button
               onClick={toggleLanguage}
-              className="text-xs font-semibold px-3 py-1.5 rounded-pill bg-well hover:bg-line text-navy border border-line transition"
+              className="decidix-chip text-xs font-semibold bg-well hover:bg-hairline text-navy border border-hairline transition"
             >
-              {language === 'en' ? 'العربية (AR)' : 'English (EN)'}
+              {language === 'en' ? 'العربية' : 'English (EN)'}
             </button>
 
-            <div className="h-4 w-px bg-line"></div>
+            <div className="h-4 w-px bg-hairline" />
 
             <button
               onClick={() => setPasswordModalOpen(true)}
-              className="text-xs font-semibold text-ink hover:text-navy transition"
+              className="p-2 rounded-pill bg-well hover:bg-hairline text-ink hover:text-navy transition"
+              title={isRTL ? 'إعدادات الحساب' : 'Account Security'}
             >
-              {isRTL ? 'الأمان' : 'Security'}
+              <DecidixIcon name="account" size={16} color="var(--color-ink)" />
             </button>
           </div>
         </header>
 
         {/* Dynamic Route Content */}
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto relative z-10">
+          <div className="max-w-[1360px] mx-auto">
             <Outlet />
           </div>
         </main>

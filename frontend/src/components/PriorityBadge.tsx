@@ -3,10 +3,30 @@ import { PriorityLevel } from '../types';
 import clsx from 'clsx';
 
 const BADGE_STYLES: Record<PriorityLevel, { bg: string; text: string; label: string; labelAr: string }> = {
-  critical: { bg: '#FEE2E2', text: '#DC2626', label: 'Critical', labelAr: 'حرج' },
-  high: { bg: '#FEF3C7', text: '#D97706', label: 'High', labelAr: 'مرتفع' },
-  medium: { bg: '#DBEAFE', text: '#2563EB', label: 'Medium', labelAr: 'متوسط' },
-  low: { bg: '#D1FAE5', text: '#059669', label: 'Low', labelAr: 'منخفض' },
+  critical: {
+    bg: 'rgba(229, 72, 77, 0.12)',
+    text: 'var(--color-danger-text)',
+    label: 'Critical',
+    labelAr: 'حرج',
+  },
+  high: {
+    bg: 'rgba(229, 72, 77, 0.10)',
+    text: 'var(--color-danger-text)',
+    label: 'High',
+    labelAr: 'مرتفع',
+  },
+  medium: {
+    bg: 'rgba(245, 165, 36, 0.15)',
+    text: 'var(--color-warning-text)',
+    label: 'Medium',
+    labelAr: 'متوسط',
+  },
+  low: {
+    bg: 'rgba(20, 184, 122, 0.12)',
+    text: 'var(--color-success-text)',
+    label: 'Low',
+    labelAr: 'منخفض',
+  },
 };
 
 interface PriorityBadgeProps {
@@ -15,6 +35,10 @@ interface PriorityBadgeProps {
   className?: string;
 }
 
+/**
+ * PriorityBadge: Authentic Decidix priority status badge.
+ * Uses exact token colors: successText (#0A8F5C), warningText (#A56A00), dangerText (#C9353A).
+ */
 export const PriorityBadge: React.FC<PriorityBadgeProps> = ({
   priority,
   isArabic = false,
@@ -25,8 +49,14 @@ export const PriorityBadge: React.FC<PriorityBadgeProps> = ({
 
   return (
     <span
-      className={clsx('decidix-pill-badge', className)}
-      style={{ backgroundColor: config.bg, color: config.text }}
+      className={clsx(
+        'inline-flex items-center select-none font-semibold uppercase tracking-wider text-[11px] px-2.5 py-0.5 rounded-pill',
+        className
+      )}
+      style={{
+        backgroundColor: config.bg,
+        color: config.text,
+      }}
     >
       {isArabic ? config.labelAr : config.label}
     </span>

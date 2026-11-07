@@ -3,8 +3,14 @@ import { useParams, Link } from 'react-router-dom';
 import { overviewService } from '../../services/overviewService';
 import { RegionProfile } from '../../types';
 import { TwoToneHeading } from '../../components/TwoToneHeading';
+import { HeroCard } from '../../components/HeroCard';
+import { DecidixCard } from '../../components/DecidixCard';
 import { PriorityBadge } from '../../components/PriorityBadge';
-import { MetricCard } from '../../components/MetricCard';
+import { TrendIndicator } from '../../components/TrendIndicator';
+import { StatWell } from '../../components/StatWell';
+import { ScoreRing } from '../../components/ScoreRing';
+import { AiInsightPanel } from '../../components/AiInsightPanel';
+import { ProvenanceCard } from '../../components/ProvenanceCard';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { DecidixIcon } from '../../components/DecidixIcon';
 import { useLanguage } from '../../context/LanguageContext';
@@ -48,22 +54,25 @@ export const RegionProfileScreen: React.FC = () => {
   }, [id]);
 
   if (isLoading) {
-    return <LoadingSpinner message={isRTL ? 'جارٍ تحميل الملف التنموي للمنطقة...' : 'Loading regional dossier...'} />;
+    return (
+      <div className="py-20 flex justify-center">
+        <LoadingSpinner message={isRTL ? 'جارٍ تحميل الملف التنموي للمنطقة...' : 'Loading regional dossier...'} />
+      </div>
+    );
   }
 
   if (error || !profile) {
     return (
       <div className="p-8 rounded-card bg-rose-50 border border-rose-200 text-danger text-center">
         <h3 className="font-bold text-lg mb-2">{isRTL ? 'تعذر استرجاع ملف المنطقة' : 'Profile Unavailable'}</h3>
-        <p>{error || 'Region not found in registry.'}</p>
-        <Link to="/regions" className="decidix-btn-primary mt-4 inline-block">
+        <p className="text-sm">{error || 'Region not found in registry.'}</p>
+        <Link to="/regions" className="decidix-btn-primary mt-4 inline-flex">
           {isRTL ? 'العودة لدليل المناطق' : 'Back to Regions'}
         </Link>
       </div>
     );
   }
 
-  // Combine region history and national history for Recharts
   const chartData = profile.history?.region?.map((pt, i) => {
     const natPt = profile.history.national?.[i];
     return {
@@ -73,112 +82,170 @@ export const RegionProfileScreen: React.FC = () => {
     };
   }) || [];
 
+  const rawScore = profile.score ?? 0;
+  const scoreNum = Number(rawScore) || 0;
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      {/* Breadcrumb & Navigation */}
+    <div className="space-y-7 animate-in fade-in duration-300">
+      {/* Breadcrumb Navigation */}
       <div className="flex items-center gap-2 text-xs font-semibold text-faded-ink">
-        <Link to="/regions" className="hover:text-blue">{isRTL ? 'دليل المناطق' : 'Regions'}</Link>
+        <Link to="/regions" className="hover:text-blue transition">
+          {isRTL ? 'دليل المناطق' : 'Regions'}
+        </Link>
         <span>/</span>
-        <span className="text-navy">{t(profile, 'name')}</span>
+        <span className="text-navy font-bold">{t(profile, 'name')}</span>
       </div>
 
-      {/* Hero Header Card */}
-      <div className="decidix-card p-6 md:p-8 bg-white flex flex-col md:flex-row md:items-center justify-between gap-6 border-b-4 border-b-blue">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <span className="w-8 h-8 rounded-full bg-blue text-white flex items-center justify-center font-black text-xs">
-              #{profile.rank}
-            </span>
-            <h1 className="text-3xl font-black text-navy">{t(profile, 'name')}</h1>
-            <PriorityBadge priority={profile.priority} isArabic={isRTL} />
+      {/* Signature Hero Card for Region */}
+      <HeroCard>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-7 space-y-4">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-pill bg-white text-navy border border-hairline shadow-sm">
+                #{profile.rank} of {profile.rank_total || 27}
+              </span>
+              <PriorityBadge priority={profile.priority} isArabic={isRTL} />
+              {profile.history_is_observed && (
+                <span className="text-[11px] font-semibold text-blue bg-blue/10 px-2 py-0.5 rounded-pill">
+                  {isRTL ? 'بيانات رصد معتمدة' : 'Observed Census Data'}
+                </span>
+              )}
+            </div>
+
+            <div>
+              <TwoToneHeading
+                first={t(profile, 'name')}
+                second={profile.governorate || (isRTL ? 'إقليم جمهورية مصر' : 'Egyptian Governorate')}
+                level={1}
+                className="type-heading-page"
+              />
+              <p className="type-caption-regular text-ink mt-1">
+                {isRTL
+                  ? 'ملف تنموي شامل يغطي التعليم، الصحة، الاقتصاد، والبنية التحتية الأساسية.'
+                  : 'Comprehensive developmental profile across education, healthcare, economy, and infrastructure.'}
+              </p>
+            </div>
+
+            {/* Quick Inset Stat Wells */}
+            <div className="grid grid-cols-3 gap-3 pt-2">
+              <StatWell
+                value={scoreNum.toFixed(1)}
+                label={isRTL ? 'درجة المؤشر' : 'Composite Score'}
+              />
+              <StatWell
+                value={profile.population ? `${(profile.population / 1_000_000).toFixed(2)}M` : 'N/A'}
+                label={isRTL ? 'السكان' : 'Population'}
+              />
+              <StatWell
+                value={profile.area_km2 ? `${profile.area_km2.toLocaleString()} km²` : 'N/A'}
+                label={isRTL ? 'المساحة' : 'Area (km²)'}
+              />
+            </div>
           </div>
 
-          <p className="text-sm text-faded-ink">
-            {profile.governorate || t(profile, 'name')} • {isRTL ? 'السكان المقدرين: ' : 'Population: '}
-            <strong className="text-navy">
-              {profile.population ? (profile.population / 1_000_000).toFixed(2) + 'M' : 'N/A'}
-            </strong>
-          </p>
-        </div>
+          {/* Right Column: Score Ring & Annual Delta */}
+          <div className="lg:col-span-5 flex flex-col items-center justify-center p-6 bg-white/70 rounded-card border border-white shadow-sm space-y-3">
+            <ScoreRing score={scoreNum} size={90} strokeWidth={8} />
 
-        <div className="flex items-baseline gap-6 p-4 rounded-well bg-well self-start md:self-auto">
-          <div>
-            <div className="text-xs font-semibold text-faded-ink uppercase">{isRTL ? 'درجة المؤشر' : 'Composite Index'}</div>
-            <div className="text-4xl font-black text-navy">{profile.score.toFixed(1)}</div>
-          </div>
-
-          <div>
-            <div className="text-xs font-semibold text-faded-ink uppercase">{isRTL ? 'التغير السنوي' : 'Annual Delta'}</div>
-            <div className={`text-xl font-bold ${profile.change >= 0 ? 'text-emerald-600' : 'text-danger'}`}>
-              {profile.change >= 0 ? '+' : ''}{profile.change.toFixed(1)} pts
+            <div className="text-center">
+              <div className="text-xs font-bold text-faded-ink uppercase tracking-wider">
+                {isRTL ? 'المستوى العام' : 'Overall Index Score'}
+              </div>
+              <div className="mt-1 flex items-center justify-center gap-2">
+                <TrendIndicator value={profile.change ?? 0} />
+                <span className="text-xs text-ink">vs previous period</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </HeroCard>
+
+      {/* AI Insight Panel */}
+      {profile.ai_insight && (
+        <AiInsightPanel
+          label={isRTL ? 'ملخص تحليلي للمنطقة' : 'Regional Intelligence Synthesis'}
+          body={isRTL && profile.ai_insight.arabic_text ? profile.ai_insight.arabic_text : profile.ai_insight.text}
+          confidence={profile.ai_insight.confidence}
+        />
+      )}
 
       {/* Domain Breakdown Grid */}
       {profile.domains && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-navy">
+        <div className="space-y-3.5">
+          <h2 className="type-heading-section text-navy">
             {isRTL ? 'الأداء التنموي عبر القطاعات' : 'Domain Performance Breakdown'}
           </h2>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {profile.domains.map((dom) => (
-              <div key={dom.key} className="decidix-card p-5 space-y-2">
-                <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider">
-                  {t(dom, 'name')}
+              <DecidixCard key={dom.key} variant="row" className="space-y-3">
+                <div className="flex items-center justify-between text-xs font-semibold text-ink">
+                  <span>{t(dom, 'name')}</span>
+                  <DecidixIcon name={dom.key as any} size={15} color="var(--color-blue)" />
                 </div>
+
                 <div className="flex items-baseline justify-between">
-                  <span className="text-2xl font-black text-navy">{dom.score.toFixed(1)}</span>
-                  <span className={`text-xs font-bold ${dom.change >= 0 ? 'text-emerald-600' : 'text-danger'}`}>
-                    {dom.change >= 0 ? '+' : ''}{dom.change.toFixed(1)}
+                  <span className="type-number-l text-navy">
+                    {dom.score != null ? dom.score.toFixed(1) : 'N/A'}
                   </span>
+                  {dom.change != null && (
+                    <TrendIndicator value={dom.change} size="sm" />
+                  )}
                 </div>
-                <div className="w-full h-1.5 bg-well rounded-pill overflow-hidden">
+
+                <div className="w-full h-2 bg-well rounded-pill overflow-hidden">
                   <div
-                    className="h-full bg-blue rounded-pill"
-                    style={{ width: `${Math.min(100, dom.score)}%` }}
-                  ></div>
+                    className="h-full bg-blue rounded-pill transition-all duration-500"
+                    style={{ width: `${Math.min(100, dom.score ?? 0)}%` }}
+                  />
                 </div>
-              </div>
+              </DecidixCard>
             ))}
           </div>
         </div>
       )}
 
-      {/* Trajectory Comparison: Region vs National */}
-      <div className="decidix-card p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-navy text-base">
-            {isRTL ? 'مقارنة المسار التاريخي مع المتوسط الوطني' : 'Historical Trajectory vs National Average'}
-          </h3>
-          <span className="text-xs font-semibold text-faded-ink">
-            {isRTL ? 'المؤشر العام' : 'Composite Score Trend'}
-          </span>
+      {/* Historical Trend vs National Average */}
+      <DecidixCard variant="card" className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="type-heading-section text-navy">
+              {isRTL ? 'المسار التاريخي مقارنة بالمتوسط الوطني' : 'Historical Trajectory vs National Average'}
+            </h3>
+            <p className="text-xs text-faded-ink mt-0.5">
+              {isRTL
+                ? 'مقارنة مسار المنطقة مع المتوسط المرجح لجميع محافظات الجمهورية'
+                : 'Regional trajectory benchmarked against the weighted national aggregate'}
+            </p>
+          </div>
         </div>
 
-        <div className="h-72 w-full">
+        <div className="h-64 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <XAxis dataKey="year" stroke="#7D8AA0" fontSize={11} tickLine={false} />
-              <YAxis stroke="#7D8AA0" fontSize={11} domain={['dataMin - 5', 'dataMax + 5']} tickLine={false} />
+              <XAxis dataKey="year" stroke="#7D8AA0" fontSize={11} tickLine={false} axisLine={{ stroke: '#E3E9F2' }} />
+              <YAxis stroke="#7D8AA0" fontSize={11} tickLine={false} axisLine={{ stroke: '#E3E9F2' }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#061A3A',
+                  backgroundColor: 'var(--color-navy)',
                   color: '#FFFFFF',
-                  borderRadius: '12px',
+                  borderRadius: '16px',
                   border: 'none',
                   fontSize: '12px',
+                  padding: '8px 14px',
                 }}
               />
-              <Legend />
+              <Legend
+                wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                iconType="circle"
+              />
               <Line
                 type="monotone"
                 dataKey="region"
                 name={t(profile, 'name')}
-                stroke="#2563EB"
+                stroke="var(--color-blue)"
                 strokeWidth={3}
-                dot={{ r: 4 }}
+                dot={{ r: 4, fill: 'var(--color-blue)' }}
               />
               <Line
                 type="monotone"
@@ -192,58 +259,10 @@ export const RegionProfileScreen: React.FC = () => {
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </DecidixCard>
 
-      {/* Key Metrics Grid */}
-      {profile.key_metrics && profile.key_metrics.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-navy">
-            {isRTL ? 'المؤشرات التفصيلية للمنطقة' : 'Key Detailed Metrics'}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {profile.key_metrics.map((m) => (
-              <MetricCard key={m.key} metric={m} isArabic={isRTL} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Strengths & Vulnerabilities */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="decidix-card p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-            <h3 className="font-bold text-navy text-base">
-              {isRTL ? 'نقاط القوة التنموية' : 'Developmental Strengths'}
-            </h3>
-          </div>
-          <div className="space-y-2">
-            {profile.strengths?.map((s, i) => (
-              <div key={i} className="p-3 rounded-well bg-emerald-50/50 text-emerald-900 text-xs font-medium border border-emerald-100 flex items-center gap-2">
-                <span>✓</span>
-                <span>{s}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="decidix-card p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-            <h3 className="font-bold text-navy text-base">
-              {isRTL ? 'الفجوات ونقاط الضعف التي تتطلب تدخلاً' : 'Vulnerabilities & Policy Targets'}
-            </h3>
-          </div>
-          <div className="space-y-2">
-            {profile.vulnerabilities?.map((v, i) => (
-              <div key={i} className="p-3 rounded-well bg-rose-50/50 text-rose-900 text-xs font-medium border border-rose-100 flex items-center gap-2">
-                <span>⚠</span>
-                <span>{v}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Canonical Provenance Card */}
+      <ProvenanceCard provenance={profile?.data_quality as any} />
     </div>
   );
 };

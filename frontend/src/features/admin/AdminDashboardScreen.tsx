@@ -3,6 +3,9 @@ import { adminService } from '../../services/adminService';
 import { AdminDashboardData } from '../../types';
 import { TwoToneHeading } from '../../components/TwoToneHeading';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { DecidixCard } from '../../components/DecidixCard';
+import { StatWell } from '../../components/StatWell';
+import { DecidixChip } from '../../components/DecidixChip';
 import { useLanguage } from '../../context/LanguageContext';
 
 export const AdminDashboardScreen: React.FC = () => {
@@ -41,14 +44,32 @@ export const AdminDashboardScreen: React.FC = () => {
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
 
+  const metrics = dashboard?.metrics || {
+    total_users: (dashboard as any)?.kpis?.users?.total ?? 0,
+    active_users: (dashboard as any)?.kpis?.users?.active ?? 0,
+    suspended_users: (dashboard as any)?.kpis?.users?.suspended ?? 0,
+    deleted_users: (dashboard as any)?.kpis?.users?.deleted ?? 0,
+    total_datasets: (dashboard as any)?.kpis?.datasets?.total ?? 0,
+    active_datasets: (dashboard as any)?.kpis?.datasets?.validated ?? 0,
+    total_records: (dashboard as any)?.kpis?.datasets?.totalRecords ?? 0,
+    total_storage_bytes: (dashboard as any)?.kpis?.datasets?.totalStorageBytes ?? 0,
+  };
+
+  const activitySummary = dashboard?.activity_summary || {
+    total_events: (dashboard as any)?.kpis?.activity?.totalEvents ?? 0,
+    api_calls_today: (dashboard as any)?.kpis?.activity?.uniqueUsers ?? 0,
+    active_sessions: (dashboard as any)?.kpis?.users?.active ?? 1,
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-pill bg-rose-50 text-danger text-[11px] font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-pill bg-rose-50 text-danger border border-rose-200/60 text-[11px] font-bold uppercase tracking-wider mb-2">
             🔒 {isRTL ? 'منطقة إدارية مقيدة (ADMIN ONLY)' : 'Restricted Administration Portal'}
           </div>
           <TwoToneHeading
+            eyebrow={isRTL ? 'لوحة القيادة الإدارية والتحليلات' : 'EXECUTIVE TELEMETRY & CONTROLS'}
             first={isRTL ? 'لوحة' : 'Admin'}
             second={isRTL ? 'إدارة المنصة والتحليلات' : 'Dashboard'}
             level={1}
@@ -61,24 +82,21 @@ export const AdminDashboardScreen: React.FC = () => {
           </p>
         </div>
 
-        {/* Period Selector */}
-        <div className="flex items-center gap-1 p-1 bg-white border border-line rounded-pill">
+        {/* Period Selector Chips */}
+        <div className="flex items-center gap-2">
           {['7d', '30d', '90d'].map((p) => (
-            <button
+            <DecidixChip
               key={p}
+              label={p.toUpperCase()}
+              selected={period === p}
               onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-pill transition ${
-                period === p ? 'bg-blue text-white' : 'text-ink hover:text-navy hover:bg-well'
-              }`}
-            >
-              {p.toUpperCase()}
-            </button>
+            />
           ))}
         </div>
       </div>
 
       {/* Privacy Guarantee Banner */}
-      <div className="p-4 rounded-card bg-blue/5 border border-blue/20 text-xs text-ink flex items-start gap-3">
+      <DecidixCard variant="well" className="p-4 bg-blue/5 border border-blue/20 text-xs text-ink flex items-start gap-3">
         <span className="text-blue text-base font-bold">🛡</span>
         <div>
           <strong className="text-navy font-bold">
@@ -88,7 +106,7 @@ export const AdminDashboardScreen: React.FC = () => {
             ? 'لا تعرض هذه اللوحة محتويات الملفات أو سجلات البيانات المرفوعة من قبل المستخدمين أو نصوص محادثات الذكاء الاصطناعي، التزاماً بسياسات الأمان.'
             : 'Operational metadata and aggregates only. Private dataset contents, individual records, and AI chat messages are never exposed.'}
         </div>
-      </div>
+      </DecidixCard>
 
       {isLoading ? (
         <LoadingSpinner message={isRTL ? 'جارٍ تحميل المقاييس الإدارية...' : 'Loading administration metrics...'} />
@@ -100,93 +118,69 @@ export const AdminDashboardScreen: React.FC = () => {
         <>
           {/* Main Metrics 4-Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="decidix-card p-5">
-              <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-                {isRTL ? 'إجمالي الحسابات' : 'Total User Accounts'}
-              </div>
-              <div className="text-3xl font-black text-navy">
-                {dashboard.metrics.total_users}
-              </div>
-              <div className="text-xs text-emerald-600 mt-1">
-                {dashboard.metrics.active_users} {isRTL ? 'نشط' : 'active'} • {dashboard.metrics.suspended_users} {isRTL ? 'معلق' : 'suspended'}
-              </div>
-            </div>
+            <StatWell
+              label={isRTL ? 'إجمالي الحسابات' : 'Total User Accounts'}
+              value={metrics.total_users}
+              subtext={`${metrics.active_users} ${isRTL ? 'نشط' : 'active'} • ${metrics.suspended_users} ${isRTL ? 'معلق' : 'suspended'}`}
+            />
 
-            <div className="decidix-card p-5">
-              <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-                {isRTL ? 'مجموعات البيانات النشطة' : 'Active Datasets'}
-              </div>
-              <div className="text-3xl font-black text-navy">
-                {dashboard.metrics.active_datasets} / {dashboard.metrics.total_datasets}
-              </div>
-              <div className="text-xs text-blue mt-1">
-                {isRTL ? 'مفحوصة ومعالجة بنجاح' : 'Validated & Canonical'}
-              </div>
-            </div>
+            <StatWell
+              label={isRTL ? 'مجموعات البيانات النشطة' : 'Active Datasets'}
+              value={`${metrics.active_datasets} / ${metrics.total_datasets}`}
+              subtext={isRTL ? 'مفحوصة ومعالجة بنجاح' : 'Validated & Canonical'}
+            />
 
-            <div className="decidix-card p-5">
-              <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-                {isRTL ? 'إجمالي السجلات المفحوصة' : 'Ingested Records'}
-              </div>
-              <div className="text-3xl font-black text-navy">
-                {(dashboard.metrics.total_records || 0).toLocaleString()}
-              </div>
-              <div className="text-xs text-faded-ink mt-1">
-                Across all regions
-              </div>
-            </div>
+            <StatWell
+              label={isRTL ? 'إجمالي السجلات المفحوصة' : 'Ingested Records'}
+              value={(metrics.total_records || 0).toLocaleString()}
+              subtext="Across all regions"
+            />
 
-            <div className="decidix-card p-5">
-              <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-                {isRTL ? 'استهلاك سحابة R2' : 'Cloudflare R2 Storage'}
-              </div>
-              <div className="text-3xl font-black text-navy">
-                {formatBytes(dashboard.metrics.total_storage_bytes || 0)}
-              </div>
-              <div className="text-xs text-faded-ink mt-1">
-                Bucket: <code className="text-navy font-bold">decidcix</code>
-              </div>
-            </div>
+            <StatWell
+              label={isRTL ? 'استهلاك سحابة R2' : 'Cloudflare R2 Storage'}
+              value={formatBytes(metrics.total_storage_bytes || 0)}
+              subtext="Bucket: decidcix"
+            />
           </div>
 
           {/* Activity Summary & Recent Admin Activity */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="decidix-card p-6">
+            <DecidixCard variant="card" className="p-6">
               <h3 className="font-bold text-navy text-base mb-4">
                 {isRTL ? 'نشاط المنظومة اليوم' : 'Platform Telemetry'}
               </h3>
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-well bg-well">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3.5 rounded-inner bg-well border border-line">
                   <span className="text-xs font-semibold text-ink">
                     {isRTL ? 'إجمالي الأحداث المسجلة:' : 'Tracked Events:'}
                   </span>
-                  <span className="font-bold text-navy text-sm">
-                    {dashboard.activity_summary?.total_events?.toLocaleString() || 0}
+                  <span className="font-bold text-navy text-sm font-mono">
+                    {activitySummary?.total_events?.toLocaleString() || 0}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-well bg-well">
+                <div className="flex items-center justify-between p-3.5 rounded-inner bg-well border border-line">
                   <span className="text-xs font-semibold text-ink">
                     {isRTL ? 'طلبات واجهة البرمجة اليوم:' : 'API Calls Today:'}
                   </span>
-                  <span className="font-bold text-blue text-sm">
-                    {dashboard.activity_summary?.api_calls_today?.toLocaleString() || 0}
+                  <span className="font-bold text-blue text-sm font-mono">
+                    {activitySummary?.api_calls_today?.toLocaleString() || 0}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-well bg-well">
+                <div className="flex items-center justify-between p-3.5 rounded-inner bg-well border border-line">
                   <span className="text-xs font-semibold text-ink">
                     {isRTL ? 'الجلسات النشطة حالياً:' : 'Active Sessions:'}
                   </span>
-                  <span className="font-bold text-emerald-600 text-sm">
-                    {dashboard.activity_summary?.active_sessions || 1}
+                  <span className="font-bold text-emerald-600 text-sm font-mono">
+                    {activitySummary?.active_sessions || 1}
                   </span>
                 </div>
               </div>
-            </div>
+            </DecidixCard>
 
-            <div className="lg:col-span-2 decidix-card p-6">
+            <DecidixCard variant="card" className="lg:col-span-2 p-6">
               <h3 className="font-bold text-navy text-base mb-4">
                 {isRTL ? 'آخر عمليات تسجيل الدخول للنظام' : 'Recent Authenticated Logins'}
               </h3>
@@ -208,7 +202,7 @@ export const AdminDashboardScreen: React.FC = () => {
                           <div className="text-[11px] text-faded-ink">{u.email}</div>
                         </td>
                         <td className="py-2.5 px-3">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-pill bg-blue/10 text-blue uppercase">
+                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-pill bg-blue/10 text-blue uppercase">
                             {u.role}
                           </span>
                         </td>
@@ -220,7 +214,7 @@ export const AdminDashboardScreen: React.FC = () => {
                   </tbody>
                 </table>
               </div>
-            </div>
+            </DecidixCard>
           </div>
         </>
       ) : null}

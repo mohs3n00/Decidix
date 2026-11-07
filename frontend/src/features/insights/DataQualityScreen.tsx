@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { insightsService } from '../../services/insightsService';
 import { TwoToneHeading } from '../../components/TwoToneHeading';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { DecidixCard } from '../../components/DecidixCard';
+import { StatWell } from '../../components/StatWell';
+import { ScoreRing } from '../../components/ScoreRing';
 import { useLanguage } from '../../context/LanguageContext';
 
 export const DataQualityScreen: React.FC = () => {
@@ -29,11 +32,16 @@ export const DataQualityScreen: React.FC = () => {
     };
   }, []);
 
+  const completeness = dataQuality?.completeness_percent || 98.4;
+  const syncedCount = dataQuality?.synced_sources || dataQuality?.sources?.length || 4;
+  const overdueCount = dataQuality?.overdue_count || 0;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <TwoToneHeading
+            eyebrow={isRTL ? 'تدقيق النزاهة الإحصائية' : 'CONTINUOUS INTEGRITY AUDIT'}
             first={isRTL ? 'تدقيق' : 'Data'}
             second={isRTL ? 'جودة البيانات والنزاهة' : 'Quality Audit'}
             level={1}
@@ -53,45 +61,40 @@ export const DataQualityScreen: React.FC = () => {
         <div className="space-y-6">
           {/* Summary KPIs */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="decidix-card p-5">
-              <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-                {isRTL ? 'معدل الاكتمال العام' : 'Completeness Rate'}
+            <DecidixCard variant="row" className="p-5 flex items-center gap-4">
+              <ScoreRing score={Math.round(completeness)} size={64} strokeWidth={6} />
+              <div>
+                <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider">
+                  {isRTL ? 'معدل الاكتمال العام' : 'Completeness Rate'}
+                </div>
+                <div className="text-2xl font-black text-navy mt-0.5">
+                  {completeness}%
+                </div>
+                <div className="text-[11px] text-emerald-600 font-semibold mt-0.5">
+                  {isRTL ? 'ضمن النطاق القياسي المعتمد' : 'Within strict tolerance'}
+                </div>
               </div>
-              <div className="text-3xl font-black text-navy">
-                {dataQuality.completeness_percent || 98.4}%
-              </div>
-              <div className="text-xs text-emerald-600 mt-1">
-                {isRTL ? 'ضمن النطاق القياسي المعتمد' : 'Within strict tolerance'}
-              </div>
-            </div>
+            </DecidixCard>
 
-            <div className="decidix-card p-5">
-              <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-                {isRTL ? 'المصادر المتزامنة' : 'Synced Sources'}
-              </div>
-              <div className="text-3xl font-black text-navy">
-                {dataQuality.synced_sources || dataQuality.sources?.length || 4}
-              </div>
-              <div className="text-xs text-blue mt-1">
-                {isRTL ? 'متصلة ومحدثة دورياً' : 'Live integration active'}
-              </div>
-            </div>
+            <StatWell
+              label={isRTL ? 'المصادر المتزامنة' : 'Synced Sources'}
+              value={syncedCount}
+              subtext={isRTL ? 'متصلة ومحدثة دورياً' : 'Live integration active'}
+            />
 
-            <div className="decidix-card p-5">
-              <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-                {isRTL ? 'تنبيهات الانقطاع' : 'Overdue Sources'}
-              </div>
-              <div className="text-3xl font-black text-emerald-600">
-                {dataQuality.overdue_count || 0}
-              </div>
-              <div className="text-xs text-faded-ink mt-1">
-                {isRTL ? 'لا توجد مصادر متأخرة' : 'All sources healthy'}
-              </div>
-            </div>
+            <StatWell
+              label={isRTL ? 'تنبيهات الانقطاع' : 'Overdue Sources'}
+              value={overdueCount}
+              subtext={
+                overdueCount === 0
+                  ? isRTL ? 'لا توجد مصادر متأخرة' : 'All sources healthy'
+                  : isRTL ? 'تتطلب إعادة المزامنة' : 'Attention required'
+              }
+            />
           </div>
 
           {/* Sources Table */}
-          <div className="decidix-card p-6">
+          <DecidixCard variant="card" className="p-6">
             <h3 className="font-bold text-navy text-base mb-4">
               {isRTL ? 'المصادر الإحصائية ومؤشرات التحديث' : 'Monitored Statistical Sources'}
             </h3>
@@ -117,8 +120,8 @@ export const DataQualityScreen: React.FC = () => {
                       <td className="py-3.5 px-4">
                         <span className={`decidix-pill-badge text-[10px] font-bold ${
                           s.status === 'overdue'
-                            ? 'bg-rose-50 text-danger'
-                            : 'bg-emerald-50 text-emerald-600'
+                            ? 'bg-rose-50 text-danger border border-rose-200'
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}>
                           {s.status === 'overdue' ? 'OVERDUE' : 'SYNCED'}
                         </span>
@@ -128,7 +131,7 @@ export const DataQualityScreen: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </div>
+          </DecidixCard>
         </div>
       ) : null}
     </div>

@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { decisionsService } from '../../services/decisionsService';
 import { DevelopmentProject, ProjectStatus } from '../../types';
 import { TwoToneHeading } from '../../components/TwoToneHeading';
+import { DecidixCard } from '../../components/DecidixCard';
+import { DecidixChip } from '../../components/DecidixChip';
+import { StatWell } from '../../components/StatWell';
+import { HatchedBar } from '../../components/HatchedBar';
+import { PriorityBadge } from '../../components/PriorityBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -38,100 +43,95 @@ export const ProjectsScreen: React.FC = () => {
     };
   }, [statusFilter]);
 
+  const STATUS_LABELS: Record<string, { en: string; ar: string }> = {
+    all: { en: 'All Projects', ar: 'جميع المشاريع' },
+    in_progress: { en: 'In Progress', ar: 'قيد التنفيذ' },
+    planned: { en: 'Planned', ar: 'مخطط لها' },
+    delayed: { en: 'Delayed', ar: 'متعثرة' },
+    completed: { en: 'Completed', ar: 'مكتملة' },
+  };
+
+  const totalBudget = projects.reduce((sum, p) => sum + (p.budget || 0), 0);
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-7 animate-in fade-in duration-300">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
+          <div className="type-eyebrow mb-1">
+            {isRTL
+              ? 'تتبع المشاريع الإقليمية ومعدلات الإنجاز'
+              : 'Capital infrastructure, healthcare & education investments tracking'}
+          </div>
           <TwoToneHeading
             first={isRTL ? 'محفظة' : 'Development'}
             second={isRTL ? 'المشاريع الإقليمية' : 'Projects'}
             level={1}
-            className="text-3xl font-extrabold"
+            className="type-heading-page"
           />
-          <p className="text-sm text-faded-ink mt-1">
-            {isRTL
-              ? 'تتبع تنفيذ مشاريع البنية التحتية والخدمات التنموية ونسب الصرف المالي'
-              : 'Tracking capital infrastructure, health, and education regional development investments'}
-          </p>
         </div>
 
-        {/* Status Filters */}
-        <div className="flex items-center gap-1 p-1 bg-white border border-line rounded-pill">
+        {/* Status Filter Chips */}
+        <div className="flex flex-wrap items-center gap-1.5">
           {(['all', 'in_progress', 'planned', 'delayed', 'completed'] as ProjectStatus[]).map((st) => (
-            <button
+            <DecidixChip
               key={st}
+              label={isRTL ? STATUS_LABELS[st]?.ar : STATUS_LABELS[st]?.en}
+              selected={statusFilter === st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-pill transition capitalize ${
-                statusFilter === st
-                  ? 'bg-blue text-white shadow-sm'
-                  : 'text-ink hover:text-navy hover:bg-well'
-              }`}
-            >
-              {st.replace('_', ' ')}
-            </button>
+            />
           ))}
         </div>
       </div>
 
-      {/* Summary KPI Cards */}
-      {summary && (
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div className="decidix-card p-5">
-            <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-              {isRTL ? 'الميزانية الإجمالية' : 'Total Capital Outlay'}
-            </div>
-            <div className="text-2xl font-black text-navy">
-              ${((summary.total_budget || 0) / 1_000_000).toFixed(1)}M
-            </div>
-          </div>
+      {/* Overview Stat Wells */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <StatWell
+          value={projects.length}
+          label={isRTL ? 'إجمالي المشاريع' : 'Active Projects'}
+        />
+        <StatWell
+          value={`$${(totalBudget / 1_000_000).toFixed(1)}M`}
+          label={isRTL ? 'الميزانية الإجمالية' : 'Total Capital Outlay'}
+        />
+        <StatWell
+          value={projects.filter((p) => p.status === 'in_progress').length}
+          label={isRTL ? 'قيد التنفيذ' : 'Under Execution'}
+        />
+        <StatWell
+          value={projects.filter((p) => p.status === 'delayed').length}
+          label={isRTL ? 'متعثرة / متأخرة' : 'Delayed / Impeded'}
+        />
+      </div>
 
-          <div className="decidix-card p-5">
-            <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-              {isRTL ? 'قيد التنفيذ' : 'In Progress'}
-            </div>
-            <div className="text-2xl font-black text-blue">
-              {summary.in_progress_count || 0}
-            </div>
-          </div>
-
-          <div className="decidix-card p-5">
-            <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-              {isRTL ? 'مكتملة بنجاح' : 'Completed'}
-            </div>
-            <div className="text-2xl font-black text-emerald-600">
-              {summary.completed_count || 0}
-            </div>
-          </div>
-
-          <div className="decidix-card p-5">
-            <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-              {isRTL ? 'متأخرة عن الجدول' : 'Delayed'}
-            </div>
-            <div className="text-2xl font-black text-danger">
-              {summary.delayed_count || 0}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Projects Grid */}
       {isLoading ? (
-        <LoadingSpinner message={isRTL ? 'جارٍ تحميل المشاريع...' : 'Loading capital projects...'} />
-      ) : projects.length === 0 ? (
-        <div className="decidix-card p-12 text-center text-ink">
-          <p className="font-semibold">{isRTL ? 'لا توجد مشاريع مسجلة في هذا التصنيف.' : 'No projects found in this category.'}</p>
+        <div className="py-20 flex justify-center">
+          <LoadingSpinner message={isRTL ? 'جارٍ استرجاع محفظة المشاريع...' : 'Retrieving project portfolio...'} />
         </div>
+      ) : projects.length === 0 ? (
+        <DecidixCard variant="card" className="p-12 text-center text-ink">
+          <p className="font-bold text-base mb-1">
+            {isRTL ? 'لا توجد مشاريع مسجلة في هذا التصنيف' : 'No projects found for the selected filter.'}
+          </p>
+        </DecidixCard>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {projects.map((proj) => (
-            <div key={proj.id} className="decidix-card p-6 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold uppercase tracking-wider text-blue bg-blue/10 px-2.5 py-1 rounded-pill">
-                    {proj.sector}
-                  </span>
+            <DecidixCard
+              key={proj.id}
+              variant="card"
+              className="flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-pill bg-well border border-hairline uppercase text-ink">
+                      {proj.domain}
+                    </span>
+                    <span className="text-xs text-faded-ink font-mono">Region: {proj.region_id}</span>
+                  </div>
                   <span
-                    className={`decidix-pill-badge text-[10px] font-bold ${
+                    className={`text-[11px] font-bold px-2.5 py-0.5 rounded-pill capitalize ${
                       proj.status === 'completed'
                         ? 'bg-emerald-50 text-emerald-600'
                         : proj.status === 'delayed'
@@ -143,39 +143,29 @@ export const ProjectsScreen: React.FC = () => {
                   </span>
                 </div>
 
-                <h3 className="font-bold text-navy text-base mb-2">
-                  {t(proj, 'title')}
+                <h3 className="font-bold text-navy text-base leading-snug">
+                  {isRTL && proj.arabic_title ? proj.arabic_title : proj.title}
                 </h3>
-                <div className="text-xs font-medium text-faded-ink mb-4">
-                  {t(proj.region, 'name')}
-                </div>
 
-                <div className="space-y-1 mb-4">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-ink">{isRTL ? 'نسبة الإنجاز:' : 'Progress:'}</span>
-                    <span className="text-navy">{proj.progress_percent}%</span>
-                  </div>
-                  <div className="w-full h-2 bg-well rounded-pill overflow-hidden">
-                    <div
-                      className="h-full bg-blue rounded-pill"
-                      style={{ width: `${proj.progress_percent}%` }}
-                    ></div>
-                  </div>
-                </div>
+                <p className="type-body-m text-ink line-clamp-2">
+                  {isRTL && proj.arabic_description ? proj.arabic_description : proj.description}
+                </p>
               </div>
 
-              <div className="pt-4 border-t border-line flex items-center justify-between text-xs text-faded-ink">
-                <div>
-                  {isRTL ? 'الميزانية: ' : 'Budget: '}
-                  <strong className="text-navy">
-                    ${(proj.budget.amount / 1_000_000).toFixed(1)}M
-                  </strong>
+              <div className="space-y-2 pt-2 border-t border-hairline">
+                <div className="flex justify-between text-xs font-semibold">
+                  <span className="text-ink">{isRTL ? 'نسبة الإنجاز المالي والفني' : 'Progress'}</span>
+                  <span className="text-blue font-bold">{proj.progress_percent}%</span>
                 </div>
-                <div>
-                  {proj.due_date ? `Due: ${proj.due_date}` : proj.completed_at ? `Done: ${proj.completed_at}` : 'Ongoing'}
+
+                <HatchedBar percentage={proj.progress_percent} height={8} />
+
+                <div className="flex justify-between text-[11px] text-faded-ink pt-1">
+                  <span>Budget: ${(proj.budget / 1_000_000).toFixed(2)}M</span>
+                  <span>Spent: ${(proj.spent / 1_000_000).toFixed(2)}M</span>
                 </div>
               </div>
-            </div>
+            </DecidixCard>
           ))}
         </div>
       )}

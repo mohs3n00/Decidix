@@ -3,6 +3,9 @@ import { adminService } from '../../services/adminService';
 import { User } from '../../types';
 import { TwoToneHeading } from '../../components/TwoToneHeading';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { DecidixIcon } from '../../components/DecidixIcon';
+import { DecidixCard } from '../../components/DecidixCard';
+import { DecidixChip } from '../../components/DecidixChip';
 import { useLanguage } from '../../context/LanguageContext';
 
 export const AdminUsersScreen: React.FC = () => {
@@ -86,10 +89,11 @@ export const AdminUsersScreen: React.FC = () => {
     <div className="space-y-8 animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-pill bg-rose-50 text-danger text-[11px] font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-pill bg-rose-50 text-danger border border-rose-200/60 text-[11px] font-bold uppercase tracking-wider mb-2">
             🔒 {isRTL ? 'منطقة إدارية (ADMIN)' : 'User Management'}
           </div>
           <TwoToneHeading
+            eyebrow={isRTL ? 'إدارة المستخدمين والأدوار' : 'IDENTITY & ACCESS CONTROLS'}
             first={isRTL ? 'إدارة' : 'User'}
             second={isRTL ? 'حسابات المستخدمين' : 'Accounts'}
             level={1}
@@ -111,32 +115,34 @@ export const AdminUsersScreen: React.FC = () => {
       )}
 
       {/* Filter and Search Bar */}
-      <div className="decidix-card p-4 flex flex-col sm:flex-row items-center gap-4 bg-white">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={isRTL ? 'ابحث بالاسم أو البريد الإلكتروني...' : 'Search by name or email...'}
-          className="decidix-input flex-1"
-        />
+      <DecidixCard variant="row" className="p-4 flex flex-col sm:flex-row items-center gap-4 bg-white">
+        <div className="relative flex-1 w-full">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={isRTL ? 'ابحث بالاسم أو البريد الإلكتروني...' : 'Search by name or email...'}
+            className="decidix-input ltr:pl-10 rtl:pr-10 w-full"
+          />
+          <span className="absolute ltr:left-3.5 rtl:right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-faded-ink">
+            <DecidixIcon name="search" size={16} />
+          </span>
+        </div>
 
-        <div className="flex items-center gap-1 p-1 bg-well rounded-pill">
+        <div className="flex items-center gap-1.5 flex-wrap">
           {['all', 'active', 'suspended', 'deleted'].map((s) => (
-            <button
+            <DecidixChip
               key={s}
+              label={s.toUpperCase()}
+              selected={statusFilter === s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-pill transition uppercase ${
-                statusFilter === s ? 'bg-blue text-white' : 'text-ink hover:text-navy'
-              }`}
-            >
-              {s}
-            </button>
+            />
           ))}
         </div>
-      </div>
+      </DecidixCard>
 
       {/* Users Table */}
-      <div className="decidix-card p-6">
+      <DecidixCard variant="card" className="p-6">
         {isLoading ? (
           <LoadingSpinner message={isRTL ? 'جارٍ تحميل الحسابات...' : 'Loading accounts...'} />
         ) : users.length === 0 ? (
@@ -163,7 +169,7 @@ export const AdminUsersScreen: React.FC = () => {
                       <div className="text-xs text-faded-ink">{u.email}</div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-pill bg-blue/10 text-blue uppercase">
+                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-pill bg-blue/10 text-blue uppercase">
                         {u.role}
                       </span>
                     </td>
@@ -171,10 +177,10 @@ export const AdminUsersScreen: React.FC = () => {
                       <span
                         className={`decidix-pill-badge text-[10px] font-bold ${
                           u.status === 'active'
-                            ? 'bg-emerald-50 text-emerald-600'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                             : u.status === 'suspended'
-                            ? 'bg-amber-50 text-amber-700'
-                            : 'bg-rose-50 text-danger'
+                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                            : 'bg-rose-50 text-danger border border-rose-200'
                         }`}
                       >
                         {u.status}
@@ -186,7 +192,7 @@ export const AdminUsersScreen: React.FC = () => {
                     <td className="py-3.5 px-4 text-right space-x-2">
                       <button
                         onClick={() => handleRevokeSessions(u.id)}
-                        className="text-xs font-semibold px-2 py-1 rounded bg-well text-navy hover:bg-line transition"
+                        className="text-xs font-semibold px-2.5 py-1 rounded-pill bg-well text-navy hover:bg-line transition border border-hairline"
                         title={isRTL ? 'إلغاء الجلسات' : 'Revoke active sessions'}
                       >
                         Revoke
@@ -195,14 +201,14 @@ export const AdminUsersScreen: React.FC = () => {
                       {u.status === 'suspended' ? (
                         <button
                           onClick={() => handleReactivate(u.id)}
-                          className="text-xs font-semibold px-2 py-1 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition"
+                          className="text-xs font-semibold px-2.5 py-1 rounded-pill bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-200"
                         >
                           Reactivate
                         </button>
                       ) : (
                         <button
                           onClick={() => handleSuspend(u.id)}
-                          className="text-xs font-semibold px-2 py-1 rounded bg-amber-50 text-amber-800 hover:bg-amber-100 transition"
+                          className="text-xs font-semibold px-2.5 py-1 rounded-pill bg-amber-50 text-amber-800 hover:bg-amber-100 transition border border-amber-200"
                         >
                           Suspend
                         </button>
@@ -210,7 +216,7 @@ export const AdminUsersScreen: React.FC = () => {
 
                       <button
                         onClick={() => handleDelete(u.id)}
-                        className="text-xs font-semibold px-2 py-1 rounded bg-rose-50 text-danger hover:bg-rose-100 transition"
+                        className="text-xs font-semibold px-2.5 py-1 rounded-pill bg-rose-50 text-danger hover:bg-rose-100 transition border border-rose-200"
                       >
                         Delete
                       </button>
@@ -221,7 +227,7 @@ export const AdminUsersScreen: React.FC = () => {
             </table>
           </div>
         )}
-      </div>
+      </DecidixCard>
     </div>
   );
 };

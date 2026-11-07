@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { intelligenceService } from '../../services/intelligenceService';
 import { Recommendation, PriorityLevel } from '../../types';
 import { TwoToneHeading } from '../../components/TwoToneHeading';
+import { DecidixCard } from '../../components/DecidixCard';
+import { DecidixChip } from '../../components/DecidixChip';
+import { DecidixButton } from '../../components/DecidixButton';
 import { PriorityBadge } from '../../components/PriorityBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { useLanguage } from '../../context/LanguageContext';
@@ -52,112 +55,115 @@ export const RecommendationsScreen: React.FC = () => {
     }
   };
 
+  const FILTER_OPTIONS = [
+    { id: 'all', labelEn: 'All Priorities', labelAr: 'جميع الأولويات' },
+    { id: 'critical', labelEn: 'Critical', labelAr: 'حرجة' },
+    { id: 'high', labelEn: 'High Priority', labelAr: 'أولوية مرتفعة' },
+    { id: 'medium', labelEn: 'Medium', labelAr: 'متوسطة' },
+    { id: 'low', labelEn: 'Low Priority', labelAr: 'منخفضة' },
+  ];
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-7 animate-in fade-in duration-300">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
+          <div className="type-eyebrow mb-1">
+            {isRTL
+              ? 'مقترحات التدخل التنموي الموجهة بالأدلة الإحصائية'
+              : 'Evidence-based intervention opportunities prioritized by return on investment'}
+          </div>
           <TwoToneHeading
             first={isRTL ? 'توصيات' : 'AI Policy'}
-            second={isRTL ? 'السياسات الذكية' : 'Recommendations'}
+            second={isRTL ? 'السياسات التنموية' : 'Recommendations'}
             level={1}
-            className="text-3xl font-extrabold"
+            className="type-heading-page"
           />
-          <p className="text-sm text-faded-ink mt-1">
-            {isRTL
-              ? 'مقترحات سياسات وتدخلات استثمارية مولدة آلياً ومقاسة بالأثر والميزانية'
-              : 'Autonomous intervention opportunities ranked by cost-effectiveness & index gains'}
-          </p>
         </div>
 
-        {/* Priority Filter */}
-        <div className="flex items-center gap-1 p-1 bg-white border border-line rounded-pill">
-          {['all', 'critical', 'high', 'medium', 'low'].map((p) => (
-            <button
-              key={p}
-              onClick={() => setPriorityFilter(p)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-pill transition uppercase ${
-                priorityFilter === p
-                  ? 'bg-blue text-white shadow-sm'
-                  : 'text-ink hover:text-navy hover:bg-well'
-              }`}
-            >
-              {p}
-            </button>
+        {/* Priority Filter Chips */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {FILTER_OPTIONS.map((opt) => (
+            <DecidixChip
+              key={opt.id}
+              label={isRTL ? opt.labelAr : opt.labelEn}
+              selected={priorityFilter === opt.id}
+              onClick={() => setPriorityFilter(opt.id)}
+            />
           ))}
         </div>
       </div>
 
       {actionSuccess && (
-        <div className="p-4 rounded-card bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center justify-between">
+        <div className="p-4 rounded-row bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between">
           <span>✓ {actionSuccess}</span>
           <button onClick={() => setActionSuccess(null)} className="text-emerald-600 font-bold">✕</button>
         </div>
       )}
 
       {isLoading ? (
-        <LoadingSpinner message={isRTL ? 'جارٍ تحميل التوصيات...' : 'Retrieving policy recommendations...'} />
+        <div className="py-20 flex justify-center">
+          <LoadingSpinner message={isRTL ? 'جارٍ تحميل التوصيات...' : 'Loading recommendations queue...'} />
+        </div>
       ) : recommendations.length === 0 ? (
-        <div className="decidix-card p-12 text-center text-ink">
-          <p className="font-semibold text-base mb-1">
-            {isRTL ? 'لا توجد توصيات معلقة حالياً.' : 'No pending recommendations.'}
+        <DecidixCard variant="card" className="p-12 text-center text-ink">
+          <p className="font-bold text-base mb-1">
+            {isRTL ? 'لا توجد توصيات تتطلب مراجعة حالياً' : 'All recommended interventions are current.'}
           </p>
           <p className="text-xs text-faded-ink">
-            {isRTL ? 'كافة التوصيات مدرجة في خطة العمل أو تمت أرشفتها.' : 'All recommended interventions have been incorporated into planning.'}
+            {isRTL ? 'يتم استنتاج التوصيات آلياً بناءً على مؤشرات الأداء' : 'No pending recommendations found for the selected priority filter.'}
           </p>
-        </div>
+        </DecidixCard>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-3.5">
           {recommendations.map((rec) => (
-            <div key={rec.id} className="decidix-card p-6 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold uppercase tracking-wider text-blue bg-blue/10 px-2.5 py-1 rounded-pill">
-                    {rec.sector}
-                  </span>
+            <DecidixCard
+              key={rec.id}
+              variant="row"
+              className="flex flex-col md:flex-row md:items-center justify-between gap-5 p-5"
+            >
+              <div className="space-y-2 flex-1">
+                <div className="flex items-center gap-2.5">
                   <PriorityBadge priority={rec.priority} isArabic={isRTL} />
+                  <span className="text-xs font-bold text-navy uppercase px-2 py-0.5 rounded bg-well border border-hairline">
+                    {rec.domain}
+                  </span>
+                  <span className="text-xs text-faded-ink font-mono">
+                    Region: {rec.region_id}
+                  </span>
                 </div>
 
-                <h3 className="font-bold text-navy text-base mb-2">
-                  {t(rec, 'title')}
+                <h3 className="font-bold text-navy text-base">
+                  {isRTL && rec.arabic_title ? rec.arabic_title : rec.title}
                 </h3>
-                <p className="text-xs text-ink mb-4 leading-relaxed line-clamp-3">
-                  {t(rec, 'description')}
+
+                <p className="type-body-m text-ink leading-relaxed">
+                  {isRTL && rec.arabic_description ? rec.arabic_description : rec.description}
                 </p>
 
-                <div className="space-y-2 p-3 rounded-well bg-well text-xs mb-6">
-                  <div className="flex justify-between">
-                    <span className="text-faded-ink">{isRTL ? 'الأثر المتوقع:' : 'Index Gain:'}</span>
-                    <strong className="text-navy">+{rec.estimated_impact_pts} pts</strong>
+                {rec.expected_impact && (
+                  <div className="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-pill">
+                    <span>▲ Expected Impact: +{rec.expected_impact} pts</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-faded-ink">{isRTL ? 'الميزانية التقديرية:' : 'Cost:'}</span>
-                    <strong className="text-navy">
-                      ${(rec.estimated_cost?.amount / 1_000_000).toFixed(1)}M {rec.estimated_cost?.currency}
-                    </strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-faded-ink">{isRTL ? 'المدى الزمني:' : 'Timeframe:'}</span>
-                    <strong className="text-navy">{rec.timeframe_months} {isRTL ? 'شهراً' : 'months'}</strong>
-                  </div>
-                </div>
+                )}
               </div>
 
-              <div className="flex items-center gap-2 pt-3 border-t border-line">
-                <button
-                  onClick={() => handleAccept(rec.id)}
-                  className="decidix-btn-primary flex-1 text-xs py-2 font-bold"
-                >
-                  ✓ {isRTL ? 'إضافة للخطة' : 'Add to Plan'}
-                </button>
-                <button
+              <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                <DecidixButton
+                  variant="outlined"
+                  compact
                   onClick={() => handleDismiss(rec.id)}
-                  className="decidix-btn-secondary text-xs py-2 px-3 hover:text-danger hover:border-danger"
-                  title={isRTL ? 'استبعاد' : 'Dismiss'}
                 >
-                  ✕
-                </button>
+                  {isRTL ? 'استبعاد' : 'Dismiss'}
+                </DecidixButton>
+                <DecidixButton
+                  variant="primary"
+                  compact
+                  onClick={() => handleAccept(rec.id)}
+                >
+                  {isRTL ? 'اعتماد وإدراج' : 'Approve & Schedule'}
+                </DecidixButton>
               </div>
-            </div>
+            </DecidixCard>
           ))}
         </div>
       )}

@@ -3,6 +3,9 @@ import { adminService, SendNotificationPayload } from '../../services/adminServi
 import { NotificationDispatch } from '../../types';
 import { TwoToneHeading } from '../../components/TwoToneHeading';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { DecidixCard } from '../../components/DecidixCard';
+import { DecidixChip } from '../../components/DecidixChip';
+import { DecidixButton } from '../../components/DecidixButton';
 import { useLanguage } from '../../context/LanguageContext';
 
 export const AdminNotificationsScreen: React.FC = () => {
@@ -74,10 +77,11 @@ export const AdminNotificationsScreen: React.FC = () => {
     <div className="space-y-8 animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-pill bg-rose-50 text-danger text-[11px] font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-pill bg-rose-50 text-danger border border-rose-200/60 text-[11px] font-bold uppercase tracking-wider mb-2">
             🔒 {isRTL ? 'مركز البث الإداري (FCM)' : 'FCM Push Broadcast Center'}
           </div>
           <TwoToneHeading
+            eyebrow={isRTL ? 'مركز البث والرسائل التنبيهية' : 'PUSH DISPATCH CONSOLE'}
             first={isRTL ? 'إرسال' : 'Push'}
             second={isRTL ? 'الإشعارات الفورية' : 'Notifications'}
             level={1}
@@ -105,7 +109,7 @@ export const AdminNotificationsScreen: React.FC = () => {
       )}
 
       {/* Dispatch Form Card */}
-      <div className="decidix-card p-6 md:p-8 bg-white border border-blue/20">
+      <DecidixCard variant="card" className="p-6 md:p-8 bg-white border border-line">
         <h3 className="font-bold text-navy text-base mb-4">
           {isRTL ? 'صياغة إشعار جديد' : 'Compose Notification'}
         </h3>
@@ -169,24 +173,30 @@ export const AdminNotificationsScreen: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-            <div>
-              <label className="block text-xs font-semibold text-ink uppercase mb-1">
-                {isRTL ? 'الجمهور المستهدف' : 'Target Audience'}
-              </label>
-              <select
-                value={targetAudience}
-                onChange={(e) => setTargetAudience(e.target.value as any)}
-                className="decidix-input font-medium"
-              >
-                <option value="test">{isRTL ? 'اختبار النظام (Test Device Only)' : 'Test Device Only'}</option>
-                <option value="all">{isRTL ? 'كافة المستخدمين المسجلين (All Users)' : 'All Registered Users'}</option>
-                <option value="user">{isRTL ? 'مستخدم محدد (Specific User ID)' : 'Specific User ID'}</option>
-              </select>
+          <div className="pt-2">
+            <label className="block text-xs font-semibold text-ink uppercase mb-2">
+              {isRTL ? 'الجمهور المستهدف' : 'Target Audience'}
+            </label>
+            <div className="flex flex-wrap gap-2 mb-3">
+              <DecidixChip
+                label={isRTL ? 'اختبار النظام' : 'Test Device Only'}
+                selected={targetAudience === 'test'}
+                onClick={() => setTargetAudience('test')}
+              />
+              <DecidixChip
+                label={isRTL ? 'كافة المستخدمين' : 'All Registered Users'}
+                selected={targetAudience === 'all'}
+                onClick={() => setTargetAudience('all')}
+              />
+              <DecidixChip
+                label={isRTL ? 'مستخدم محدد' : 'Specific User'}
+                selected={targetAudience === 'user'}
+                onClick={() => setTargetAudience('user')}
+              />
             </div>
 
             {targetAudience === 'user' && (
-              <div>
+              <div className="mt-2">
                 <label className="block text-xs font-semibold text-ink uppercase mb-1">
                   Target User ID
                 </label>
@@ -202,20 +212,22 @@ export const AdminNotificationsScreen: React.FC = () => {
             )}
           </div>
 
-          <div className="pt-3 flex justify-end">
-            <button
+          <div className="pt-4 flex justify-end">
+            <DecidixButton
               type="submit"
+              variant="primary"
               disabled={isSending || !title || !body}
-              className="decidix-btn-primary px-8 text-xs font-bold"
             >
-              {isSending ? (isRTL ? 'جارٍ الإرسال عبر FCM...' : 'Broadcasting...') : (isRTL ? 'إرسال الإشعار الآن' : 'Dispatch Push Notification')}
-            </button>
+              {isSending
+                ? isRTL ? 'جارٍ الإرسال عبر FCM...' : 'Broadcasting...'
+                : isRTL ? 'إرسال الإشعار الآن' : 'Dispatch Push Notification'}
+            </DecidixButton>
           </div>
         </form>
-      </div>
+      </DecidixCard>
 
       {/* Dispatch History Table */}
-      <div className="decidix-card p-6">
+      <DecidixCard variant="card" className="p-6">
         <h3 className="font-bold text-navy text-base mb-4">
           {isRTL ? 'سجل الإشعارات المرسلة' : 'Dispatch History Log'}
         </h3>
@@ -246,7 +258,7 @@ export const AdminNotificationsScreen: React.FC = () => {
                       <div className="text-xs text-ink line-clamp-1">{h.body}</div>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-well text-navy uppercase">
+                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-pill bg-well text-navy uppercase">
                         {h.target_audience}
                       </span>
                     </td>
@@ -257,7 +269,7 @@ export const AdminNotificationsScreen: React.FC = () => {
                       {new Date(h.sent_at).toLocaleString()}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="decidix-pill-badge bg-emerald-50 text-emerald-600 text-[10px] font-bold">
+                      <span className="decidix-pill-badge bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
                         {h.status.toUpperCase()}
                       </span>
                     </td>
@@ -267,7 +279,7 @@ export const AdminNotificationsScreen: React.FC = () => {
             </table>
           </div>
         )}
-      </div>
+      </DecidixCard>
     </div>
   );
 };

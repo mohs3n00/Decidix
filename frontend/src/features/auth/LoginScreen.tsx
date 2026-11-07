@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { DecidixIcon } from '../../components/DecidixIcon';
+import { DecidixButton } from '../../components/DecidixButton';
 
 export const LoginScreen: React.FC = () => {
   const { login, register } = useAuth();
@@ -51,13 +52,13 @@ export const LoginScreen: React.FC = () => {
       <div className="absolute top-6 right-6">
         <button
           onClick={toggleLanguage}
-          className="px-3 py-1.5 text-xs font-semibold rounded-pill bg-white/10 hover:bg-white/20 text-white transition border border-white/20"
+          className="px-3.5 py-1.5 text-xs font-semibold rounded-pill bg-white/10 hover:bg-white/20 text-white transition border border-white/20 shadow-sm"
         >
           {language === 'en' ? 'العربية' : 'English'}
         </button>
       </div>
 
-      <div className="w-full max-w-md bg-white rounded-hero p-8 shadow-2xl relative z-10">
+      <div className="w-full max-w-md bg-white rounded-hero p-8 shadow-decidix-hero border border-hairline relative z-10">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-6">
           <div className="w-16 h-16 bg-navy rounded-2xl flex items-center justify-center p-3 shadow-lg mb-3">
@@ -137,17 +138,21 @@ export const LoginScreen: React.FC = () => {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="decidix-btn-primary w-full mt-2"
-          >
-            {isSubmitting
-              ? isRTL ? 'جارٍ المعالجة...' : 'Authenticating...'
-              : isRegisterMode
-              ? isRTL ? 'إنشاء حساب جديد' : 'Create Account'
-              : isRTL ? 'تسجيل الدخول' : 'Sign In'}
-          </button>
+          <div className="pt-2">
+            <DecidixButton
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              disabled={isSubmitting}
+            >
+              {isSubmitting
+                ? isRTL ? 'جارٍ المعالجة...' : 'Authenticating...'
+                : isRegisterMode
+                ? isRTL ? 'إنشاء حساب جديد' : 'Create Account'
+                : isRTL ? 'تسجيل الدخول' : 'Sign In'}
+            </DecidixButton>
+          </div>
         </form>
 
         <div className="mt-6 pt-5 border-t border-line text-center">

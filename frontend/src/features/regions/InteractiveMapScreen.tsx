@@ -3,7 +3,12 @@ import { Link } from 'react-router-dom';
 import { overviewService } from '../../services/overviewService';
 import { MapPoint, Sector } from '../../types';
 import { TwoToneHeading } from '../../components/TwoToneHeading';
+import { DecidixCard } from '../../components/DecidixCard';
+import { DecidixChip } from '../../components/DecidixChip';
+import { DecidixButton } from '../../components/DecidixButton';
 import { PriorityBadge } from '../../components/PriorityBadge';
+import { ScoreRing } from '../../components/ScoreRing';
+import { TrendIndicator } from '../../components/TrendIndicator';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { DecidixIcon, DecidixIconName } from '../../components/DecidixIcon';
 import { useLanguage } from '../../context/LanguageContext';
@@ -47,7 +52,6 @@ export const InteractiveMapScreen: React.FC = () => {
     const minLng = 24.5;
     const maxLng = 36.5;
 
-    // Invert lat for SVG Y (top is 0)
     const x = ((lng - minLng) / (maxLng - minLng)) * 100;
     const y = ((maxLat - lat) / (maxLat - minLat)) * 100;
 
@@ -66,52 +70,65 @@ export const InteractiveMapScreen: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-7 animate-in fade-in duration-300">
+      {/* Top Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
+          <div className="type-eyebrow mb-1">
+            {isRTL
+              ? 'التوزيع المكاني للمؤشرات عبر محافظات الجمهورية'
+              : 'Spatial GIS distribution of developmental indicators across Egypt'}
+          </div>
           <TwoToneHeading
-            first={isRTL ? 'الخريطة' : 'Interactive'}
+            first={isRTL ? 'الخريطة' : 'Spatial'}
             second={isRTL ? 'التفاعلية' : 'Map'}
             level={1}
-            className="text-3xl font-extrabold"
+            className="type-heading-page"
           />
-          <p className="text-sm text-faded-ink mt-1">
-            {isRTL
-              ? 'توزيع المؤشرات التنموية ومستويات الأداء عبر محافظات الجمهورية'
-              : 'Spatial distribution of regional developmental performance & acute intervention priorities'}
-          </p>
         </div>
 
-        {/* Sector Filter Pills */}
-        <div className="flex flex-wrap items-center gap-1.5 p-1 bg-white border border-line rounded-pill shadow-sm">
-          {SECTORS.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => setSector(s.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-pill transition-all ${
-                sector === s.id
-                  ? 'bg-blue text-white shadow-sm'
-                  : 'text-ink hover:text-navy hover:bg-well'
-              }`}
-            >
-              <DecidixIcon name={s.icon} size={14} color={sector === s.id ? '#FFFFFF' : 'currentColor'} />
-              <span>{isRTL ? s.labelAr : s.labelEn}</span>
-            </button>
-          ))}
+        {/* Sector Filter Chips */}
+        <div className="flex flex-wrap items-center gap-2">
+          {SECTORS.map((s) => {
+            const isSelected = sector === s.id;
+            return (
+              <DecidixChip
+                key={s.id}
+                label={isRTL ? s.labelAr : s.labelEn}
+                selected={isSelected}
+                icon={
+                  <DecidixIcon
+                    name={s.icon}
+                    size={15}
+                    color={isSelected ? '#FFFFFF' : 'var(--color-ink)'}
+                  />
+                }
+                onClick={() => setSector(s.id)}
+              />
+            );
+          })}
         </div>
       </div>
 
       {isLoading ? (
-        <LoadingSpinner message={isRTL ? 'جارٍ تحميل إحداثيات الخريطة...' : 'Loading geographic map layers...'} />
+        <div className="py-20 flex justify-center">
+          <LoadingSpinner message={isRTL ? 'جارٍ تحميل إحداثيات الخريطة...' : 'Loading geographic map layers...'} />
+        </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Map Canvas Card */}
-          <div className="lg:col-span-2 decidix-card p-6 bg-gradient-to-br from-[#061A3A] to-[#0A2554] text-white relative min-h-[500px] flex flex-col justify-between overflow-hidden">
+          <div
+            className="lg:col-span-8 p-6 text-white relative min-h-[520px] flex flex-col justify-between overflow-hidden shadow-decidix-card"
+            style={{
+              backgroundColor: 'var(--color-navy)',
+              borderRadius: 'var(--radius-card)',
+            }}
+          >
             {/* Map Canvas Background Grid */}
             <div className="absolute inset-0 opacity-15 pointer-events-none bg-[radial-gradient(#21EAF4_1px,transparent_1px)] [background-size:24px_24px]"></div>
 
             {/* Region Pins on Vector Surface */}
-            <div className="relative w-full h-[450px]">
+            <div className="relative w-full h-[440px]">
               {points.map((pt) => {
                 const rId = pt.region_id || (pt as any).id;
                 const { x, y } = projectCoords(pt.latitude, pt.longitude);
@@ -122,11 +139,11 @@ export const InteractiveMapScreen: React.FC = () => {
                     key={rId}
                     onClick={() => setSelectedPoint(pt)}
                     style={{ left: `${x}%`, top: `${y}%` }}
-                    className={`absolute transform -translate-x-1/2 -translate-y-1/2 group transition-all duration-200 z-10 focus:outline-none`}
+                    className="absolute transform -translate-x-1/2 -translate-y-1/2 group transition-all duration-200 z-10 focus:outline-none"
                   >
                     <div className="flex flex-col items-center">
                       <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-lg transition-transform ${
+                        className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-decidix-pill transition-transform ${
                           isSelected
                             ? 'bg-cyan text-navy ring-4 ring-cyan/40 scale-125 z-20'
                             : pt.priority === 'critical' || pt.priority === 'high'
@@ -136,7 +153,7 @@ export const InteractiveMapScreen: React.FC = () => {
                       >
                         {pt.score.toFixed(0)}
                       </div>
-                      <span className="mt-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-navy/80 text-white whitespace-nowrap opacity-90 group-hover:opacity-100">
+                      <span className="mt-1 px-2 py-0.5 rounded-pill text-[10px] font-bold bg-navy/90 text-white whitespace-nowrap opacity-90 group-hover:opacity-100 border border-white/10 shadow-sm">
                         {t(pt, 'name')}
                       </span>
                     </div>
@@ -146,99 +163,87 @@ export const InteractiveMapScreen: React.FC = () => {
             </div>
 
             {/* Map Legend */}
-            <div className="relative z-10 flex flex-wrap items-center justify-between text-xs text-white/70 pt-4 border-t border-white/10">
+            <div className="relative z-10 flex flex-wrap items-center justify-between text-xs text-white/75 pt-3.5 border-t border-white/10">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-cyan"></span> Selected
+                  <span className="w-2.5 h-2.5 rounded-full bg-cyan"></span> Selected
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-rose-500"></span> Priority
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Priority Intervention
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-blue"></span> Moderate/High
+                  <span className="w-2.5 h-2.5 rounded-full bg-blue"></span> Benchmark
                 </span>
               </div>
               <div>
-                WGS84 Coordinates • {points.length} Regions
+                WGS84 Coordinates • {points.length} Regions Grounded
               </div>
             </div>
           </div>
 
-          {/* Selected Region Detail Flyout */}
-          <div className="decidix-card p-6 flex flex-col justify-between">
+          {/* Selected Region Detail Drawer */}
+          <DecidixCard variant="card" className="lg:col-span-4 flex flex-col justify-between">
             {selectedPoint ? (
               <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <PriorityBadge priority={selectedPoint.priority} isArabic={isRTL} />
+                  <span className="text-xs text-faded-ink">
+                    Lat: {selectedPoint.latitude.toFixed(2)}, Lng: {selectedPoint.longitude.toFixed(2)}
+                  </span>
+                </div>
+
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-faded-ink uppercase tracking-wider">
-                      {isRTL ? 'بيانات المنطقة المحددة' : 'Selected Region Profile'}
-                    </span>
-                    <PriorityBadge priority={selectedPoint.priority} isArabic={isRTL} />
-                  </div>
-                  <h3 className="text-2xl font-bold text-navy">
+                  <h3 className="type-heading-page text-navy text-2xl font-bold">
                     {t(selectedPoint, 'name')}
                   </h3>
+                  <div className="type-caption-regular text-ink mt-1">
+                    {isRTL ? 'إقليم معتمد في قاعدة البيانات الجغرافية' : 'Verified Administrative Governorate'}
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 p-4 rounded-well bg-well text-xs">
+                <div className="flex items-center gap-4 p-4 rounded-well bg-well border border-hairline">
+                  <ScoreRing score={selectedPoint.score} size={54} strokeWidth={5} />
                   <div>
-                    <div className="text-faded-ink mb-0.5">{isRTL ? 'درجة المؤشر' : 'Composite Score'}</div>
-                    <div className="text-xl font-bold text-navy">{selectedPoint.score.toFixed(1)} / 100</div>
-                  </div>
-                  <div>
-                    <div className="text-faded-ink mb-0.5">{isRTL ? 'تعداد السكان' : 'Population'}</div>
-                    <div className="text-xl font-bold text-navy">
-                      {selectedPoint.population ? (selectedPoint.population / 1_000_000).toFixed(1) + 'M' : 'N/A'}
+                    <div className="text-xs font-semibold text-faded-ink uppercase">
+                      {sector.toUpperCase()} {isRTL ? 'درجة المؤشر' : 'Score'}
+                    </div>
+                    <div className="text-xl font-black text-navy">
+                      {selectedPoint.score.toFixed(1)} <span className="text-xs text-faded-ink font-normal">/ 100</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-2 text-xs">
-                  <div className="font-bold text-navy">
-                    {isRTL ? 'الإحداثيات الجغرافية:' : 'Coordinates:'}
+                <div className="space-y-2 text-xs text-ink">
+                  <div className="flex justify-between py-1.5 border-b border-hairline">
+                    <span className="text-faded-ink">{isRTL ? 'معرف المنطقة' : 'Region ID'}</span>
+                    <span className="font-mono font-bold text-navy">{selectedPoint.region_id || (selectedPoint as any).id}</span>
                   </div>
-                  <div className="font-mono text-faded-ink">
-                    Lat: {selectedPoint.latitude.toFixed(4)}, Long: {selectedPoint.longitude.toFixed(4)}
+                  <div className="flex justify-between py-1.5 border-b border-hairline">
+                    <span className="text-faded-ink">{isRTL ? 'حالة الأولوية' : 'Intervention Urgency'}</span>
+                    <span className="font-bold text-navy capitalize">{selectedPoint.priority}</span>
                   </div>
-                </div>
-
-                {selectedPoint.key_challenges && selectedPoint.key_challenges.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="text-xs font-bold text-navy">
-                      {isRTL ? 'أبرز التحديات التنموية:' : 'Key Developmental Challenges:'}
-                    </div>
-                    <div className="space-y-1">
-                      {selectedPoint.key_challenges.map((c, i) => (
-                        <div key={i} className="text-xs text-ink flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                          <span>{c}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-4">
-                  <Link
-                    to={`/regions/${selectedPoint.region_id || (selectedPoint as any).id}`}
-                    className="decidix-btn-primary w-full text-xs font-bold"
-                  >
-                    {isRTL ? 'فتح الملف التنموي الكامل للمنطقة ←' : 'View Full Region Dossier →'}
-                  </Link>
                 </div>
               </div>
             ) : (
-              <div className="text-center text-ink py-12">
-                <p>{isRTL ? 'انقر على أي نقطة في الخريطة لعرض تفاصيلها' : 'Click on any regional point on the map to inspect details'}</p>
+              <div className="py-20 text-center text-xs text-faded-ink">
+                {isRTL ? 'انقر على أي نقطة في الخريطة لعرض تفاصيل المنطقة' : 'Click any pin on the map to inspect regional metrics.'}
               </div>
             )}
 
-            <div className="pt-4 border-t border-line text-xs text-faded-ink mt-6">
-              {isRTL
-                ? 'البيانات الجغرافية مستندة إلى أحدث مسح سكاني وإحصائي معتمد.'
-                : 'GIS points aligned with verified Egyptian administrative divisions.'}
-            </div>
-          </div>
+            {selectedPoint && (
+              <div className="pt-4 border-t border-hairline">
+                <Link
+                  to={`/regions/${selectedPoint.region_id || (selectedPoint as any).id}`}
+                  className="w-full"
+                >
+                  <DecidixButton variant="primary" compact expand>
+                    <span>{isRTL ? 'عرض الملف التنموي الكامل' : 'Open Regional Dossier'}</span>
+                    <span>→</span>
+                  </DecidixButton>
+                </Link>
+              </div>
+            )}
+          </DecidixCard>
         </div>
       )}
     </div>

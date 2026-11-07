@@ -2,6 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 
 interface TwoToneHeadingProps {
+  eyebrow?: string;
   first: string;
   second: string;
   level?: 1 | 2 | 3 | 4;
@@ -9,6 +10,7 @@ interface TwoToneHeadingProps {
 }
 
 export const TwoToneHeading: React.FC<TwoToneHeadingProps> = ({
+  eyebrow,
   first,
   second,
   level = 2,
@@ -16,10 +18,23 @@ export const TwoToneHeading: React.FC<TwoToneHeadingProps> = ({
 }) => {
   const Tag = `h${level}` as keyof JSX.IntrinsicElements;
 
-  return (
+  const content = (
     <Tag className={clsx('heading-twotone tracking-tight', className)}>
-      <span className="first-word font-bold text-navy">{first}</span>
+      <span className="first-word font-bold text-navy">{first}</span>{' '}
       <span className="second-word font-normal text-faded-ink">{second}</span>
     </Tag>
   );
+
+  if (eyebrow) {
+    return (
+      <div className="flex flex-col">
+        <span className="text-[12px] font-semibold tracking-wider text-blue uppercase mb-1">
+          {eyebrow}
+        </span>
+        {content}
+      </div>
+    );
+  }
+
+  return content;
 };

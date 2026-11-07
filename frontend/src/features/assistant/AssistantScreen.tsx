@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { intelligenceService } from '../../services/intelligenceService';
 import { AssistantChatMessage } from '../../types';
 import { TwoToneHeading } from '../../components/TwoToneHeading';
+import { DecidixButton } from '../../components/DecidixButton';
+import { DecidixChip } from '../../components/DecidixChip';
 import { ProvenanceCard } from '../../components/ProvenanceCard';
 import { DecidixIcon } from '../../components/DecidixIcon';
 import { useLanguage } from '../../context/LanguageContext';
@@ -101,23 +103,26 @@ export const AssistantScreen: React.FC = () => {
       ];
 
   return (
-    <div className="h-[calc(100vh-140px)] flex flex-col decidix-card bg-white overflow-hidden shadow-lg border border-line">
+    <div
+      className="h-[calc(100vh-140px)] flex flex-col bg-white overflow-hidden shadow-decidix-card border border-hairline"
+      style={{ borderRadius: 'var(--radius-card)' }}
+    >
       {/* Header Bar */}
-      <div className="p-4 md:p-6 border-b border-line bg-gradient-to-r from-navy via-navy to-[#0F2B59] text-white flex items-center justify-between">
+      <div className="p-4 md:p-5 border-b border-white/10 bg-navy text-white flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-cyan/20 border border-cyan/40 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-2xl bg-cyan/20 border border-cyan/40 flex items-center justify-center shrink-0">
             <DecidixIcon name="spark" size={20} color="#21EAF4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-bold text-lg leading-none">
+              <h2 className="font-bold text-base md:text-lg leading-none">
                 {isRTL ? 'مساعد Decidix الذكي' : 'Decidix Intelligence Assistant'}
               </h2>
-              <span className="decidix-pill-badge bg-cyan text-navy font-bold text-[10px]">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-pill bg-cyan text-navy">
                 ZERO-COST RAG
               </span>
             </div>
-            <div className="text-xs text-white/70 mt-1">
+            <div className="text-[11px] text-faded-ink mt-1">
               {isRTL ? 'مرتبط مباشرة بقاعدة بيانات المحافظات وسحابة R2' : 'Strictly grounded in canonical database records'}
             </div>
           </div>
@@ -128,14 +133,14 @@ export const AssistantScreen: React.FC = () => {
             setMessages([messages[0]]);
             setConversationId(null);
           }}
-          className="text-xs font-semibold px-3 py-1.5 rounded-pill bg-white/10 hover:bg-white/20 text-white/80 transition"
+          className="text-xs font-semibold px-3 py-1.5 rounded-pill bg-white/10 hover:bg-white/20 text-white/90 transition"
         >
           {isRTL ? 'محادثة جديدة' : 'New Chat'}
         </button>
       </div>
 
       {/* Messages Thread */}
-      <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-6 bg-mist/40">
+      <div className="flex-1 p-4 md:p-6 overflow-y-auto space-y-5 bg-mist">
         {messages.map((msg, idx) => {
           const isUser = msg.role === 'user';
           return (
@@ -145,39 +150,65 @@ export const AssistantScreen: React.FC = () => {
                 isUser ? 'ml-auto' : 'mr-auto'
               } w-full`}
             >
-              <div
-                className={`p-4 md:p-5 rounded-card text-sm leading-relaxed shadow-sm w-full ${
-                  isUser
-                    ? 'bg-blue text-white rounded-tr-none'
-                    : 'bg-white text-navy border border-line rounded-tl-none'
-                }`}
-              >
-                <div className="whitespace-pre-wrap">{msg.content}</div>
+              {isUser ? (
+                // User Bubble: Crisp white card with hairline border
+                <div
+                  className="p-4 rounded-row text-sm leading-relaxed shadow-sm bg-white text-navy border border-hairline max-w-2xl"
+                  style={{ borderRadius: 'var(--radius-row)' }}
+                >
+                  <div className="whitespace-pre-wrap">{msg.content}</div>
+                </div>
+              ) : (
+                // Assistant Bubble: Signature Decidix Navy Card
+                <div
+                  className="p-5 rounded-card text-sm leading-relaxed shadow-md bg-navy text-white relative overflow-hidden w-full"
+                  style={{ borderRadius: 'var(--radius-card)' }}
+                >
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -top-8 -right-8 w-24 h-24 rounded-full"
+                    style={{
+                      background: 'radial-gradient(circle, rgba(33, 234, 244, 0.25) 0%, transparent 70%)',
+                    }}
+                  />
+                  <div className="relative z-10 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan" />
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-cyan">
+                        DECIDIX AGENT
+                      </span>
+                    </div>
 
-                {/* Optional Table Rendering */}
-                {msg.table && msg.table.headers && (
-                  <div className="mt-4 overflow-x-auto rounded-well border border-line bg-well/50">
-                    <table className="w-full text-xs text-left">
-                      <thead>
-                        <tr className="bg-well text-navy font-bold border-b border-line">
-                          {msg.table.headers.map((h, i) => (
-                            <th key={i} className="p-2.5">{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-line">
-                        {msg.table.rows?.map((row, rIdx) => (
-                          <tr key={rIdx} className="hover:bg-white">
-                            {row.map((cell, cIdx) => (
-                              <td key={cIdx} className="p-2.5 font-medium text-navy">{cell}</td>
+                    <div className="whitespace-pre-wrap text-white/95 leading-relaxed">
+                      {msg.content}
+                    </div>
+
+                    {/* Table Rendering */}
+                    {msg.table && msg.table.headers && (
+                      <div className="mt-4 overflow-x-auto rounded-well border border-white/15 bg-white/5">
+                        <table className="w-full text-xs text-left">
+                          <thead>
+                            <tr className="bg-white/10 text-cyan font-bold border-b border-white/15">
+                              {msg.table.headers.map((h, i) => (
+                                <th key={i} className="p-2.5">{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/10">
+                            {msg.table.rows?.map((row, rIdx) => (
+                              <tr key={rIdx} className="hover:bg-white/5">
+                                {row.map((cell, cIdx) => (
+                                  <td key={cIdx} className="p-2.5 font-medium text-white/90">{cell}</td>
+                                ))}
+                              </tr>
                             ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Provenance Card for Assistant */}
               {!isUser && msg.provenance && (
@@ -190,18 +221,22 @@ export const AssistantScreen: React.FC = () => {
         })}
 
         {isSending && (
-          <div className="flex items-center gap-3 p-4 rounded-card bg-white border border-line max-w-sm text-sm text-ink">
-            <div className="w-4 h-4 border-2 border-blue border-t-transparent rounded-full animate-spin"></div>
-            <span>{isRTL ? 'المساعد يقوم بفحص قاعدة البيانات وصياغة الرد...' : 'Querying database & reasoning with zero-cost model...'}</span>
+          <div className="flex items-center gap-3 p-4 rounded-row bg-navy text-white max-w-sm text-xs shadow-md border border-cyan/20">
+            <div className="w-4 h-4 border-2 border-cyan border-t-transparent rounded-full animate-spin shrink-0"></div>
+            <span className="text-white/90">
+              {isRTL
+                ? 'المساعد يقوم بفحص قاعدة البيانات وصياغة الرد...'
+                : 'Grounding in regional database records...'}
+            </span>
           </div>
         )}
 
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Suggested Prompts (if chat is short) */}
+      {/* Suggested Prompts */}
       {messages.length <= 2 && (
-        <div className="p-3 bg-white border-t border-line flex flex-wrap gap-2 items-center">
+        <div className="p-3 bg-white border-t border-hairline flex flex-wrap gap-2 items-center">
           <span className="text-[11px] font-bold text-faded-ink uppercase tracking-wider px-2">
             {isRTL ? 'أسئلة مقترحة:' : 'Suggestions:'}
           </span>
@@ -209,7 +244,7 @@ export const AssistantScreen: React.FC = () => {
             <button
               key={idx}
               onClick={() => handleSendMessage(prompt)}
-              className="text-xs bg-well hover:bg-line text-navy px-3 py-1.5 rounded-pill transition border border-line truncate max-w-xs"
+              className="text-xs bg-well hover:bg-hairline text-navy px-3.5 py-1.5 rounded-pill transition border border-hairline truncate max-w-xs font-medium"
             >
               {prompt}
             </button>
@@ -218,13 +253,13 @@ export const AssistantScreen: React.FC = () => {
       )}
 
       {/* Input Bar */}
-      <div className="p-4 bg-white border-t border-line">
+      <div className="p-3.5 bg-white border-t border-hairline">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSendMessage();
           }}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2.5"
         >
           <input
             type="text"
@@ -238,13 +273,14 @@ export const AssistantScreen: React.FC = () => {
             }
             className="decidix-input flex-1 py-3"
           />
-          <button
+          <DecidixButton
             type="submit"
+            variant="primary"
+            compact
             disabled={isSending || !inputMessage.trim()}
-            className="decidix-btn-primary px-6 py-3 font-bold text-xs"
           >
             {isRTL ? 'إرسال' : 'Send'}
-          </button>
+          </DecidixButton>
         </form>
       </div>
     </div>

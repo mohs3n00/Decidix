@@ -4,6 +4,10 @@ import { DatasetItem, DatasetStats } from '../../types';
 import { TwoToneHeading } from '../../components/TwoToneHeading';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { DecidixIcon } from '../../components/DecidixIcon';
+import { DecidixCard } from '../../components/DecidixCard';
+import { StatWell } from '../../components/StatWell';
+import { DecidixChip } from '../../components/DecidixChip';
+import { DecidixButton } from '../../components/DecidixButton';
 import { useLanguage } from '../../context/LanguageContext';
 
 export const DatasetManagementScreen: React.FC = () => {
@@ -128,11 +132,21 @@ export const DatasetManagementScreen: React.FC = () => {
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
 
+  const availableFormats: Array<'csv' | 'tsv' | 'json' | 'jsonl' | 'xlsx' | 'xls'> = [
+    'csv',
+    'tsv',
+    'json',
+    'jsonl',
+    'xlsx',
+    'xls',
+  ];
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <TwoToneHeading
+            eyebrow={isRTL ? 'إدارة البيانات والتخزين السحابي' : 'STORAGE & INGESTION PIPELINE'}
             first={isRTL ? 'إدارة' : 'Dataset'}
             second={isRTL ? 'البيانات وسحابة R2' : 'Platform & R2'}
             level={1}
@@ -145,71 +159,55 @@ export const DatasetManagementScreen: React.FC = () => {
           </p>
         </div>
 
-        <button
+        <DecidixButton
+          variant="outlined"
+          size="sm"
           onClick={loadData}
-          className="decidix-btn-secondary text-xs self-start"
+          className="self-start"
         >
           {isRTL ? 'تحديث البيانات ⟳' : 'Refresh Datasets ⟳'}
-        </button>
+        </DecidixButton>
       </div>
 
       {/* R2 & Platform Storage KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="decidix-card p-5">
-          <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-            {isRTL ? 'المجموعات النشطة' : 'Active Datasets'}
-          </div>
-          <div className="text-2xl font-bold text-navy">
-            {stats?.active_datasets || (activeDataset ? 1 : 0)}
-          </div>
-          <div className="text-xs text-blue mt-1">
-            {isRTL ? 'المصدر الأساسي للمؤشرات' : 'Grounding Analytics & AI'}
-          </div>
-        </div>
+        <StatWell
+          label={isRTL ? 'المجموعات النشطة' : 'Active Datasets'}
+          value={stats?.active_datasets || (activeDataset ? 1 : 0)}
+          subtext={isRTL ? 'المصدر الأساسي للمؤشرات' : 'Grounding Analytics & AI'}
+        />
 
-        <div className="decidix-card p-5">
-          <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-            {isRTL ? 'إجمالي السجلات المفحوصة' : 'Ingested Records'}
-          </div>
-          <div className="text-2xl font-bold text-navy">
-            {(stats?.total_records || 0).toLocaleString()}
-          </div>
-          <div className="text-xs text-emerald-600 mt-1">
-            {isRTL ? 'تم التحقق من النزاهة' : 'Verified canonical data'}
-          </div>
-        </div>
+        <StatWell
+          label={isRTL ? 'إجمالي السجلات المفحوصة' : 'Ingested Records'}
+          value={(stats?.total_records || 0).toLocaleString()}
+          subtext={isRTL ? 'تم التحقق من النزاهة' : 'Verified canonical data'}
+        />
 
-        <div className="decidix-card p-5">
-          <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
-            {isRTL ? 'استهلاك سحابة R2' : 'R2 Object Storage'}
-          </div>
-          <div className="text-2xl font-bold text-navy">
-            {formatBytes(stats?.total_storage_bytes || 0)}
-          </div>
-          <div className="text-xs text-faded-ink mt-1">
-            Bucket: <code className="text-navy font-bold">decidcix</code>
-          </div>
-        </div>
+        <StatWell
+          label={isRTL ? 'استهلاك سحابة R2' : 'R2 Object Storage'}
+          value={formatBytes(stats?.total_storage_bytes || 0)}
+          subtext="Bucket: decidcix"
+        />
 
-        <div className="decidix-card p-5">
+        <DecidixCard variant="well" className="p-4 flex flex-col justify-between">
           <div className="text-xs font-semibold text-faded-ink uppercase tracking-wider mb-1">
             {isRTL ? 'الصيغ المدعومة' : 'Supported Formats'}
           </div>
           <div className="flex flex-wrap gap-1 mt-1">
             {['CSV', 'TSV', 'JSON', 'JSONL', 'XLSX', 'XLS'].map((fmt) => (
-              <span key={fmt} className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-well text-navy">
+              <span key={fmt} className="text-[10px] font-bold px-2 py-0.5 rounded-pill bg-white border border-hairline text-navy">
                 {fmt}
               </span>
             ))}
           </div>
-        </div>
+        </DecidixCard>
       </div>
 
       {/* Direct Multi-Format Upload Card */}
-      <div className="decidix-card p-6 md:p-8 bg-white border border-blue/20">
+      <DecidixCard variant="card" className="p-6 md:p-8 bg-white border border-line">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-blue/10 text-blue flex items-center justify-center font-bold">
-            ☁
+          <div className="w-10 h-10 rounded-xl bg-blue/10 text-blue flex items-center justify-center p-2">
+            <DecidixIcon name="insights" size={22} className="text-blue" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-navy">
@@ -237,9 +235,9 @@ export const DatasetManagementScreen: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleUploadSubmit} className="space-y-5">
+        <form onSubmit={handleUploadSubmit} className="space-y-6">
           {/* File Picker Drop Area */}
-          <div className="border-2 border-dashed border-line hover:border-blue rounded-hero p-8 text-center transition bg-well/50">
+          <div className="border-2 border-dashed border-line hover:border-blue rounded-hero p-8 text-center transition bg-well/40">
             <input
               type="file"
               id="dataset-file-input"
@@ -248,7 +246,11 @@ export const DatasetManagementScreen: React.FC = () => {
               onChange={handleFileChange}
             />
             <label htmlFor="dataset-file-input" className="cursor-pointer block">
-              <div className="text-3xl mb-2">📁</div>
+              <div className="w-12 h-12 mx-auto mb-2 text-blue flex items-center justify-center">
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+              </div>
               <div className="font-bold text-navy text-sm">
                 {file ? file.name : isRTL ? 'انقر لاختيار ملف بيانات من جهازك' : 'Click to select or drag & drop dataset file'}
               </div>
@@ -260,25 +262,24 @@ export const DatasetManagementScreen: React.FC = () => {
             </label>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-ink uppercase mb-1">
-                {isRTL ? 'صيغة الملف' : 'Format'}
-              </label>
-              <select
-                value={format}
-                onChange={(e) => setFormat(e.target.value as any)}
-                className="decidix-input font-medium"
-              >
-                <option value="csv">CSV (Comma-Separated)</option>
-                <option value="tsv">TSV (Tab-Separated)</option>
-                <option value="json">JSON (Structured Array)</option>
-                <option value="jsonl">JSONL / NDJSON</option>
-                <option value="xlsx">Excel OpenXML (.xlsx)</option>
-                <option value="xls">Excel 97-2004 (.xls)</option>
-              </select>
+          {/* Format Chips Selector */}
+          <div>
+            <label className="block text-xs font-semibold text-ink uppercase mb-2">
+              {isRTL ? 'صيغة الملف المدعومة' : 'Target Format Selection'}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {availableFormats.map((fmt) => (
+                <DecidixChip
+                  key={fmt}
+                  label={fmt.toUpperCase()}
+                  selected={format === fmt}
+                  onClick={() => setFormat(fmt)}
+                />
+              ))}
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-ink uppercase mb-1">
                 {isRTL ? 'الجهة المصدرية' : 'Data Source'}
@@ -306,13 +307,13 @@ export const DatasetManagementScreen: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-3 border-t border-line">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-line">
             <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-navy">
               <input
                 type="checkbox"
                 checked={autoActivate}
                 onChange={(e) => setAutoActivate(e.target.checked)}
-                className="w-4 h-4 text-blue rounded"
+                className="w-4 h-4 text-blue rounded border-line"
               />
               <span>
                 {isRTL
@@ -321,21 +322,21 @@ export const DatasetManagementScreen: React.FC = () => {
               </span>
             </label>
 
-            <button
+            <DecidixButton
               type="submit"
+              variant="primary"
               disabled={isUploading || !file}
-              className="decidix-btn-primary px-8 text-xs font-bold"
             >
               {isUploading
                 ? isRTL ? 'جارٍ البث إلى R2 والمعالجة...' : 'Streaming to R2 & Ingesting...'
                 : isRTL ? 'رفع وتنشيط البيانات' : 'Upload & Ingest Dataset'}
-            </button>
+            </DecidixButton>
           </div>
         </form>
-      </div>
+      </DecidixCard>
 
       {/* Datasets Table */}
-      <div className="decidix-card p-6">
+      <DecidixCard variant="card" className="p-6">
         <h3 className="font-bold text-navy text-base mb-4">
           {isRTL ? 'سجل مجموعات البيانات المخزنة في المنصة' : 'Registered Dataset Repository'}
         </h3>
@@ -367,7 +368,7 @@ export const DatasetManagementScreen: React.FC = () => {
                       <div className="text-[11px] text-faded-ink font-normal">{item.coverage}</div>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-blue/10 text-blue uppercase">
+                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-pill bg-blue/10 text-blue uppercase">
                         {item.format}
                       </span>
                     </td>
@@ -379,7 +380,7 @@ export const DatasetManagementScreen: React.FC = () => {
                       {(item.active_version?.record_count || 0).toLocaleString()}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="decidix-pill-badge bg-emerald-50 text-emerald-600 font-bold text-[10px]">
+                      <span className="decidix-pill-badge bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-[10px]">
                         ACTIVE
                       </span>
                     </td>
@@ -389,7 +390,7 @@ export const DatasetManagementScreen: React.FC = () => {
             </table>
           </div>
         )}
-      </div>
+      </DecidixCard>
     </div>
   );
 };

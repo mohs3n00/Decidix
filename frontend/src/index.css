@@ -13,25 +13,60 @@
 }
 
 :root {
+  /* Decidix Exact Color Tokens (from lib/core/constants/app_colors.dart) */
   --color-navy: #061A3A;
   --color-blue: #2563EB;
   --color-cyan: #21EAF4;
+  --color-white: #FFFFFF;
   --color-mist: #F5F7FA;
-  --color-well: #F1F5FA;
   --color-line: #E3E9F2;
+  --color-hairline: #E9EEF5;
+  --color-well: #F1F5FA;
+  --color-hero-tint: #D9ECFF;
+  --color-track: #EAF0F8;
   --color-ink: #5B6B85;
   --color-faded-ink: #7D8AA0;
-  --color-white: #FFFFFF;
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
+  --color-muted-text: #8A99AD;
+  --color-hatch: rgba(6, 26, 58, 0.18);
 
-  --radius-hero: 32px;
-  --radius-card: 28px;
-  --radius-row: 24px;
+  /* Semantic Feedback Tokens */
+  --color-success: #14B87A;
+  --color-success-text: #0A8F5C;
+  --color-success-soft: #ECFDF5;
+
+  --color-danger: #E5484D;
+  --color-danger-text: #C9353A;
+  --color-danger-soft: #FEF2F2;
+
+  --color-warning: #F5A524;
+  --color-warning-text: #A56A00;
+  --color-warning-soft: #FFFBEB;
+
+  --color-blue-soft: #EFF6FF;
+  --color-cyan-soft: #E0FBFC;
+  --color-navy-soft: #EEF2F6;
+
+  /* Radius Tokens (from lib/core/constants/app_radius.dart) */
+  --radius-sm: 6px;
+  --radius-md: 10px;
   --radius-well: 18px;
+  --radius-inner: 18px;
+  --radius-row: 24px;
+  --radius-card: 28px;
+  --radius-hero: 32px;
+  --radius-bottom-nav: 36px;
+  --radius-avatar: 44px;
   --radius-pill: 9999px;
 
+  /* Shadow Tokens (from lib/core/constants/app_shadows.dart) */
+  --shadow-card: 0 10px 30px -10px rgba(6, 26, 58, 0.08);
+  --shadow-hero: 0 16px 40px -12px rgba(6, 26, 58, 0.12);
+  --shadow-bottom-nav: 0 12px 32px -8px rgba(6, 26, 58, 0.16);
+  --shadow-pill: 0 4px 12px 0 rgba(6, 26, 58, 0.08);
+  --shadow-avatar: 0 4px 10px -2px rgba(6, 26, 58, 0.20);
+  --shadow-active-tab: 0 6px 16px 0 rgba(6, 26, 58, 0.14);
+
+  /* Fonts */
   --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-arabic: 'Cairo', 'Outfit', sans-serif;
 
@@ -69,7 +104,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-line);
+  background: var(--color-hairline);
   border-radius: var(--radius-pill);
 }
 
@@ -77,12 +112,13 @@ body {
   background: var(--color-ink);
 }
 
-/* Base Utility Classes */
+/* Color Utilities */
 .bg-navy { background-color: var(--color-navy); }
 .bg-blue { background-color: var(--color-blue); }
 .bg-cyan { background-color: var(--color-cyan); }
 .bg-mist { background-color: var(--color-mist); }
 .bg-well { background-color: var(--color-well); }
+.bg-hairline { background-color: var(--color-hairline); }
 .bg-white { background-color: var(--color-white); }
 .bg-success { background-color: var(--color-success); }
 .bg-warning { background-color: var(--color-warning); }
@@ -94,13 +130,14 @@ body {
 .text-ink { color: var(--color-ink); }
 .text-faded-ink { color: var(--color-faded-ink); }
 .text-white { color: var(--color-white); }
-.text-success { color: var(--color-success); }
-.text-warning { color: var(--color-warning); }
-.text-danger { color: var(--color-danger); }
+.text-success { color: var(--color-success-text); }
+.text-warning { color: var(--color-warning-text); }
+.text-danger { color: var(--color-danger-text); }
 
-.border-line { border: 1px solid var(--color-line); }
-.border-blue { border: 1px solid var(--color-blue); }
-.border-cyan { border: 1px solid var(--color-cyan); }
+.border-line { border-color: var(--color-line); }
+.border-hairline { border-color: var(--color-hairline); }
+.border-blue { border-color: var(--color-blue); }
+.border-cyan { border-color: var(--color-cyan); }
 
 .rounded-hero { border-radius: var(--radius-hero); }
 .rounded-card { border-radius: var(--radius-card); }
@@ -108,49 +145,302 @@ body {
 .rounded-well { border-radius: var(--radius-well); }
 .rounded-pill { border-radius: var(--radius-pill); }
 
+/* Shadows */
+.shadow-decidix-card { box-shadow: var(--shadow-card); }
+.shadow-decidix-hero { box-shadow: var(--shadow-hero); }
+.shadow-decidix-pill { box-shadow: var(--shadow-pill); }
+.shadow-decidix-nav { box-shadow: var(--shadow-bottom-nav); }
+.shadow-decidix-tab { box-shadow: var(--shadow-active-tab); }
+
 /* Decidix Signature Two-Tone Heading */
 .heading-twotone {
   display: inline-flex;
   gap: 0.35em;
   align-items: baseline;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 .heading-twotone .first-word {
   color: var(--color-navy);
+  font-weight: 700;
 }
 .heading-twotone .second-word {
   color: var(--color-faded-ink);
+  font-weight: 300;
+}
+
+/* Decidix Typography Ramp (from lib/core/constants/app_typography.dart) */
+.type-heading-page {
+  font-size: 34px;
+  font-weight: 300;
+  line-height: 36px;
+  letter-spacing: -0.025em;
+}
+
+.type-heading-section {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.type-number-l {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.type-number-m {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.type-number-s {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.type-title-m {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.type-title-s {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 21px;
+}
+
+.type-body-m {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22.75px;
+}
+
+.type-label-l {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.type-label-l-strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.type-caption-regular {
+  font-size: 12px;
   font-weight: 400;
 }
 
-/* Decidix Card Styles */
+.type-caption-medium {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.type-caption-strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.type-overline-m {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-blue);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.type-overline-s {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-blue);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.type-eyebrow {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-ink);
+  text-transform: none;
+}
+
+/* Decidix Authentic Container Classes */
 .decidix-card {
   background-color: var(--color-white);
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-card);
-  box-shadow: 0 4px 20px -2px rgba(6, 26, 58, 0.04);
+  box-shadow: var(--shadow-card);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .decidix-card:hover {
-  box-shadow: 0 8px 30px -4px rgba(6, 26, 58, 0.08);
+  box-shadow: 0 14px 36px -8px rgba(6, 26, 58, 0.10);
 }
 
-.decidix-card-well {
+.decidix-card-row {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-row);
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+}
+
+.decidix-well {
   background-color: var(--color-well);
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-well);
+}
+
+.decidix-hero-card {
+  background: linear-gradient(135deg, #FFFFFF 0%, var(--color-hero-tint) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-hero);
+  box-shadow: var(--shadow-hero);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Diagonal Stripe Hatched Bar Pattern */
+.decidix-hatched-pattern {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(6, 26, 58, 0.18),
+    rgba(6, 26, 58, 0.18) 1.5px,
+    transparent 1.5px,
+    transparent 6px
+  );
+}
+
+/* Brand Cyan Glow Backdrop */
+.decidix-brand-backdrop {
+  position: relative;
+}
+.decidix-brand-backdrop::after {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -60px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(33, 234, 244, 0.22) 0%, rgba(37, 99, 235, 0.08) 40%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+[dir="rtl"] .decidix-brand-backdrop::after {
+  right: auto;
+  left: -60px;
+}
+
+/* Decidix Interactive Buttons & Chips */
+.decidix-chip {
+  height: 36px;
+  border-radius: var(--radius-pill);
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-hairline);
+  color: var(--color-ink);
+}
+.decidix-chip:hover:not(.active) {
+  background-color: var(--color-well);
+  color: var(--color-navy);
+}
+.decidix-chip.active {
+  background-color: var(--color-navy);
+  border-color: var(--color-navy);
+  color: var(--color-white);
+  box-shadow: var(--shadow-pill);
+}
+
+.decidix-btn-primary {
+  height: 52px;
+  background-color: var(--color-navy);
+  color: var(--color-white);
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: var(--radius-pill);
+  padding: 0 24px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-pill);
+}
+.decidix-btn-primary:hover:not(:disabled) {
+  background-color: #0d2854;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(6, 26, 58, 0.16);
+}
+.decidix-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.decidix-btn-brand {
+  height: 52px;
+  background-color: var(--color-blue);
+  color: var(--color-white);
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: var(--radius-pill);
+  padding: 0 24px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+.decidix-btn-brand:hover:not(:disabled) {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+}
+
+.decidix-btn-outlined {
+  height: 52px;
+  background-color: var(--color-white);
+  color: var(--color-navy);
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: var(--radius-pill);
+  padding: 0 24px;
+  border: 1px solid var(--color-hairline);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+.decidix-btn-outlined:hover:not(:disabled) {
+  background-color: var(--color-well);
+  border-color: var(--color-line);
 }
 
 .decidix-input {
   background-color: var(--color-well);
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-well);
-  padding: 12px 16px;
+  padding: 12px 18px;
   color: var(--color-navy);
-  font-size: 0.95rem;
+  font-size: 14px;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.15s ease;
   width: 100%;
 }
 .decidix-input:focus {
@@ -159,89 +449,43 @@ body {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-.decidix-btn-primary {
-  background-color: var(--color-blue);
-  color: var(--color-white);
-  font-weight: 600;
+.decidix-badge-high {
+  background-color: rgba(229, 72, 77, 0.10);
+  color: var(--color-danger-text);
   border-radius: var(--radius-pill);
-  padding: 12px 24px;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-}
-.decidix-btn-primary:hover:not(:disabled) {
-  background-color: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
-}
-.decidix-btn-primary:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.decidix-btn-secondary {
-  background-color: var(--color-well);
-  color: var(--color-navy);
+  padding: 3px 10px;
+  font-size: 11px;
   font-weight: 600;
+}
+.decidix-badge-medium {
+  background-color: rgba(245, 165, 36, 0.15);
+  color: var(--color-warning-text);
   border-radius: var(--radius-pill);
-  padding: 12px 24px;
-  border: 1px solid var(--color-line);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-}
-.decidix-btn-secondary:hover:not(:disabled) {
-  background-color: var(--color-white);
-  border-color: var(--color-ink);
-}
-
-.decidix-btn-danger {
-  background-color: #FEE2E2;
-  color: var(--color-danger);
+  padding: 3px 10px;
+  font-size: 11px;
   font-weight: 600;
-  border-radius: var(--radius-pill);
-  padding: 10px 20px;
-  border: 1px solid #FECACA;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
 }
-.decidix-btn-danger:hover {
-  background-color: #FCA5A5;
-  color: #991B1B;
-}
-
-.decidix-pill-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
+.decidix-badge-low {
+  background-color: rgba(20, 184, 122, 0.12);
+  color: var(--color-success-text);
   border-radius: var(--radius-pill);
-  font-size: 0.75rem;
+  padding: 3px 10px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
 }
-
-/* Grid & Layout Helpers */
-.layout-container {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 24px;
+.decidix-badge-info {
+  background-color: rgba(37, 99, 235, 0.10);
+  color: var(--color-blue);
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
 }
-
-@media (max-width: 768px) {
-  .layout-container {
-    padding: 16px;
-  }
+.decidix-badge-neutral {
+  background-color: rgba(91, 107, 133, 0.10);
+  color: var(--color-ink);
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
 }
