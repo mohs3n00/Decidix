@@ -626,11 +626,19 @@ export class ForecastRepository {
     }));
 
     // 2. Forecast points up to targetYear, restricted to THIS dataset version.
-    const nationalForecasts = await this.findNationalForecasts({
+    let nationalForecasts = await this.findNationalForecasts({
       validationStatus,
       horizonYear: targetYear,
       datasetVersionId: active.id,
     });
+    if (nationalForecasts.length === 0) {
+      const fallbackStatus = validationStatus === 'experimental' ? 'validated' : 'experimental';
+      nationalForecasts = await this.findNationalForecasts({
+        validationStatus: fallbackStatus,
+        horizonYear: targetYear,
+        datasetVersionId: active.id,
+      });
+    }
     if (nationalForecasts.length === 0) {
       throw AppError.unavailable(
         `No version-scoped forecasts exist for dataset ${active.version}. Generate them from the active dataset before viewing predictions.`,

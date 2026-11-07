@@ -195,23 +195,25 @@ export class MlForecasterService {
         upperBound: upper,
       });
 
-      await ForecastRepository.upsertForecast({
-        id: `fc_nat_dev_idx_${yr}_${this.MODEL_NAME}_${datasetVersionId.slice(0, 8)}`,
-        regionId: null,
-        indicatorId: 'development_index',
-        forecastYear: yr,
-        predictedValue: pred,
-        lowerBound: lower,
-        upperBound: upper,
-        confidenceLevel: 0.95,
-        modelName: this.MODEL_NAME,
-        modelVersion: this.MODEL_VERSION,
-        forecastSource: 'validated_ml_ensemble',
-        forecastMethod: 'temporal_trend_regression',
-        validationStatus: 'validated',
-        isCalibrated: true,
-        datasetVersionId,
-      });
+      for (const status of ['experimental', 'validated'] as const) {
+        await ForecastRepository.upsertForecast({
+          id: `fc_nat_dev_idx_${yr}_${this.MODEL_NAME}_${status}_${datasetVersionId.slice(0, 8)}`,
+          regionId: null,
+          indicatorId: 'development_index',
+          forecastYear: yr,
+          predictedValue: pred,
+          lowerBound: lower,
+          upperBound: upper,
+          confidenceLevel: 0.95,
+          modelName: this.MODEL_NAME,
+          modelVersion: this.MODEL_VERSION,
+          forecastSource: status === 'validated' ? 'validated_ml_ensemble' : 'ml_ensemble',
+          forecastMethod: 'temporal_trend_regression',
+          validationStatus: status,
+          isCalibrated: true,
+          datasetVersionId,
+        });
+      }
     }
 
     logger.info(`[MlForecaster] Successfully generated ${generated.length} forecasts for ${datasetVersionId}`, {

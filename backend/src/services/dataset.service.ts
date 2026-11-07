@@ -758,6 +758,11 @@ export class DatasetService {
       }
     }
   });
+    try {
+      await MlForecasterService.evaluateAndForecast(id);
+    } catch (mlErr) {
+      logger.warn('[DatasetService] ML forecasting on ingest completed with warning', { mlErr });
+    }
     return { id, record_count: records.length, status: 'ingested' };
   }
 
@@ -780,10 +785,16 @@ export class DatasetService {
         'DATASET_NOT_INGESTED'
       );
     }
-    return runInWriteTransaction(async (tx) => {
+    const activated = await runInWriteTransaction(async (tx) => {
       await tx.datasetVersion.updateMany({ data: { isActive: false }, where: { isActive: true } });
       return tx.datasetVersion.update({ where: { id }, data: { isActive: true } });
     });
+    try {
+      await MlForecasterService.evaluateAndForecast(id);
+    } catch (mlErr) {
+      logger.warn('[DatasetService] ML forecasting on activate completed with warning', { mlErr });
+    }
+    return activated;
   }
 
   static async active() {
