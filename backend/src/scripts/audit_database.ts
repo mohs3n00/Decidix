@@ -1,4 +1,6 @@
 import { prisma } from '../database/prisma.js';
+import { DatasetService } from '../services/dataset.service.js';
+import { MlForecasterService } from '../services/ml_forecaster.service.js';
 
 function safeJson(obj: unknown) {
   return JSON.stringify(obj, (_, v) => (typeof v === 'bigint' ? v.toString() : v), 2);
@@ -9,6 +11,39 @@ async function main() {
     where: { isActive: true },
   });
   console.log('ACTIVE VERSION:', safeJson(activeVersion));
+
+  // Check forecasts for active version
+  if (activeVersion) {
+    const activeForecasts = await prisma.mlForecast.findMany({
+      where: { datasetVersionId: activeVersion.id },
+    });
+    console.log(`ACTIVE VERSION FORECASTS COUNT: ${activeForecasts.length}`);
+    if (activeForecasts.length === 0) {
+      console.log('Attempting to evaluate and forecast active version...');
+      const summary = await MlForecasterService.evaluateAndForecast(activeVersion.id);
+      console.log('Forecast summary:', safeJson(summary));
+
+      // If active version was unsuitable (< 3 periods), activate the comprehensive Egypt version
+      if (summary.status === 'unsuitable_preserved_previous') {
+        const comprehensive = await prisma.datasetVersion.findFirst({
+          where: {
+            filename: { contains: 'egypt_comprehensive_dev' },
+            validationStatus: 'validated',
+          },
+          orderBy: { uploadedAt: 'desc' },
+        }) || await prisma.datasetVersion.findFirst({
+          where: { id: 'ds_demo_curated_2025_v1' },
+        });
+
+        if (comprehensive) {
+          console.log(`Switching active dataset to comprehensive: ${comprehensive.version} (${comprehensive.id})`);
+          await DatasetService.activate(comprehensive.id);
+          const compForecasts = await MlForecasterService.evaluateAndForecast(comprehensive.id);
+          console.log('Comprehensive forecast summary:', safeJson(compForecasts));
+        }
+      }
+    }
+  }
 
   const allVersions = await prisma.datasetVersion.findMany({
     select: {
