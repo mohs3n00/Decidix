@@ -47,8 +47,14 @@
 | **ML Forecast Integrity** | `MlForecasterService` audit | Out-of-sample holdout test, naive baseline benchmark, 2026–2030 forecasts generated. | **PASS** |
 | **AI Assistant Grounding** | Live Assistant API (`/v1/intelligence/assistant/chat`) | Exact retrieval of Cairo 2024 literacy (89.5%), Aswan vs Alexandria comparison. | **PASS** |
 | **Viewer Privilege Hardening** | Unit Tests + Router Audit | Viewers blocked from global activation, deletion, and reading private datasets. | **PASS** |
-| **Admin Dashboard & RBAC** | Live Android Emulator UI + Heroku API | 24 users, 34 datasets, real-time metrics, self-suspension/deletion guards active. | **PASS** |
-| **Backend Test Suite** | Local Vitest (`npm test`) | Target dataset upload, lifecycle, authorization, and auth test suites pass. | **PASS** |
+| **Admin Dashboard & RBAC** | Live Android Emulator UI + Heroku API | 28 users, 35 datasets, 114,175 bytes, real-time metrics, self-suspension/deletion guards active. | **PASS** |
+| **Admin Account Security** | Live PostgreSQL + API Auth Lifecycle | Role `admin`, bcrypt hash, password change, old password 401 rejection, session revocation. | **PASS** |
+| **Privilege Escalation Guard** | Registration & RBAC Endpoint Probes | Role `'admin'` attempt forced to `'viewer'`; non-admin blocked with 403 `ROLE_NOT_AUTHORIZED`. | **PASS** |
+| **Telemetry Strict Allowlisting**| Hostile payload + Direct PostgreSQL check | Disallowed keys (`prompt`, `records`, `token`) & nested fields purged; only allowlisted scalars persisted. | **PASS** |
+| **Admin Statistics 100% Accuracy**| Side-by-side API vs PostgreSQL aggregate query | Users, datasets, R2 storage (114,175 B), records (429), activity (10), campaigns (4) 1:1 match. | **PASS** |
+| **Real FCM Push Delivery** | Firebase Admin SDK + FCM + Android Emulator | Targeted single-user push accepted by FCM (`status: "sent"`, delivered 1, failed 0); screenshot verified. | **PASS** |
+| **Deployment Safety Guard** | Git Remotes + GitHub Actions + Dyno Audit | Only Staging exists (`release v33`); workflows require manual dispatch; zero Production impact. | **PASS** |
+| **Backend Test Suite** | Local Vitest (`npm test`) | All backend test suites passing (including admin & analytics suite). | **PASS** |
 | **Flutter Test Suite** | Local PowerShell (`flutter test`) | All 250 Flutter tests passing. | **PASS** |
 
 ---
@@ -67,3 +73,12 @@
 - Android OS on the emulator currently has **0 Google accounts** registered.
 - The Google Sign-In SDK is properly configured in Flutter with the server client ID (`50086376748-676lft8efht29skofqs9ouk3ic8nldue.apps.googleusercontent.com`).
 - Manual user interaction on the Google Play Services Sign In screen is required to link an actual Google account to the emulator device.
+
+---
+
+## 5. Admin Dashboard Final Verification Summary
+
+- **Administrator:** `admin@decidixapp.tech` (verified active in PostgreSQL, permanent credentials retained).
+- **Heroku Staging Release:** Running `release v33` with healthy status (`/health` returns HTTP 200).
+- **Push Notification Artifact:** Saved to `docs/audits/screenshots/admin/admin_push_notification_shade.png`.
+
