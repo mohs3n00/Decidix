@@ -371,6 +371,28 @@ class AppShell extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(modalContext).pop();
+                      context.push('/datasets/upload');
+                    },
+                    icon: const Icon(Icons.cloud_upload_outlined, size: 18, color: AppColors.blue),
+                    label: Text(
+                      isAr ? 'رفع وإدارة مجموعات البيانات' : 'Dataset Management & Upload',
+                      style: AppTypography.labelMStrong.copyWith(color: AppColors.blue),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.blue),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
                   child: ElevatedButton.icon(
                     onPressed: () {
                       Navigator.of(modalContext).pop();

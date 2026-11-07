@@ -588,7 +588,9 @@ central_capital,Central Capital,العاصمة,4000000,24.7,46.7,literacy_rate,L
   Widget build(BuildContext context) {
     final isAr = Directionality.of(context) == TextDirection.rtl ||
         Localizations.localeOf(context).languageCode == 'ar';
-    final canUpload = ref.watch(authNotifierProvider).isAuthenticated;
+    final user = ref.watch(authNotifierProvider).user;
+    final role = user?.role;
+    final canUpload = role == 'admin' || role == 'analyst' || (role == 'viewer' && user != null);
 
     return Scaffold(
       backgroundColor: AppColors.mist,
@@ -605,10 +607,10 @@ central_capital,Central Capital,العاصمة,4000000,24.7,46.7,literacy_rate,L
             if (!canUpload)
               _notice(
                 isAr
-                    ? 'يرجى تسجيل الدخول للتمكن من رفع وإدارة البيانات.'
-                    : 'Please log in to upload and manage datasets.',
-                AppColors.blueSoft,
-                AppColors.blue,
+                    ? 'هذه الشاشة متاحة للمسؤولين والمحللين فقط.'
+                    : 'Only administrators and analysts can upload datasets.',
+                AppColors.dangerSoft,
+                AppColors.dangerText,
               ),
             _notice(
               isAr

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
@@ -97,16 +98,39 @@ class ErrorView extends StatelessWidget {
               style: AppTypography.bodyS.copyWith(color: AppColors.ink),
             ),
             const SizedBox(height: AppSpacing.lg),
-            FilledButton(
-              onPressed: onRetry,
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.navy,
-                foregroundColor: AppColors.white,
-                minimumSize: const Size(120, 44),
-                shape: const StadiumBorder(),
-                textStyle: AppTypography.labelMStrong,
-              ),
-              child: Text(context.tr('btn_retry')),
+            Wrap(
+              spacing: 12,
+              runSpacing: 10,
+              alignment: WrapAlignment.center,
+              children: [
+                FilledButton(
+                  onPressed: onRetry,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.navy,
+                    foregroundColor: AppColors.white,
+                    minimumSize: const Size(120, 44),
+                    shape: const StadiumBorder(),
+                    textStyle: AppTypography.labelMStrong,
+                  ),
+                  child: Text(context.tr('btn_retry')),
+                ),
+                if (datasetUnavailable)
+                  OutlinedButton.icon(
+                    onPressed: () => context.push('/datasets/upload'),
+                    icon: const Icon(Icons.cloud_upload_outlined, size: 18, color: AppColors.blue),
+                    label: Text(
+                      Localizations.localeOf(context).languageCode == 'ar'
+                          ? 'إدارة ورفع البيانات'
+                          : 'Manage & Upload Datasets',
+                      style: AppTypography.labelMStrong.copyWith(color: AppColors.blue),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.blue),
+                      minimumSize: const Size(140, 44),
+                      shape: const StadiumBorder(),
+                    ),
+                  ),
+              ],
             ),
           ],
         ),

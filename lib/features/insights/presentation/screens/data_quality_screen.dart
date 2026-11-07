@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../api/models/insights.dart';
-import '../../../../core/auth/auth_controller.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/format/formatters.dart';
@@ -179,8 +178,8 @@ class DataQualityScreen extends ConsumerWidget {
 
   /// Red below 65, amber below 75, green from 75.
   bool _canUpload(WidgetRef ref) {
-    // All authenticated users can access dataset upload & management
-    return ref.watch(authNotifierProvider).isAuthenticated;
+    // Accessible to all users for browsing datasets, inspecting reports and uploading
+    return true;
   }
 
   static Color _coverageColor(double value) {
