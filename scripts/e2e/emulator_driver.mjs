@@ -48,7 +48,7 @@ function decodeEntities(value) {
     .replace(/&amp;/g, '&');
 }
 
-/** Reads the current accessibility tree as `{ desc, bounds: [x1,y1,x2,y2], clickable }[]`. */
+/** Reads the current accessibility tree as rich node objects. */
 export function nodes() {
   adb('shell', 'uiautomator', 'dump', DUMP_PATH);
   const xml = adb('exec-out', 'cat', DUMP_PATH);
@@ -56,17 +56,71 @@ export function nodes() {
   for (const match of xml.matchAll(/<node\b[^>]*>/g)) {
     const tag = match[0];
     const desc = /content-desc="([^"]*)"/.exec(tag)?.[1] ?? '';
+    const hint = /hint="([^"]*)"/.exec(tag)?.[1] ?? '';
+    const text = /text="([^"]*)"/.exec(tag)?.[1] ?? '';
+    const resourceId = /resource-id="([^"]*)"/.exec(tag)?.[1] ?? '';
+    const className = /class="([^"]*)"/.exec(tag)?.[1] ?? '';
     const boundsText = /bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/.exec(tag);
     if (!boundsText) continue;
-    const raw = decodeEntities(desc).trim();
+    const cleanDesc = decodeEntities(desc).trim();
+    const cleanHint = decodeEntities(hint).trim();
+    const cleanText = decodeEntities(text).trim();
+    const cleanId = decodeEntities(resourceId).trim();
+    const raw = cleanDesc || cleanHint || cleanText || cleanId;
     if (!raw) continue;
     result.push({
       desc: raw,
+      rawDesc: cleanDesc,
+      hint: cleanHint,
+      text: cleanText,
+      id: cleanId,
+      className,
       bounds: boundsText.slice(1, 5).map(Number),
       clickable: /clickable="true"/.test(tag),
+      focusable: /focusable="true"/.test(tag),
+      focused: /focused="true"/.test(tag),
     });
   }
   return result;
+}
+
+export function findNode(match, { clickableOnly = false, focusableOnly = false } = {}) {
+  const all = nodes();
+  const pool = all.filter(n => {
+    if (clickableOnly && !n.clickable) return false;
+    if (focusableOnly && !n.focusable) return false;
+    return true;
+  });
+
+  // 1. Exact ID match
+  const byId = pool.find(n => n.id === match);
+  if (byId) return byId;
+
+  // 2. Exact hint match (critical for Flutter text fields)
+  const byHint = pool.find(n => n.hint === match);
+  if (byHint) return byHint;
+
+  // 3. Exact rawDesc or text match
+  const byExactText = pool.find(n => n.rawDesc === match || n.text === match || n.desc === match);
+  if (byExactText) return byExactText;
+
+  // 4. Starts with match
+  const byPrefix = pool.find(n => n.rawDesc.startsWith(match) || n.text.startsWith(match));
+  if (byPrefix) return byPrefix;
+
+  // 5. Substring match prioritized by clickable / tightest length
+  const substrings = (pool.length > 0 ? pool : all).filter(n =>
+    n.desc.includes(match) || n.hint.includes(match) || n.text.includes(match) || n.id.includes(match)
+  );
+
+  if (substrings.length === 0) return null;
+
+  substrings.sort((a, b) => {
+    if (a.clickable !== b.clickable) return a.clickable ? -1 : 1;
+    return a.desc.length - b.desc.length;
+  });
+
+  return substrings[0];
 }
 
 export function waitFor(match, { timeout = 20000, interval = 700, gone = false } = {}) {
@@ -78,7 +132,7 @@ export function waitFor(match, { timeout = 20000, interval = 700, gone = false }
     } catch {
       last = [];
     }
-    const found = last.find((node) => node.desc.includes(match));
+    const found = findNode(match);
     if (gone ? !found : found) return found ?? null;
     sleepSync(interval);
   }
@@ -89,13 +143,13 @@ export function waitFor(match, { timeout = 20000, interval = 700, gone = false }
 }
 
 export function tap(match, { index = 0 } = {}) {
-  const matches = nodes().filter((node) => node.desc.includes(match));
-  if (!matches[index]) {
-    throw new Error(`No node matching "${match}" (found ${matches.length}).`);
+  const target = findNode(match, { clickableOnly: true }) || findNode(match);
+  if (!target) {
+    throw new Error(`No node matching "${match}".`);
   }
-  const [x1, y1, x2, y2] = matches[index].bounds;
+  const [x1, y1, x2, y2] = target.bounds;
   adb('shell', 'input', 'tap', String(Math.round((x1 + x2) / 2)), String(Math.round((y1 + y2) / 2)));
-  return matches[index];
+  return target;
 }
 
 export function typeText(text) {
@@ -156,6 +210,34 @@ try {
       typeText(positional[0]);
       console.log('typed');
       break;
+    case 'fill': {
+      const matchLabel = positional[0];
+      const all = nodes();
+      // Prioritize exact hint (Flutter input hint), then exact id/resource-id, then focusable/clickable matching node
+      const target = all.find(n => n.hint === matchLabel)
+                  || all.find(n => n.id === matchLabel)
+                  || all.find(n => (n.focusable || n.clickable) && (n.hint.includes(matchLabel) || n.rawDesc === matchLabel))
+                  || findNode(matchLabel);
+      if (!target) throw new Error(`Could not find field matching ${matchLabel}`);
+      const [x1, y1, x2, y2] = target.bounds;
+      const cx = Math.round((x1 + x2) / 2);
+      const cy = Math.round((y1 + y2) / 2);
+      adb('shell', 'input', 'tap', String(cx), String(cy));
+      sleepSync(250);
+      adb('shell', 'input', 'keyevent', '123'); // KEYCODE_MOVE_END
+      for (let i = 0; i < 60; i++) {
+        adb('shell', 'input', 'keyevent', '67'); // KEYCODE_DEL
+      }
+      if (positional[1]) {
+        typeText(positional[1]);
+      }
+      sleepSync(200);
+      // Dismiss soft keyboard so it does not block buttons
+      adb('shell', 'input', 'keyevent', '111'); // KEYCODE_ESCAPE
+      sleepSync(200);
+      console.log(`filled ${matchLabel} with ${positional[1]}`);
+      break;
+    }
     case 'tapxy':
       adb('shell', 'input', 'tap', positional[0], positional[1]);
       console.log('tapped');
