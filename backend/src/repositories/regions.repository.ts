@@ -99,9 +99,10 @@ export class RegionsRepository {
         return [];
       }
 
-      // Region names and coordinates in the development fixtures are fictional.
-      // Do not expose map pins until an approved administrative boundary is stored.
-      const mappableRegions = regions.filter((region) => region.boundaryGeojson != null);
+      // Map points require valid geographic coordinates or administrative boundary
+      const mappableRegions = regions.filter(
+        (region) => region.boundaryGeojson != null || (region.latitude != null && region.longitude != null)
+      );
       if (mappableRegions.length === 0) return [];
 
       // Sector filters must come from stored regional metrics. When no metric
