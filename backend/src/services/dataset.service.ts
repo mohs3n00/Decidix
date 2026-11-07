@@ -372,6 +372,7 @@ export class DatasetService {
         license: input.license,
         coverage: input.coverage,
         createdBy: userId,
+        sizeBytes: object.contentLength ? BigInt(object.contentLength) : undefined,
         validationStatus: 'uploaded',
       },
     });
@@ -407,6 +408,7 @@ export class DatasetService {
         license: input.license,
         coverage: input.coverage,
         createdBy: input.createdBy,
+        sizeBytes: BigInt(Buffer.byteLength(input.content)),
         validationStatus: 'uploaded',
       },
     });
@@ -1191,6 +1193,7 @@ export class DatasetService {
         coverage: input.coverage,
         createdBy: userId,
         recordCount: 0,
+        sizeBytes: BigInt(contentBuffer.length),
         validationStatus: 'uploaded',
       },
     });

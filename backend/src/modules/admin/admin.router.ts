@@ -72,12 +72,7 @@ adminRouter.get(
       const result = await AdminService.listUsers({ search, status, page, limit });
       sendSuccess(
         res,
-        {
-          users: result.users,
-          total: result.total,
-          page: result.page,
-          limit: result.limit,
-        },
+        result.users,
         { page: result.page, per_page: result.limit, total: result.total }
       );
     } catch (error) {

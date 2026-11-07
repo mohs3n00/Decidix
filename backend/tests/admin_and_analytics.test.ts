@@ -172,5 +172,45 @@ describe('Admin Dashboard & Platform Analytics Suite', () => {
       expect(res.status).toBe(422);
       expect(res.body.error.code).toBe('VALIDATION_ERROR');
     });
+
+    it('enforces strict allowlisting on telemetry metadata, purging unexpected, sensitive, or nested fields', () => {
+      const untrustedInput = {
+        // Allowed keys
+        screen: 'insights_overview',
+        period: '30d',
+        count: 5,
+        status: 'validated',
+        // Blocked / sensitive keys
+        prompt: 'What is the maternal mortality in Cairo?',
+        response: 'Based on CAPMAS...',
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        secret: 'supersecret',
+        records: [{ id: 1, val: 99 }],
+        // Unexpected / non-allowlisted keys
+        unexpected_field: 'should_be_stripped',
+        arbitrary_data: 'also_stripped',
+        // Nested structures
+        nested_object: { prompt: 'nested secret', count: 1 },
+        array_field: ['val1', 'val2'],
+      };
+
+      const sanitized = AnalyticsService.sanitizeMetadata(untrustedInput);
+
+      expect(sanitized).toEqual({
+        screen: 'insights_overview',
+        period: '30d',
+        count: 5,
+        status: 'validated',
+      });
+      expect(sanitized).not.toHaveProperty('prompt');
+      expect(sanitized).not.toHaveProperty('response');
+      expect(sanitized).not.toHaveProperty('token');
+      expect(sanitized).not.toHaveProperty('secret');
+      expect(sanitized).not.toHaveProperty('records');
+      expect(sanitized).not.toHaveProperty('unexpected_field');
+      expect(sanitized).not.toHaveProperty('arbitrary_data');
+      expect(sanitized).not.toHaveProperty('nested_object');
+      expect(sanitized).not.toHaveProperty('array_field');
+    });
   });
 });

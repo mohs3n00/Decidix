@@ -10,34 +10,64 @@ export interface ActivityEventInput {
 }
 
 export class AnalyticsService {
-  private static readonly DISALLOWED_METADATA_KEYS = new Set([
-    'prompt',
-    'response',
-    'content',
-    'password',
-    'token',
-    'secret',
-    'rows',
-    'records',
-    'payload',
-    'query',
+  /**
+   * Strict allowlist of safe, non-sensitive telemetry metadata keys.
+   * Any key not explicitly in this allowlist is discarded to prevent sensitive data,
+   * dataset rows, prompts, responses, conversations, or unexpected fields from entering analytics storage.
+   */
+  private static readonly ALLOWED_METADATA_KEYS = new Set([
+    'tab',
+    'screen',
+    'view_mode',
+    'theme',
+    'locale',
+    'filter',
+    'step',
+    'action',
+    'source',
+    'sector',
+    'region_id',
+    'regionid',
+    'indicator',
+    'indicator_id',
+    'indicatorid',
+    'format',
+    'file_type',
+    'period',
+    'range',
+    'status',
+    'count',
+    'year',
+    'budget_range',
+    'scenario_id',
+    'simulation_id',
   ]);
 
   /**
-   * Sanitizes metadata to strictly exclude any user input, prompts, responses, or dataset rows.
+   * Sanitizes metadata using strict allowlisting.
+   * Only allowlisted keys with primitive scalar values (string, number, boolean) are retained.
+   * Discards nested objects, arrays, unrecognized keys, and sensitive data.
    */
-  private static sanitizeMetadata(meta?: Record<string, any>): Record<string, any> | undefined {
-    if (!meta || typeof meta !== 'object') return undefined;
+  public static sanitizeMetadata(meta?: Record<string, any>): Record<string, any> | undefined {
+    if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return undefined;
 
     const clean: Record<string, any> = {};
     for (const [key, val] of Object.entries(meta)) {
       const lowerKey = key.toLowerCase();
-      if (this.DISALLOWED_METADATA_KEYS.has(lowerKey)) {
+      // Strict allowlist check
+      if (!this.ALLOWED_METADATA_KEYS.has(lowerKey)) {
         continue;
       }
-      // Only keep primitive or safe descriptive fields (e.g. format, sector, regionId, tabIndex)
-      if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
-        clean[key] = String(val).slice(0, 100);
+      // Strict primitive scalar check (rejects nested objects, arrays, functions)
+      if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if (trimmed.length > 0) {
+          clean[lowerKey] = trimmed.slice(0, 100);
+        }
+      } else if (typeof val === 'number' && Number.isFinite(val)) {
+        clean[lowerKey] = val;
+      } else if (typeof val === 'boolean') {
+        clean[lowerKey] = val;
       }
     }
     return Object.keys(clean).length > 0 ? clean : undefined;
