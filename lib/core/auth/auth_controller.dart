@@ -23,6 +23,8 @@ class DecidixUser {
   final String email;
   final String role;
   final bool emailVerified;
+  final String status;
+  final bool mustChangePassword;
 
   const DecidixUser({
     required this.id,
@@ -31,7 +33,12 @@ class DecidixUser {
     required this.email,
     required this.role,
     this.emailVerified = true,
+    this.status = 'active',
+    this.mustChangePassword = false,
   });
+
+  bool get isAdmin => role.toLowerCase() == 'admin';
+  bool get isSuspended => status.toLowerCase() == 'suspended';
 
   factory DecidixUser.fromJson(Map<String, dynamic> json) => DecidixUser(
     id: json['id'] as String,
@@ -40,6 +47,8 @@ class DecidixUser {
     email: json['email'] as String,
     role: json['role'] as String? ?? 'viewer',
     emailVerified: json['email_verified'] as bool? ?? true,
+    status: json['status'] as String? ?? 'active',
+    mustChangePassword: json['must_change_password'] as bool? ?? false,
   );
 
   Map<String, dynamic> toJson() => {
@@ -49,6 +58,8 @@ class DecidixUser {
     'email': email,
     'role': role,
     'email_verified': emailVerified,
+    'status': status,
+    'must_change_password': mustChangePassword,
   };
 }
 
@@ -674,6 +685,59 @@ class AuthNotifier extends Notifier<AuthState> {
         success: false,
         message: 'Could not send verification email. Please check your connection.',
       );
+    }
+  }
+
+  /// Changes password for the authenticated user and clears `mustChangePassword`.
+  Future<({bool success, String message})> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final cur = currentPassword.trim();
+    final next = newPassword.trim();
+    if (cur.isEmpty || next.isEmpty) {
+      return (success: false, message: 'Both current and new password are required.');
+    }
+    if (next.length < 8) {
+      return (success: false, message: 'New password must be at least 8 characters.');
+    }
+    try {
+      final api = ref.read(apiClientProvider);
+      await api.post(
+        '/auth/change-password',
+        data: {
+          'current_password': cur,
+          'new_password': next,
+        },
+      );
+
+      if (state.user != null) {
+        final updatedUser = DecidixUser(
+          id: state.user!.id,
+          name: state.user!.name,
+          arabicName: state.user!.arabicName,
+          email: state.user!.email,
+          role: state.user!.role,
+          emailVerified: state.user!.emailVerified,
+          status: state.user!.status,
+          mustChangePassword: false,
+        );
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_prefUserKey, jsonEncode(updatedUser.toJson()));
+        if (ref.mounted) {
+          state = state.copyWith(user: updatedUser);
+        }
+      }
+      return (success: true, message: 'Password updated successfully.');
+    } catch (e) {
+      debugPrint('[AuthNotifier] changePassword error: $e');
+      if (e is DioException && e.response?.data is Map) {
+        final err = (e.response!.data as Map)['error'];
+        if (err is Map && err['message'] is String) {
+          return (success: false, message: err['message'] as String);
+        }
+      }
+      return (success: false, message: 'Failed to update password. Check your current password.');
     }
   }
 

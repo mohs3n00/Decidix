@@ -56,6 +56,9 @@ class AppShell extends ConsumerWidget {
   }
 
   VoidCallback? _resolveBackButton(BuildContext context) {
+    if (_isOverviewRoot) {
+      return null;
+    }
     if (_isRegionProfile) {
       return () => context.canPop()
           ? context.pop()
@@ -65,6 +68,12 @@ class AppShell extends ConsumerWidget {
       return () => context.canPop()
           ? context.pop()
           : context.go('/insights/data-quality');
+    }
+    if (location.startsWith('/admin/') && location != '/admin') {
+      return () => context.canPop() ? context.pop() : context.go('/admin');
+    }
+    if (location == '/admin') {
+      return () => context.canPop() ? context.pop() : context.go('/overview/dashboard');
     }
     if (context.canPop()) {
       return () => context.pop();
@@ -335,6 +344,30 @@ class AppShell extends ConsumerWidget {
                     ),
                   ),
                 ),
+                if (user.isAdmin) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(modalContext).pop();
+                        context.push('/admin');
+                      },
+                      icon: const Icon(Icons.admin_panel_settings_outlined, size: 18, color: Colors.white),
+                      label: Text(
+                        isAr ? 'لوحة تحكم المشرف' : 'Admin Dashboard',
+                        style: AppTypography.labelMStrong.copyWith(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.navy,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,

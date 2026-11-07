@@ -27,6 +27,13 @@ import '../../features/decisions/presentation/screens/simulator_screen.dart';
 import '../../features/decisions/presentation/screens/development_projects_screen.dart';
 import '../../features/decisions/presentation/screens/citizen_reports_screen.dart';
 
+// Admin Screens
+import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/screens/admin_users_screen.dart';
+import '../../features/admin/presentation/screens/admin_analytics_screen.dart';
+import '../../features/admin/presentation/screens/admin_datasets_screen.dart';
+import '../../features/admin/presentation/screens/admin_notifications_screen.dart';
+
 import '../../features/auth/presentation/screens/login_screen.dart';
 import 'app_shell.dart';
 import 'not_found_screen.dart';
@@ -166,6 +173,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/decisions/reports',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: CitizenReportsScreen()),
+          ),
+
+          // 5. Admin Dashboard & Subsystems
+          GoRoute(
+            path: '/admin',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: AdminDashboardScreen()),
+          ),
+          GoRoute(
+            path: '/admin/users',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: AdminUsersScreen()),
+          ),
+          GoRoute(
+            path: '/admin/analytics',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: AdminAnalyticsScreen()),
+          ),
+          GoRoute(
+            path: '/admin/datasets',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: AdminDatasetsScreen()),
+          ),
+          GoRoute(
+            path: '/admin/notifications',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: AdminNotificationsScreen()),
           ),
         ],
       ),
