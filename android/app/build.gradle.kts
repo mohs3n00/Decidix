@@ -13,7 +13,9 @@ plugins {
 val keystorePropertiesFile = rootProject.file("key.properties")
 val keystoreProperties = Properties()
 if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+    keystorePropertiesFile.reader(Charsets.UTF_8).use { reader ->
+        keystoreProperties.load(reader)
+    }
 }
 
 android {
@@ -38,22 +40,38 @@ android {
     signingConfigs {
         create("release") {
             if (keystorePropertiesFile.exists()) {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
-                storePassword = keystoreProperties["storePassword"] as String
+                val keyAliasProp = keystoreProperties.getProperty("keyAlias")
+                val keyPasswordProp = keystoreProperties.getProperty("keyPassword")
+                val storePasswordProp = keystoreProperties.getProperty("storePassword")
+                val storeFileProp = keystoreProperties.getProperty("storeFile")
+
+                if (keyAliasProp != null && keyPasswordProp != null && storePasswordProp != null && storeFileProp != null) {
+                    keyAlias = keyAliasProp
+                    keyPassword = keyPasswordProp
+                    storePassword = storePasswordProp
+                    val resolvedStoreFile = if (file(storeFileProp).exists()) {
+                        file(storeFileProp)
+                    } else if (rootProject.file(storeFileProp).exists()) {
+                        rootProject.file(storeFileProp)
+                    } else {
+                        file(storeFileProp)
+                    }
+                    storeFile = resolvedStoreFile
+                } else {
+                    logger.warn("WARNING: android/key.properties is missing one or more required keys (keyAlias, keyPassword, storePassword, storeFile).")
+                }
             }
         }
     }
 
     buildTypes {
         release {
-            if (keystorePropertiesFile.exists()) {
+            if (keystorePropertiesFile.exists() && signingConfigs.getByName("release").storeFile?.exists() == true) {
                 signingConfig = signingConfigs.getByName("release")
             } else {
                 // No key.properties: sign with the debug key so `flutter run --release`
                 // works on a developer machine. Google Play rejects this build.
-                logger.warn("WARNING: android/key.properties not found, signing the release build with the debug key.")
+                logger.warn("WARNING: android/key.properties not found or storeFile missing, signing the release build with the debug key.")
                 signingConfig = signingConfigs.getByName("debug")
             }
         }

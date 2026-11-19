@@ -16,17 +16,23 @@ export const intelligenceService = {
     message: string;
     language?: 'en' | 'ar';
     conversation_id?: string | null;
-  }): Promise<{ reply: AssistantChatMessage; conversation_id: string; provenance?: any }> {
+    dataset_context?: any;
+  }): Promise<{ reply: { text: string; sources?: any[] }; conversation_id: string; provenance?: any }> {
     const res = await apiClient.post<{
-      reply: AssistantChatMessage;
+      reply: { text: string; sources?: any[] };
       conversation_id: string;
       provenance?: any;
     }>('/intelligence/assistant/chat', {
       message: params.message,
       language: params.language || 'en',
       conversation_id: params.conversation_id || null,
+      dataset_context: params.dataset_context || undefined,
     });
     return res.data;
+  },
+
+  async askAssistant(message: string, language: 'en' | 'ar' = 'en', conversation_id?: string | null, dataset_context?: any) {
+    return this.chatAssistant({ message, language, conversation_id, dataset_context });
   },
 
   async getRecommendations(priority?: string): Promise<Recommendation[]> {

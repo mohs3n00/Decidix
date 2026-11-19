@@ -51,14 +51,31 @@ export interface RegionReference {
 }
 
 export interface OverviewData {
+  as_of?: string;
   index: {
-    current: number;
+    score?: number;
+    current?: number;
+    max_score?: number;
     change: number;
-    band: 'low' | 'moderate_low' | 'moderate' | 'moderate_high' | 'high';
-    year: number;
+    compared_with?: string;
+    band: 'low' | 'moderate_low' | 'moderate' | 'moderate_high' | 'high' | string;
+    regions_count?: number;
+    population?: number;
+    at_risk_count?: number;
+    year?: number;
   };
+  kpis?: Array<{
+    key: string;
+    label: string;
+    arabic_label?: string;
+    value: number;
+    unit: string;
+    change?: number;
+    higher_is_better?: boolean;
+    sparkline?: number[];
+  }>;
   trend: {
-    points: TrendPoint[];
+    points: Array<{ year: number | string; value: number }>;
     range: Range;
   };
   national_index?: {
@@ -66,21 +83,36 @@ export interface OverviewData {
     change: number;
     band: string;
   };
-  top_improvers: Array<{
+  top_improvers?: Array<{
     region_id: string;
     name: string;
     arabic_name?: string;
     delta: number;
     current: number;
   }>;
-  needs_attention: Array<{
-    region_id: string;
+  needs_attention?: Array<{
+    id?: string;
+    region_id?: string;
     name: string;
     arabic_name?: string;
     score: number;
-    priority: PriorityLevel;
+    population?: number;
+    priority: PriorityLevel | string;
+    change?: number;
   }>;
-  key_indicators: Metric[];
+  key_indicators?: Metric[];
+  ai_insight?: {
+    text: string;
+    arabic_text?: string;
+  };
+  provenance?: {
+    source: string;
+    dataset_version: string;
+    observation_period: string;
+    verification_status: string;
+    disclaimer_en?: string;
+    disclaimer_ar?: string;
+  };
 }
 
 export interface MapPoint {
@@ -109,54 +141,280 @@ export interface RegionListItem {
 }
 
 export interface RegionProfile {
-  region_id: string;
+  id: string;
+  region_id?: string;
   name: string;
   arabic_name?: string;
   rank: number;
+  rank_total?: number;
   score: number;
   change: number;
   priority: PriorityLevel;
   population: number;
-  governorate?: string;
-  history: {
-    region: TrendPoint[];
-    national: TrendPoint[];
-  };
+  area_km2?: number;
+  area_available?: boolean;
   domains: Array<{
     key: string;
-    name: string;
+    label?: string;
+    name?: string;
+    arabic_label?: string;
     arabic_name?: string;
     score: number;
-    change: number;
+    is_measured?: boolean;
+    change?: number;
   }>;
-  key_metrics: Metric[];
-  strengths: string[];
-  vulnerabilities: string[];
+  history?: {
+    region: Array<{ year: number; value: number }>;
+    national: Array<{ year: number; value: number }>;
+  };
+  history_source?: string;
+  history_is_observed?: boolean;
+  ai_insight?: {
+    text: string;
+    arabic_text?: string;
+  };
+  data_quality?: {
+    score: number;
+    updated_at: string;
+    source: string;
+    is_official?: boolean;
+  };
 }
 
 export interface SectorInsightData {
   sector: Sector;
-  title: string;
+  title?: string;
   arabic_title?: string;
-  kpis: Metric[];
-  trend: TrendPoint[];
-  breakdown: Array<{
-    category: string;
-    arabic_category?: string;
-    value: number;
-    percentage: number;
-  }>;
-  indicators: Metric[];
-  ranking: {
-    top: Array<{ region_id: string; name: string; score: number }>;
-    bottom: Array<{ region_id: string; name: string; score: number }>;
+  data_classification?: string;
+  is_official?: boolean;
+  source_classification?: string;
+  dataset_version?: string;
+  index: {
+    score: number;
+    change: number;
   };
-  ai_insight: {
+  normalization?: {
+    method: string;
+    scale: number[];
+    direction_adjusted: boolean;
+    weights: string;
+    reference_year: number;
+    previous_year: number;
+    indicators_used: number;
+    indicators_missing: number;
+    note: string;
+  };
+  kpis: Array<{
+    key: string;
+    label: string;
+    arabic_label?: string;
+    value: number;
+    unit?: string;
+    change?: number;
+    higher_is_better?: boolean;
+  }>;
+  trend?: {
+    points: Array<{ year: number; value: number }>;
+  };
+  breakdown?: {
+    title: string;
+    arabic_title?: string;
+    unit: string;
+    bars: any[];
+  };
+  indicators?: Array<{
+    key: string;
+    label: string;
+    arabic_label?: string;
+    value: number;
+    unit?: string;
+  }>;
+  ranking: {
+    basis?: string;
+    top: Array<{ rank: number; region_id: string; name: string; arabic_name?: string; score: number }>;
+    bottom: Array<{ rank: number; region_id: string; name: string; arabic_name?: string; score: number }>;
+  };
+  ai_insight?: {
     text: string;
     arabic_text?: string;
-    confidence: number;
-    generated_at: string;
   };
+  provenance?: ProvenanceMeta;
+}
+
+export interface ComparisonData {
+  a: {
+    id: string;
+    name: string;
+    arabic_name?: string;
+    score: number;
+  };
+  b: {
+    id: string;
+    name: string;
+    arabic_name?: string;
+    score: number;
+  };
+  metrics: Array<{
+    key: string;
+    label: string;
+    arabic_label?: string;
+    score_a: number;
+    score_b: number;
+  }>;
+  gap_analysis: {
+    text: string;
+    arabic_text?: string;
+  };
+  provenance?: ProvenanceMeta;
+}
+
+export interface HistoricalData {
+  range: string;
+  points: Array<{ year: number; value: number }>;
+  annual_change: number;
+  milestones: any[];
+  milestones_note?: string;
+  data_classification?: string;
+  is_official?: boolean;
+  source_classification?: string;
+  dataset_version?: string;
+  provenance?: ProvenanceMeta;
+}
+
+export interface PriorityQueueItem {
+  rank: number;
+  region_id: string;
+  name: string;
+  arabic_name?: string;
+  priority: string;
+  need_score: number;
+  weakest_domain?: string | null;
+}
+
+export interface PriorityQueueData {
+  summary: {
+    high: number;
+    medium: number;
+    low: number;
+  };
+  queue: PriorityQueueItem[];
+  provenance?: ProvenanceMeta;
+}
+
+export interface DataQualityData {
+  score: number;
+  completeness: number;
+  timeliness: number;
+  accuracy: number;
+  coverage: string;
+  data_classification?: string;
+  is_official?: boolean;
+  source_classification?: string;
+  dataset_version?: string;
+  accuracy_definition?: string;
+  provenance?: ProvenanceMeta;
+  sources: Array<{
+    id: string;
+    name: string;
+    arabic_name?: string;
+    original_source?: string;
+    license?: string;
+    record_count: number;
+    frequency?: string;
+    status: string;
+    age_days?: number;
+  }>;
+}
+
+export interface SimulationResponse {
+  region_id: string;
+  horizon_months: number;
+  today_score: number;
+  projected_score: number;
+  gain: number;
+  total_package: {
+    amount: number;
+    currency: string;
+  };
+  levers: Array<{
+    domain: string;
+    amount: number;
+    gain: number;
+    yield_per_million: number;
+  }>;
+  best_lever: {
+    domain: string;
+    yield_per_million: number;
+  };
+  note: {
+    text: string;
+    arabic_text?: string;
+  };
+  metadata?: {
+    model_id: string;
+    disclaimer: string;
+  };
+  provenance?: ProvenanceMeta;
+}
+
+export interface ProjectsResponse {
+  summary: {
+    projects_count: number;
+    total_budget: {
+      amount: number;
+      currency: string;
+    };
+    delayed_count: number;
+  };
+  items: Array<{
+    id: string;
+    title: string;
+    arabic_title?: string;
+    region: {
+      region_id: string;
+      name: string;
+      arabic_name?: string;
+    };
+    status: 'planned' | 'in_progress' | 'delayed' | 'completed';
+    progress: number;
+    budget: {
+      amount: number;
+      currency: string;
+    };
+    due_date?: string | null;
+    completed_at?: string | null;
+  }>;
+}
+
+export interface CitizenReportsResponse {
+  summary: {
+    open_this_week: {
+      value: number;
+      change: number;
+      higher_is_better: boolean;
+    };
+    resolved_rate: {
+      value: number;
+      change: number;
+      higher_is_better: boolean;
+    };
+  };
+  items: Array<{
+    id: string;
+    category: string;
+    title: string;
+    arabic_title?: string;
+    region: {
+      region_id: string;
+      name: string;
+      arabic_name?: string;
+    };
+    created_at: string;
+    likes: number;
+    priority: string;
+    status: string;
+    liked_by_me?: boolean;
+  }>;
 }
 
 export interface PredictionSeriesPoint {
@@ -332,3 +590,74 @@ export interface NotificationDispatch {
   failed_count: number;
   status: 'delivered' | 'failed' | 'queued';
 }
+
+// -------------------------------------------------------------
+// Workspaces & Collaborative Teams (Multi-Tenant Architecture)
+// -------------------------------------------------------------
+
+export type WorkspaceType = 'national' | 'personal' | 'team';
+
+export interface WorkspaceContextState {
+  type: WorkspaceType;
+  id: string; // 'national' | userId | teamId
+  name: string;
+  arabicName: string;
+  activeDatasetId?: string;
+  activeDatasetName?: string;
+}
+
+export interface TeamMember {
+  userId: string;
+  name: string;
+  email: string;
+  arabicName?: string;
+  role: 'owner' | 'admin' | 'member';
+  joinedAt: string;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  arabicName?: string;
+  description?: string;
+  ownerId: string;
+  members: TeamMember[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkspaceDataset {
+  id: string;
+  name: string;
+  arabicName?: string;
+  description?: string;
+  workspaceType?: WorkspaceType;
+  workspaceId?: string;
+  uploadedBy: string;
+  uploadedByName: string;
+  uploadedByRole?: string;
+  filename: string;
+  format: string;
+  recordCount: number;
+  uploadedAt: string;
+  status: 'ready' | 'processing' | 'error';
+  approvalStatus: 'approved' | 'pending_review' | 'rejected';
+  rejectionReason?: string;
+  validatedAt?: string;
+  qualityScore: number;
+  completenessPct: number;
+  accuracyPct: number;
+  coverage: string;
+  isActiveInWorkspace?: boolean;
+  kpis?: {
+    nationalIndex: number;
+    delta: number;
+    healthScore: number;
+    educationScore: number;
+    economyScore: number;
+    infrastructureScore: number;
+    topGovernorates?: string[];
+    priorityGovernorates?: string[];
+  };
+}
+

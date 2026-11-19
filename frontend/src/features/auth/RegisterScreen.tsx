@@ -12,7 +12,6 @@ export const RegisterScreen: React.FC = () => {
   const navigate = useNavigate();
 
   const [name, setName] = useState('');
-  const [arabicName, setArabicName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,20 +21,16 @@ export const RegisterScreen: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
 
-  // Post-Registration Verification-Pending State
-  const [registrationComplete, setRegistrationComplete] = useState(false);
-  const [registeredEmail, setRegisteredEmail] = useState('');
-
   // Password Strength Calculation
   const getPasswordStrength = (pwd: string) => {
-    if (!pwd) return { score: 0, label: '', color: 'bg-line' };
+    if (!pwd) return { score: 0, label: '', color: 'bg-slate-200' };
     let score = 0;
     if (pwd.length >= 8) score += 1;
     if (/[A-Z]/.test(pwd)) score += 1;
     if (/[0-9]/.test(pwd)) score += 1;
     if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
 
-    if (score <= 1) return { score: 1, label: isRTL ? 'ضعيفة' : 'Weak', color: 'bg-danger' };
+    if (score <= 1) return { score: 1, label: isRTL ? 'ضعيفة' : 'Weak', color: 'bg-rose-500' };
     if (score === 2) return { score: 2, label: isRTL ? 'متوسطة' : 'Fair', color: 'bg-amber-500' };
     if (score === 3) return { score: 3, label: isRTL ? 'جيدة' : 'Good', color: 'bg-blue' };
     return { score: 4, label: isRTL ? 'قوية جداً' : 'Strong', color: 'bg-emerald-500' };
@@ -46,6 +41,16 @@ export const RegisterScreen: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!name.trim()) {
+      setError(isRTL ? 'الرجاء إدخال الاسم الكامل.' : 'Please enter your full name.');
+      return;
+    }
+
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+      setError(isRTL ? 'الرجاء إدخال بريد إلكتروني صالح.' : 'Please enter a valid email address.');
+      return;
+    }
 
     if (password.length < 8) {
       setError(isRTL ? 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.' : 'Password must be at least 8 characters long.');
@@ -62,13 +67,11 @@ export const RegisterScreen: React.FC = () => {
     try {
       await register({
         name,
-        arabic_name: arabicName || undefined,
         email,
         password,
       });
 
-      setRegisteredEmail(email);
-      setRegistrationComplete(true);
+      navigate('/', { replace: true, state: { registered: true, email } });
     } catch (err: any) {
       const msg = err?.message || '';
       if (msg.includes('already exists') || msg.includes('EMAIL_ALREADY_EXISTS')) {
@@ -95,269 +98,290 @@ export const RegisterScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-navy flex flex-col items-center justify-center p-4 relative overflow-hidden select-none">
-      {/* Background accents */}
-      <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-cyan/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col lg:flex-row select-none font-cairo overflow-x-hidden">
+      {/* 1. Visual Showcase Column (Desktop Hero Panel) */}
+      <div className="hidden lg:flex lg:w-1/2 xl:w-7/12 bg-gradient-to-br from-[#061A3A] via-[#082250] to-[#041028] text-white p-8 xl:p-14 flex-col justify-between relative overflow-hidden border-e border-slate-800/40">
+        <div className="absolute -top-32 -start-32 w-96 h-96 bg-blue/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -end-32 w-96 h-96 bg-cyan/15 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Language Switcher */}
-      <div className="absolute top-6 ltr:right-6 rtl:left-6 z-20">
-        <button
-          type="button"
-          onClick={toggleLanguage}
-          className="px-3.5 py-1.5 text-xs font-semibold rounded-pill bg-white/10 hover:bg-white/20 text-white transition border border-white/20 shadow-sm backdrop-blur-sm"
-        >
-          {language === 'en' ? 'العربية' : 'English'}
-        </button>
-      </div>
-
-      <div className="w-full max-w-md bg-white rounded-hero p-8 shadow-decidix-hero border border-hairline relative z-10 animate-in fade-in zoom-in-95 duration-300">
-        {/* Verification-Pending Success State */}
-        {registrationComplete ? (
-          <div className="text-center py-4 space-y-5 animate-in fade-in">
-            <div className="w-16 h-16 rounded-full bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center text-3xl mx-auto shadow-sm">
-              ✉️
-            </div>
-
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <DecidixIcon name="splash_mark" size={38} className="brightness-110 drop-shadow-md" />
             <div>
-              <h2 className="text-xl font-black text-navy">
-                {isRTL ? 'تم إنشاء الحساب بنجاح!' : 'Account Created Successfully!'}
-              </h2>
-              <p className="text-xs text-faded-ink mt-2 leading-relaxed">
-                {isRTL
-                  ? `أرسلنا رسالة تأكيد إلكترونية إلى:`
-                  : 'A verification link has been dispatched to:'}
-              </p>
-              <div className="inline-block px-3 py-1 bg-well text-blue font-mono text-xs font-bold rounded-pill mt-2 border border-line">
-                {registeredEmail}
+              <div className="text-xl font-bold tracking-tight text-white flex items-center gap-1.5">
+                <span>DECIDIX</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan animate-pulse" />
               </div>
-            </div>
-
-            {/* Verification Notice */}
-            <div className="p-4 rounded-well bg-blue/5 border border-blue/20 text-xs text-ink text-start space-y-2">
-              <div className="font-bold text-navy flex items-center gap-1.5">
-                <span>🛡️</span>
-                <span>{isRTL ? 'حالة التوثيق (Verification Pending)' : 'Email Verification Pending'}</span>
+              <div className="text-[10px] text-slate-300 font-medium">
+                {isRTL ? 'المنظومة الوطنية لدعم اتخاذ القرار' : 'National Decision Support System'}
               </div>
-              <p className="leading-relaxed">
-                {isRTL
-                  ? 'تم إنشاء حسابك بدور (Viewer). يرجى النقر على الرابط المرسل إلى بريدك الإلكتروني لتأكيد ملكية الحساب وتمكين كافة صلاحيات التحليل والرفع.'
-                  : 'Your account has been provisioned with the Viewer role. Please check your inbox and click the verification link to confirm ownership and activate full analytical access.'}
-              </p>
-            </div>
-
-            <div className="pt-2 space-y-3">
-              <DecidixButton
-                variant="primary"
-                size="lg"
-                fullWidth
-                onClick={() => navigate('/')}
-              >
-                {isRTL ? 'متابعة إلى لوحة التحكم' : 'Proceed to Dashboard'}
-              </DecidixButton>
-
-              <Link
-                to="/verify-email"
-                className="block text-xs font-bold text-blue hover:underline text-center"
-              >
-                {isRTL ? 'إدخال رمز التأكيد يدوياً أو إعادة الإرسال' : 'Enter verification token or resend email'} →
-              </Link>
             </div>
           </div>
-        ) : (
-          <>
-            {/* Brand Header */}
-            <div className="flex flex-col items-center text-center mb-6">
-              <div className="w-16 h-16 bg-navy rounded-2xl flex items-center justify-center p-3 shadow-lg mb-3 border border-white/10">
-                <DecidixIcon name="logo_white" size={40} />
+
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] text-cyan-200">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span>{isRTL ? 'عضوية بحثية مفتوحة' : 'Open Research Access'}</span>
+          </div>
+        </div>
+
+        <div className="relative z-10 my-auto py-8 space-y-6 max-w-xl">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-blue/20 border border-blue/40 text-blue-200 text-xs font-bold mb-3">
+              <DecidixIcon name="user" size={13} color="#93C5FD" />
+              <span>{isRTL ? 'انضم إلى شبكة الباحثين والمخططين' : 'Join Planners & Analysts'}</span>
+            </div>
+            <h2 className="text-3xl xl:text-4xl font-extrabold text-white leading-tight tracking-tight">
+              {isRTL
+                ? 'ابنِ دراساتك التنموية ومحاكاة سياساتك بأعلى دقة إحصائية'
+                : 'Build Regional Policy Simulations with Statistical Precision'}
+            </h2>
+            <p className="text-xs xl:text-sm text-slate-300 mt-2.5 leading-relaxed">
+              {isRTL
+                ? 'أنشئ حسابك للوصول إلى أدوات محاكاة السياسات الاستثمارية، رفع مجموعات البيانات الخاصة وتدقيقها، واستشارة المساعد الذكي المدعوم ببيانات الجهاز المركزي للتعبئة العامة والإحصاء.'
+                : 'Create an account to run investment policy simulations, ingest and audit datasets, and query AI decision support grounded in official CAPMAS statistics.'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3.5 pt-2">
+            <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15">
+              <div className="w-8 h-8 rounded-xl bg-blue/30 flex items-center justify-center text-cyan mb-2">
+                <DecidixIcon name="dataset" size={16} color="#21EAF4" />
               </div>
-              <h1 className="text-2xl font-black text-navy tracking-tight font-display">DECIDIX</h1>
-              <p className="text-xs text-faded-ink mt-1 max-w-xs leading-relaxed">
-                {isRTL
-                  ? 'إنشاء حساب جديد في منصة دعم القرار الإقليمي'
-                  : 'Create an account to access regional intelligence'}
-              </p>
+              <div className="text-xs font-bold text-white mb-1">{isRTL ? 'رفع وتدقيق البيانات' : 'Dataset Ingestion'}</div>
+              <div className="text-[11px] text-slate-300 leading-relaxed">{isRTL ? 'رفع ملفات CSV وExcel وتوليد مؤشرات فورية' : 'Ingest CSV/Excel and generate indicators'}</div>
             </div>
 
-            {/* Error Alert */}
-            {error && (
-              <div className="p-3.5 mb-5 rounded-well bg-rose-50 text-danger text-xs font-semibold border border-rose-200/80 flex items-start gap-2 animate-in fade-in">
-                <span className="shrink-0 text-base leading-none">⚠️</span>
-                <div className="flex-1">{error}</div>
-                <button type="button" onClick={() => setError(null)} className="text-rose-500 hover:text-danger font-bold text-sm leading-none">✕</button>
+            <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15">
+              <div className="w-8 h-8 rounded-xl bg-cyan/20 flex items-center justify-center text-cyan mb-2">
+                <DecidixIcon name="robot" size={16} color="#21EAF4" />
               </div>
-            )}
+              <div className="text-xs font-bold text-white mb-1">{isRTL ? 'المساعد الذكي المؤصل' : 'Grounded AI Copilot'}</div>
+              <div className="text-[11px] text-slate-300 leading-relaxed">{isRTL ? 'إجابات مدعومة بسجلات إحصائية موثقة' : 'Answers grounded in authoritative evidence'}</div>
+            </div>
+          </div>
+        </div>
 
-            {/* Google Fast Register */}
-            <div className="mb-5">
-              <GoogleSignInButton
-                onSuccess={handleGoogleSuccess}
-                onError={(err) => setError(err)}
-                isLoading={isGoogleSubmitting}
+        <div className="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
+          <span>{isRTL ? 'منظومة ديسيدكس © 2026' : 'DECIDIX System © 2026'}</span>
+          <span>{isRTL ? 'حماية البيانات وفق القانون المصري 151 لسنة 2020' : 'Data Protected under Law 151/2020'}</span>
+        </div>
+      </div>
+
+      {/* 2. Registration Widget Column */}
+      <div className="w-full lg:w-1/2 xl:w-5/12 flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 bg-white overflow-y-auto">
+        <div className="flex items-center justify-between pb-4">
+          <Link to="/" className="inline-flex items-center gap-2 lg:hidden">
+            <DecidixIcon name="splash_mark" size={32} />
+            <span className="text-lg font-bold text-[#061A3A]">DECIDIX</span>
+          </Link>
+
+          <div className="ms-auto">
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="h-8 px-3 text-xs font-bold rounded-lg bg-slate-50 hover:bg-slate-100 text-[#061A3A] transition border border-slate-200 shadow-2xs flex items-center gap-1.5"
+            >
+              <DecidixIcon name="globe" size={13} color="#0052FF" />
+              <span>{language === 'en' ? 'العربية' : 'English'}</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="max-w-md w-full mx-auto my-auto py-2">
+          <div className="mb-5">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-blue mb-1">
+              {isRTL ? 'تسجيل عضوية جديدة' : 'ACCOUNT REGISTRATION'}
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#061A3A] tracking-tight">
+              {isRTL ? 'إنشاء حساب جديد' : 'Create an Account'}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              {isRTL
+                ? 'انضم إلى نخبة الباحثين وصناع القرار في المنظومة الوطنية.'
+                : 'Join researchers and decision-makers in the national system.'}
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-3.5 mb-5 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200/80 flex items-start gap-2.5 animate-in fade-in">
+              <DecidixIcon name="warning" size={16} color="#E11D48" />
+              <div className="flex-1 leading-relaxed">{error}</div>
+              <button
+                type="button"
+                onClick={() => setError(null)}
+                className="text-rose-500 hover:text-rose-700 p-0.5 rounded transition"
+              >
+                <DecidixIcon name="x" size={14} color="currentColor" />
+              </button>
+            </div>
+          )}
+
+          <div className="mb-4">
+            <GoogleSignInButton
+              onSuccess={handleGoogleSuccess}
+              onError={(err) => setError(err)}
+              isLoading={isGoogleSubmitting}
+            />
+          </div>
+
+          <div className="flex items-center my-4">
+            <div className="flex-1 h-px bg-slate-200/80" />
+            <span className="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap shrink-0">
+              {isRTL ? 'أو عبر البريد الإلكتروني' : 'or with email'}
+            </span>
+            <div className="flex-1 h-px bg-slate-200/80" />
+          </div>
+
+          <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
+            <div>
+              <label className="block text-xs font-bold text-[#061A3A] mb-1">
+                {isRTL ? 'الاسم الكامل' : 'Full Name'} *
+              </label>
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-[#061A3A] placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-blue/15 focus:border-blue transition-colors bg-slate-50/70 outline-none"
+                placeholder={isRTL ? 'د. أحمد حسن' : 'Dr. Ahmed Hassan'}
+                autoComplete="name"
               />
             </div>
 
-            {/* Divider */}
-            <div className="relative flex items-center justify-center mb-5">
-              <div className="border-t border-line w-full"></div>
-              <span className="bg-white px-3 text-[11px] font-semibold text-faded-ink uppercase tracking-wider">
-                {isRTL ? 'أو التسجيل عبر البريد' : 'or register with email'}
-              </span>
-              <div className="border-t border-line w-full"></div>
+            <div>
+              <label className="block text-xs font-bold text-[#061A3A] mb-1">
+                {isRTL ? 'البريد الإلكتروني' : 'Email Address'} *
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-[#061A3A] placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-blue/15 focus:border-blue transition-colors bg-slate-50/70 outline-none"
+                placeholder="user@decidixapp.tech"
+                autoComplete="email"
+              />
             </div>
 
-            {/* Registration Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-navy mb-1.5">
-                  {isRTL ? 'الاسم الكامل' : 'Full Name'} *
-                </label>
+            <div>
+              <label className="block text-xs font-bold text-[#061A3A] mb-1">
+                {isRTL ? 'كلمة المرور' : 'Password'} *
+              </label>
+              <div className="relative">
                 <input
-                  type="text"
+                  type={showPassword ? 'text' : 'password'}
                   required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="decidix-input text-sm w-full"
-                  placeholder="e.g. Dr. Ahmed Hassan"
-                  autoComplete="name"
+                  minLength={8}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full h-10 ltr:pl-3.5 ltr:pr-10 rtl:pr-3.5 rtl:pl-10 rounded-xl border border-slate-200 text-xs text-[#061A3A] placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-blue/15 focus:border-blue transition-colors bg-slate-50/70 outline-none font-mono"
+                  placeholder="••••••••"
+                  autoComplete="new-password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute ltr:right-3 rtl:left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#061A3A] p-1 transition"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  <DecidixIcon name={showPassword ? 'eye_slash' : 'eye'} size={15} color="currentColor" />
+                </button>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-navy mb-1.5">
-                  {isRTL ? 'الاسم بالعربية (اختياري)' : 'Arabic Name (Optional)'}
-                </label>
-                <input
-                  type="text"
-                  value={arabicName}
-                  onChange={(e) => setArabicName(e.target.value)}
-                  className="decidix-input text-sm w-full"
-                  placeholder="مثال: د. أحمد حسن"
-                  dir="rtl"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-navy mb-1.5">
-                  {isRTL ? 'البريد الإلكتروني' : 'Email Address'} *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="decidix-input text-sm w-full"
-                  placeholder="user@decidixapp.tech"
-                  autoComplete="email"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-navy mb-1.5">
-                  {isRTL ? 'كلمة المرور' : 'Password'} *
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    minLength={8}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="decidix-input text-sm w-full ltr:pr-10 rtl:pl-10"
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute ltr:right-3 rtl:left-3 top-1/2 -translate-y-1/2 text-faded-ink hover:text-navy text-xs font-bold p-1"
-                  >
-                    {showPassword ? '👁️' : '👁️‍🗨️'}
-                  </button>
-                </div>
-
-                {/* Password Strength Indicator */}
-                {password && (
-                  <div className="mt-2 space-y-1">
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-faded-ink">{isRTL ? 'قوة كلمة المرور:' : 'Password strength:'}</span>
-                      <span className="font-bold text-navy">{strength.label}</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-line rounded-full overflow-hidden flex gap-1">
-                      {[1, 2, 3, 4].map((step) => (
-                        <div
-                          key={step}
-                          className={`h-full flex-1 transition-all ${
-                            step <= strength.score ? strength.color : 'bg-transparent'
-                          }`}
-                        />
-                      ))}
-                    </div>
+              {password && (
+                <div className="mt-1.5 space-y-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500">{isRTL ? 'قوة كلمة المرور:' : 'Password strength:'}</span>
+                    <span className="font-bold text-[#061A3A]">{strength.label}</span>
                   </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-navy mb-1.5">
-                  {isRTL ? 'تأكيد كلمة المرور' : 'Confirm Password'} *
-                </label>
-                <div className="relative">
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    required
-                    minLength={8}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`decidix-input text-sm w-full ltr:pr-10 rtl:pl-10 ${
-                      confirmPassword && confirmPassword !== password ? 'border-danger' : ''
-                    }`}
-                    placeholder="••••••••"
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute ltr:right-3 rtl:left-3 top-1/2 -translate-y-1/2 text-faded-ink hover:text-navy text-xs font-bold p-1"
-                  >
-                    {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-                  </button>
+                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex gap-1">
+                    {[1, 2, 3, 4].map((step) => (
+                      <div
+                        key={step}
+                        className={`h-full flex-1 transition-all ${
+                          step <= strength.score ? strength.color : 'bg-transparent'
+                        }`}
+                      />
+                    ))}
+                  </div>
                 </div>
-                {confirmPassword && confirmPassword !== password && (
-                  <p className="text-[11px] text-danger font-medium mt-1">
-                    {isRTL ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match'}
-                  </p>
-                )}
-              </div>
-
-              <div className="pt-2">
-                <DecidixButton
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  fullWidth
-                  disabled={isSubmitting || isGoogleSubmitting}
-                >
-                  {isSubmitting
-                    ? isRTL ? 'جارٍ إنشاء الحساب...' : 'Creating Account...'
-                    : isRTL ? 'إنشاء حساب جديد' : 'Create Account'}
-                </DecidixButton>
-              </div>
-            </form>
-
-            {/* Switch to Login */}
-            <div className="mt-6 pt-5 border-t border-line text-center">
-              <p className="text-xs text-ink">
-                {isRTL ? 'لديك حساب بالفعل؟' : 'Already have an account?'}{' '}
-                <Link
-                  to="/login"
-                  className="font-bold text-blue hover:underline"
-                >
-                  {isRTL ? 'تسجيل الدخول' : 'Sign In'}
-                </Link>
-              </p>
+              )}
             </div>
-          </>
-        )}
+
+            <div>
+              <label className="block text-xs font-bold text-[#061A3A] mb-1">
+                {isRTL ? 'تأكيد كلمة المرور' : 'Confirm Password'} *
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  required
+                  minLength={8}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={`w-full h-10 ltr:pl-3.5 ltr:pr-10 rtl:pr-3.5 rtl:pl-10 rounded-xl border text-xs text-[#061A3A] placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-blue/15 focus:border-blue transition-colors bg-slate-50/70 outline-none font-mono ${
+                    confirmPassword && confirmPassword !== password ? 'border-rose-400' : 'border-slate-200'
+                  }`}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute ltr:right-3 rtl:left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#061A3A] p-1 transition"
+                  title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                >
+                  <DecidixIcon name={showConfirmPassword ? 'eye_slash' : 'eye'} size={15} color="currentColor" />
+                </button>
+              </div>
+              {confirmPassword && confirmPassword !== password && (
+                <p className="text-[11px] text-rose-600 font-medium mt-1">
+                  {isRTL ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match'}
+                </p>
+              )}
+            </div>
+
+            <div className="pt-2">
+              <DecidixButton
+                type="submit"
+                variant="primary"
+                size="lg"
+                fullWidth
+                disabled={isSubmitting || isGoogleSubmitting}
+                className="h-11 rounded-xl text-xs font-bold shadow-sm"
+              >
+                {isSubmitting
+                  ? (isRTL ? 'جارٍ إنشاء الحساب...' : 'Creating Account...')
+                  : (isRTL ? 'إنشاء حساب جديد' : 'Create Account')}
+              </DecidixButton>
+            </div>
+          </form>
+
+          <div className="mt-5 pt-4 border-t border-slate-100 text-center space-y-2.5">
+            <p className="text-xs text-slate-600">
+              {isRTL ? 'لديك حساب بالفعل؟' : 'Already have an account?'}{' '}
+              <Link
+                to="/login"
+                className="font-bold text-blue hover:text-blue-600 transition"
+              >
+                {isRTL ? 'تسجيل الدخول' : 'Sign In'}
+              </Link>
+            </p>
+            <div>
+              <Link
+                to="/"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-[#061A3A] transition shadow-2xs"
+              >
+                <span>{isRTL ? 'تصفح المنظومة كزائر' : 'Browse Decidix as Guest'}</span>
+                <DecidixIcon name="arrow_right" size={13} color="currentColor" />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-slate-100 text-center text-[11px] text-slate-400">
+          <span>{isRTL ? 'منظومة ديسيدكس الوطنية للذكاء التنموي لدعم القرار الإقليمي' : 'Decidix National Decision Support Intelligence System'}</span>
+        </div>
       </div>
     </div>
   );

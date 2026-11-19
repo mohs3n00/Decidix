@@ -22,6 +22,7 @@ import { adminRouter } from './modules/admin/admin.router.js';
 import { analyticsRouter } from './modules/analytics/analytics.router.js';
 import { notificationsRouter } from './modules/notifications/notifications.router.js';
 import { datasetsRouter } from './modules/datasets/datasets.router.js';
+import { teamsRouter } from './modules/teams/teams.router.js';
 
 export function createApp(): Express {
   const app = express();
@@ -109,6 +110,7 @@ export function createApp(): Express {
 
   v1.use('/auth', authRouter);
   v1.use('/datasets', datasetsRouter);
+  v1.use('/teams', teamsRouter);
   v1.use(overviewRouter);
   v1.use(insightsRouter);
   v1.use(intelligenceRouter);

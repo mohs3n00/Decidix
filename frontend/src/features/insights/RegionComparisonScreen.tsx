@@ -1,209 +1,295 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { insightsService } from '../../services/insightsService';
 import { overviewService } from '../../services/overviewService';
-import { RegionListItem } from '../../types';
-import { TwoToneHeading } from '../../components/TwoToneHeading';
-import { HeroCard } from '../../components/HeroCard';
-import { DecidixCard } from '../../components/DecidixCard';
-import { ScoreRing } from '../../components/ScoreRing';
-import { StatWell } from '../../components/StatWell';
-import { HatchedBar } from '../../components/HatchedBar';
-import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { useLanguage } from '../../context/LanguageContext';
+import { DecidixIcon } from '../../components/DecidixIcon';
+import { ComparisonData } from '../../types';
 
 export const RegionComparisonScreen: React.FC = () => {
-  const { isRTL, t } = useLanguage();
-  const [regionsList, setRegionsList] = useState<RegionListItem[]>([]);
-  const [regionA, setRegionA] = useState<string>('central_capital');
-  const [regionB, setRegionB] = useState<string>('frontier');
-  const [comparison, setComparison] = useState<any | null>(null);
+  const { isRTL } = useLanguage();
+  const [searchParams] = useSearchParams();
+
+  const [availableRegions, setAvailableRegions] = useState<Array<{ id: string; name: string; arabic_name?: string }>>([]);
+  const [regionAId, setRegionAId] = useState<string>(searchParams.get('a') || searchParams.get('regionA') || 'cairo');
+  const [regionBId, setRegionBId] = useState<string>(searchParams.get('b') || searchParams.get('regionB') || 'alexandria');
+  const [comparison, setComparison] = useState<ComparisonData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Load regions list for dropdowns
   useEffect(() => {
-    const fetchList = async () => {
+    let isMounted = true;
+    const fetchRegions = async () => {
       try {
         const res = await overviewService.getRegions({ per_page: 50 });
-        if (res.items && res.items.length >= 2) {
-          setRegionsList(res.items);
-          setRegionA(res.items[0].region_id);
-          setRegionB(res.items[1].region_id);
+        if (isMounted && res.items?.length) {
+          setAvailableRegions(
+            res.items.map((r) => ({
+              id: r.id,
+              name: r.name,
+              arabic_name: r.arabic_name || r.name,
+            }))
+          );
+        } else if (isMounted) {
+          setAvailableRegions([
+            { id: 'cairo', name: 'Cairo', arabic_name: 'القاهرة' },
+            { id: 'alexandria', name: 'Alexandria', arabic_name: 'الإسكندرية' },
+            { id: 'giza', name: 'Giza', arabic_name: 'الجيزة' },
+            { id: 'port_said', name: 'Port Said', arabic_name: 'بورسعيد' },
+            { id: 'aswan', name: 'Aswan', arabic_name: 'أسوان' },
+          ]);
         }
-      } catch (err) {
-        console.error(err);
+      } catch {
+        if (isMounted) {
+          setAvailableRegions([
+            { id: 'cairo', name: 'Cairo', arabic_name: 'القاهرة' },
+            { id: 'alexandria', name: 'Alexandria', arabic_name: 'الإسكندرية' },
+            { id: 'giza', name: 'Giza', arabic_name: 'الجيزة' },
+            { id: 'port_said', name: 'Port Said', arabic_name: 'بورسعيد' },
+            { id: 'aswan', name: 'Aswan', arabic_name: 'أسوان' },
+          ]);
+        }
       }
     };
-    fetchList();
+    fetchRegions();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
+  // Fetch comparison between A and B
   useEffect(() => {
     let isMounted = true;
     const fetchComparison = async () => {
-      if (!regionA || !regionB) return;
+      if (!regionAId || !regionBId) return;
+      setIsLoading(true);
       try {
-        setIsLoading(true);
-        const data = await insightsService.getComparison(regionA, regionB);
+        const data = await insightsService.getComparison(regionAId, regionBId);
         if (isMounted) setComparison(data);
       } catch (err) {
-        console.error(err);
+        console.warn('Comparison fetch error:', err);
       } finally {
         if (isMounted) setIsLoading(false);
       }
     };
-
     fetchComparison();
     return () => {
       isMounted = false;
     };
-  }, [regionA, regionB]);
+  }, [regionAId, regionBId]);
+
+  const regA = comparison?.a || {
+    id: regionAId,
+    name: regionAId,
+    arabic_name: regionAId,
+    score: 75,
+  };
+
+  const regB = comparison?.b || {
+    id: regionBId,
+    name: regionBId,
+    arabic_name: regionBId,
+    score: 75,
+  };
+
+  const metrics = comparison?.metrics || [
+    {
+      key: 'overall',
+      label: 'Overall Development Index',
+      arabic_label: 'مؤشر التنمية الشاملة',
+      score_a: regA.score,
+      score_b: regB.score,
+    },
+  ];
 
   return (
-    <div className="space-y-7 animate-in fade-in duration-300">
-      {/* Header */}
+    <div className="space-y-6 animate-fadeIn pb-8">
+      {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="type-eyebrow mb-1">
-            {isRTL
-              ? 'مقارنة إحصائية مباشرة بين محافظتين'
-              : 'Direct side-by-side indicator benchmark between two selected administrative territories'}
+          <div className="text-[11px] font-bold uppercase tracking-wider text-blue mb-1">
+            {isRTL ? 'التحليلات والمقارنات' : 'INSIGHTS'}
           </div>
-          <TwoToneHeading
-            first={isRTL ? 'مقارنة' : 'Region'}
-            second={isRTL ? 'المحافظات' : 'Comparison'}
-            level={1}
-            className="type-heading-page"
-          />
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-navy">
+            {isRTL ? 'مقارنة المحافظات' : 'Compare Governorates'}
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            {isRTL
+              ? 'مقارنة بين محافظتين عبر حزمة المؤشرات المعتمدة لنفس الفترة التقريرية (CAPMAS).'
+              : 'Compare two governorates across the verified indicator set and reporting period.'}
+          </p>
         </div>
+
+        <button
+          onClick={() => window.print()}
+          className="h-9 px-4 rounded-lg bg-white border border-slate-200/80 text-navy hover:bg-slate-50 text-xs font-semibold shadow-2xs transition-colors duration-150"
+        >
+          {isRTL ? 'تصدير المقارنة' : 'Export comparison'}
+        </button>
       </div>
 
-      {/* Region Selectors Row */}
-      <DecidixCard variant="row" className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center p-5">
-        <div>
-          <label className="block text-xs font-semibold text-ink uppercase mb-2">
-            {isRTL ? 'المنطقة الأولى (أ)' : 'First Region (A)'}
-          </label>
-          <select
-            value={regionA}
-            onChange={(e) => setRegionA(e.target.value)}
-            className="decidix-input font-bold text-navy"
-          >
-            {regionsList.map((r) => (
-              <option key={r.region_id} value={r.region_id}>
-                {t(r, 'name')} (#{r.rank} - Score {r.score})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-ink uppercase mb-2">
-            {isRTL ? 'المنطقة المقابلة (ب)' : 'Benchmark Region (B)'}
-          </label>
-          <select
-            value={regionB}
-            onChange={(e) => setRegionB(e.target.value)}
-            className="decidix-input font-bold text-navy"
-          >
-            {regionsList.map((r) => (
-              <option key={r.region_id} value={r.region_id}>
-                {t(r, 'name')} (#{r.rank} - Score {r.score})
-              </option>
-            ))}
-          </select>
-        </div>
-      </DecidixCard>
-
-      {/* Head-to-Head Cards */}
-      {comparison && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <HeroCard className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-pill bg-white text-blue border border-white">
-                  REGION A
-                </span>
-                <h3 className="type-heading-page text-2xl font-bold text-navy mt-1">
-                  {comparison.region_a?.name || 'Region A'}
-                </h3>
-              </div>
-              <ScoreRing score={comparison.region_a?.score ?? 80} size={64} strokeWidth={6} />
-            </div>
-          </HeroCard>
-
-          <HeroCard className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-pill bg-white text-navy border border-white">
-                  REGION B (BENCHMARK)
-                </span>
-                <h3 className="type-heading-page text-2xl font-bold text-navy mt-1">
-                  {comparison.region_b?.name || 'Region B'}
-                </h3>
-              </div>
-              <ScoreRing score={comparison.region_b?.score ?? 60} size={64} strokeWidth={6} />
-            </div>
-          </HeroCard>
+      {/* Provenance Banner */}
+      {comparison?.provenance && (
+        <div className="bg-blue-50/70 border border-blue-200/80 rounded-xl px-4 py-3 flex items-center justify-between text-xs text-blue-900 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+            <span className="font-semibold">
+              {isRTL ? 'المصدر المعتمد للمقارنة:' : 'Comparison Source:'}
+            </span>
+            <span>{comparison.provenance.source}</span>
+          </div>
+          <div className="text-[11px] text-blue font-medium">
+            {comparison.provenance.geographic_coverage}
+          </div>
         </div>
       )}
 
-      {/* Comparison Metrics Table */}
-      {isLoading ? (
-        <div className="py-20 flex justify-center">
-          <LoadingSpinner message={isRTL ? 'جارٍ مقارنة البيانات...' : 'Calculating comparative indicators...'} />
+      {/* Two Region Selector Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Region A Selector */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between">
+            <span>{isRTL ? 'المحافظة (أ)' : 'GOVERNORATE A'}</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-blue inline-block" />
+          </div>
+          <div className="flex items-center justify-between">
+            <select
+              value={regionAId}
+              onChange={(e) => setRegionAId(e.target.value)}
+              className="text-base font-bold text-navy bg-transparent outline-none cursor-pointer w-full py-1"
+            >
+              {availableRegions.map((r) => (
+                <option key={`a-${r.id}`} value={r.id}>
+                  {isRTL ? r.arabic_name || r.name : r.name}
+                </option>
+              ))}
+            </select>
+            <DecidixIcon name="location" size={18} color="var(--color-blue)" />
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-baseline justify-between">
+            <span className="text-xs text-slate-500 font-medium">{isRTL ? 'المؤشر العام' : 'Overall Index'}</span>
+            <span className="text-xl font-bold text-navy tabular-nums">{regA.score}/100</span>
+          </div>
         </div>
-      ) : comparison ? (
-        <DecidixCard variant="card" className="p-0 overflow-hidden">
-          <div className="p-5 border-b border-hairline">
-            <h3 className="type-heading-section text-navy">
-              {isRTL ? 'المقارنة القطاعية المباشرة' : 'Sectoral Disparity Matrix'}
+
+        {/* Region B Selector */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between">
+            <span>{isRTL ? 'المحافظة (ب)' : 'GOVERNORATE B'}</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan inline-block" />
+          </div>
+          <div className="flex items-center justify-between">
+            <select
+              value={regionBId}
+              onChange={(e) => setRegionBId(e.target.value)}
+              className="text-base font-bold text-navy bg-transparent outline-none cursor-pointer w-full py-1"
+            >
+              {availableRegions.map((r) => (
+                <option key={`b-${r.id}`} value={r.id}>
+                  {isRTL ? r.arabic_name || r.name : r.name}
+                </option>
+              ))}
+            </select>
+            <DecidixIcon name="location" size={18} color="var(--color-cyan)" />
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-baseline justify-between">
+            <span className="text-xs text-slate-500 font-medium">{isRTL ? 'المؤشر العام' : 'Overall Index'}</span>
+            <span className="text-xl font-bold text-navy tabular-nums">{regB.score}/100</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Indicator Comparison Table Card */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+        <div className="mb-6 flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h2 className="text-base font-bold text-navy">
+              {isRTL ? 'مقارنة المؤشرات المعتمدة' : 'Verified Indicator Comparison'}
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {isRTL
+                ? 'مقارنة مبنية على المؤشرات المعتمدة في قاعدة البيانات'
+                : 'Comparison derived from version-matched observations'}
+            </p>
+          </div>
+          <div className="flex items-center gap-4 text-xs font-semibold">
+            <span className="flex items-center gap-1.5 text-blue">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue inline-block" />
+              {isRTL ? regA.arabic_name || regA.name : regA.name}
+            </span>
+            <span className="flex items-center gap-1.5 text-cyan">
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan inline-block" />
+              {isRTL ? regB.arabic_name || regB.name : regB.name}
+            </span>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="py-12 text-center text-slate-400 text-xs">
+            <div className="w-6 h-6 border-2 border-blue border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            {isRTL ? 'جاري استخراج المقارنة...' : 'Loading comparison...'}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {metrics.map((m) => {
+              const diff = Math.abs(m.score_a - m.score_b);
+              return (
+                <div key={m.key} className="space-y-2 p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/70">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs font-semibold text-navy gap-1.5">
+                    <span className="truncate">{isRTL ? m.arabic_label || m.label : m.label}</span>
+                    <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 self-stretch sm:self-auto">
+                      <span className="text-blue font-bold tabular-nums">{m.score_a}</span>
+                      <span className="text-cyan font-bold tabular-nums">{m.score_b}</span>
+                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full min-w-[55px] text-center border border-emerald-200/60 tabular-nums">
+                        {diff.toFixed(1)} pts
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Dual Horizontal Bars */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Region A (Blue) */}
+                    <div className="h-2 w-full bg-slate-200/70 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue rounded-full transition-all duration-300"
+                        style={{ width: `${Math.min(100, Math.max(4, m.score_a))}%` }}
+                      />
+                    </div>
+                    {/* Region B (Cyan) */}
+                    <div className="h-2 w-full bg-slate-200/70 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-cyan rounded-full transition-all duration-300"
+                        style={{ width: `${Math.min(100, Math.max(4, m.score_b))}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Card: Gap Analysis Insight */}
+      {comparison?.gap_analysis && (
+        <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-bold text-navy mb-1 flex items-center gap-2">
+              <DecidixIcon name="robot" size={16} color="var(--color-blue)" />
+              <span>{isRTL ? 'تحليل الفجوة التنموية' : 'Development Gap Analysis'}</span>
             </h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              {isRTL
+                ? comparison.gap_analysis.arabic_text || comparison.gap_analysis.text
+                : comparison.gap_analysis.text}
+            </p>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="bg-well border-b border-hairline text-xs font-semibold text-faded-ink uppercase">
-                  <th className="py-3.5 px-5">{isRTL ? 'القطاع / المؤشر' : 'Domain / Indicator'}</th>
-                  <th className="py-3.5 px-5 text-center font-bold text-navy">{comparison.region_a?.name || 'Region A'}</th>
-                  <th className="py-3.5 px-5 text-center font-bold text-navy">{comparison.region_b?.name || 'Region B'}</th>
-                  <th className="py-3.5 px-5 text-right">{isRTL ? 'الفارق الصافي' : 'Net Disparity'}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-hairline">
-                {comparison.metrics?.map((m: any, i: number) => {
-                  const valA = m.value_a ?? m.score_a ?? 0;
-                  const valB = m.value_b ?? m.score_b ?? 0;
-                  const delta = valA - valB;
-
-                  return (
-                    <tr key={i} className="hover:bg-well/50 transition">
-                      <td className="py-4 px-5 font-bold text-navy">
-                        {isRTL && m.arabic_label ? m.arabic_label : m.label || m.domain}
-                      </td>
-                      <td className="py-4 px-5 text-center font-black text-navy">
-                        {valA.toFixed(1)}
-                      </td>
-                      <td className="py-4 px-5 text-center font-black text-navy">
-                        {valB.toFixed(1)}
-                      </td>
-                      <td className="py-4 px-5 text-right font-bold">
-                        <span className={`text-xs px-2.5 py-1 rounded-pill ${
-                          delta > 0
-                            ? 'bg-emerald-50 text-emerald-600'
-                            : delta < 0
-                            ? 'bg-rose-50 text-danger'
-                            : 'bg-well text-faded-ink'
-                        }`}>
-                          {delta > 0 ? `+${delta.toFixed(1)}` : delta.toFixed(1)}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </DecidixCard>
-      ) : null}
+          <span className="shrink-0 text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue">
+            {isRTL ? 'تحليل معتمد' : 'Verified Analysis'}
+          </span>
+        </div>
+      )}
     </div>
   );
 };

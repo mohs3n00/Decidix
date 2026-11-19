@@ -13,8 +13,14 @@ const uploadGuard = (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) {
     return next(AppError.unauthorized('Authentication required.', 'UNAUTHORIZED'));
   }
-  // When viewer uploads are explicitly enabled (e.g. dev/staging configuration), allow viewers to upload
-  if (process.env.ALLOW_VIEWER_UPLOADS === 'true') {
+  // When viewer uploads are explicitly enabled or scoped to personal/team workspaces, allow upload
+  if (
+    process.env.ALLOW_VIEWER_UPLOADS === 'true' ||
+    req.user.role === 'admin' ||
+    req.user.role === 'analyst' ||
+    req.body?.workspaceType === 'personal' ||
+    req.body?.workspaceType === 'team'
+  ) {
     return next();
   }
   return datasetRoles(req, res, next);
@@ -33,6 +39,8 @@ const metadataSchema = z.object({
   sizeBytes: z.number().int().positive().max(25 * 1024 * 1024).optional(),
   checksumSha256: z.string().regex(/^[a-f0-9]{64}$/i).optional(),
   sheetName: z.string().max(255).optional(),
+  workspaceType: z.enum(['national', 'personal', 'team']).optional(),
+  teamId: z.string().optional(),
 });
 
 const completeSchema = metadataSchema.extend({
@@ -59,8 +67,6 @@ function handle(handler: (req: Request) => Promise<unknown>) {
 datasetsRouter.get(
   '/',
   requireAuth,
-  requireVerifiedEmail,
-  datasetRoles,
   handle((req) =>
     DatasetService.list({
       search: req.query.search as string | undefined,
@@ -172,6 +178,31 @@ datasetsRouter.post(
   datasetRoles,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.retry(req.params.id))
+);
+
+/**
+ * Admin approves a dataset version
+ */
+datasetsRouter.post(
+  '/:id/approve',
+  requireAuth,
+  adminOnly,
+  validateRequest({ params: z.object({ id: z.string().min(1) }) }),
+  handle((req) => DatasetService.approve(req.params.id, req.user!.id))
+);
+
+/**
+ * Admin rejects a dataset version
+ */
+datasetsRouter.post(
+  '/:id/reject',
+  requireAuth,
+  adminOnly,
+  validateRequest({
+    params: z.object({ id: z.string().min(1) }),
+    body: z.object({ reason: z.string().optional() }),
+  }),
+  handle((req) => DatasetService.reject(req.params.id, req.user!.id, req.body?.reason))
 );
 
 datasetsRouter.delete(

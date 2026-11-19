@@ -63,6 +63,16 @@ const chatBodySchema = z.object({
   message: z.string().min(1, 'Message is required').max(1000, 'Message cannot exceed 1000 characters'),
   language: z.enum(['en', 'ar']).default('en'),
   conversation_id: z.string().nullable().optional(),
+  dataset_context: z
+    .object({
+      name: z.string(),
+      nationalIndex: z.number().optional(),
+      recordsCount: z.number().optional(),
+      topGovernorates: z.array(z.string()).optional(),
+      lowestGovernorates: z.array(z.string()).optional(),
+      sectorScores: z.record(z.string(), z.number()).optional(),
+    })
+    .optional(),
 });
 
 intelligenceRouter.post(
@@ -72,7 +82,7 @@ intelligenceRouter.post(
   validateRequest({ body: chatBodySchema }),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { message, language, conversation_id } = req.body;
+      const { message, language, conversation_id, dataset_context } = req.body;
       const userId = req.user?.id;
 
       const response = await AiAssistantService.chat({
@@ -80,6 +90,7 @@ intelligenceRouter.post(
         language,
         conversationId: conversation_id,
         userId,
+        datasetContext: dataset_context,
       });
 
       sendSuccess(res, response);

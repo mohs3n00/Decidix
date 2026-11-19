@@ -95,6 +95,25 @@ export const authService = {
     }
   },
 
+  async deleteAccount(): Promise<{ message: string }> {
+    const res = await apiClient.delete<{ message: string }>('/auth/me');
+    apiClient.clearTokens();
+    localStorage.removeItem('decidix_user');
+    return res.data;
+  },
+
+  async requestAccountDeletion(email: string): Promise<{ message: string }> {
+    const res = await apiClient.post<{ message: string }>('/auth/request-deletion', { email });
+    return res.data;
+  },
+
+  async confirmAccountDeletion(token: string): Promise<{ message: string }> {
+    const res = await apiClient.post<{ message: string }>('/auth/confirm-deletion', { token });
+    apiClient.clearTokens();
+    localStorage.removeItem('decidix_user');
+    return res.data;
+  },
+
   getCurrentUser(): User | null {
     const raw = localStorage.getItem('decidix_user');
     if (!raw) return null;

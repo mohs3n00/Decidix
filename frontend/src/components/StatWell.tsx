@@ -11,7 +11,7 @@ interface StatWellProps {
 }
 
 /**
- * StatWell: 18px rounded inner stat tile that sits cleanly inside a hero card or card.
+ * StatWell: 12px (rounded-xl) inner stat tile with crisp SaaS aesthetic.
  */
 export const StatWell: React.FC<StatWellProps> = ({
   value,
@@ -26,21 +26,20 @@ export const StatWell: React.FC<StatWellProps> = ({
   return (
     <div
       className={clsx(
-        'rounded-well px-4 py-3 flex flex-col items-center justify-center text-center transition-all',
+        'rounded-xl px-4 py-3 flex flex-col items-center justify-center text-center transition-all',
         dark
           ? 'bg-white/5 border border-white/10 text-white'
-          : 'bg-white/80 border border-hairline shadow-sm text-navy',
+          : 'bg-white border border-slate-200/80 shadow-xs text-navy',
         className
       )}
-      style={{ borderRadius: 'var(--radius-well)' }}
     >
-      <div className="text-xl md:text-2xl font-bold tracking-tight">
+      <div className="text-xl md:text-2xl font-bold tracking-tight tabular-nums">
         {value}
       </div>
       <div
         className={clsx(
           'text-xs font-medium mt-0.5 truncate max-w-full',
-          dark ? 'text-white/70' : 'text-ink'
+          dark ? 'text-white/70' : 'text-slate-500'
         )}
       >
         {label}
@@ -48,8 +47,8 @@ export const StatWell: React.FC<StatWellProps> = ({
       {subtitle && (
         <div
           className={clsx(
-            'text-[10px] mt-0.5',
-            dark ? 'text-cyan' : 'text-faded-ink'
+            'text-[11px] mt-0.5 font-medium truncate max-w-full',
+            dark ? 'text-cyan' : 'text-slate-400'
           )}
         >
           {subtitle}

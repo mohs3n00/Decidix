@@ -1,5 +1,11 @@
 import { apiClient } from './apiClient';
-import { SimulationResult, DevelopmentProject, CitizenReport, ProjectStatus, ReportCategory } from '../types';
+import {
+  SimulationResponse,
+  ProjectsResponse,
+  CitizenReportsResponse,
+  ProjectStatus,
+  ReportCategory,
+} from '../types';
 
 export const decisionsService = {
   async simulate(
@@ -10,8 +16,8 @@ export const decisionsService = {
       infrastructure: number;
       economy: number;
     }
-  ): Promise<SimulationResult> {
-    const res = await apiClient.post<SimulationResult>('/decisions/simulate', {
+  ): Promise<SimulationResponse> {
+    const res = await apiClient.post<SimulationResponse>('/decisions/simulate', {
       region_id,
       allocations,
     });
@@ -22,13 +28,13 @@ export const decisionsService = {
     status?: ProjectStatus;
     page?: number;
     per_page?: number;
-  }): Promise<{ summary: any; items: DevelopmentProject[]; meta?: any }> {
+  }): Promise<ProjectsResponse & { meta?: any }> {
     const query = new URLSearchParams();
     if (params?.status && params.status !== 'all') query.set('status', params.status);
     if (params?.page) query.set('page', params.page.toString());
     if (params?.per_page) query.set('per_page', params.per_page.toString());
 
-    const res = await apiClient.get<{ summary: any; items: DevelopmentProject[] }>(
+    const res = await apiClient.get<ProjectsResponse>(
       `/decisions/projects?${query.toString()}`
     );
     return {
@@ -43,14 +49,14 @@ export const decisionsService = {
     status?: string;
     page?: number;
     per_page?: number;
-  }): Promise<{ summary: any; items: CitizenReport[]; meta?: any }> {
+  }): Promise<CitizenReportsResponse & { meta?: any }> {
     const query = new URLSearchParams();
     if (params?.category && params.category !== 'all') query.set('category', params.category);
     if (params?.status) query.set('status', params.status);
     if (params?.page) query.set('page', params.page.toString());
     if (params?.per_page) query.set('per_page', params.per_page.toString());
 
-    const res = await apiClient.get<{ summary: any; items: CitizenReport[] }>(
+    const res = await apiClient.get<CitizenReportsResponse>(
       `/decisions/citizen-reports?${query.toString()}`
     );
     return {
@@ -60,8 +66,8 @@ export const decisionsService = {
     };
   },
 
-  async toggleLikeReport(id: string): Promise<CitizenReport> {
-    const res = await apiClient.post<CitizenReport>(`/decisions/citizen-reports/${encodeURIComponent(id)}/like`);
+  async toggleLikeReport(id: string): Promise<any> {
+    const res = await apiClient.post<any>(`/decisions/citizen-reports/${encodeURIComponent(id)}/like`);
     return res.data;
   },
 };

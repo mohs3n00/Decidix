@@ -1,299 +1,432 @@
 import React, { useState, useEffect } from 'react';
-import { decisionsService } from '../../services/decisionsService';
-import { overviewService } from '../../services/overviewService';
-import { SimulationResult, RegionListItem } from '../../types';
-import { TwoToneHeading } from '../../components/TwoToneHeading';
-import { HeroCard } from '../../components/HeroCard';
-import { DecidixCard } from '../../components/DecidixCard';
-import { DecidixButton } from '../../components/DecidixButton';
-import { ScoreRing } from '../../components/ScoreRing';
-import { TrendIndicator } from '../../components/TrendIndicator';
-import { HatchedBar } from '../../components/HatchedBar';
-import { AiInsightPanel } from '../../components/AiInsightPanel';
-import { ProvenanceCard } from '../../components/ProvenanceCard';
-import { LoadingSpinner } from '../../components/LoadingSpinner';
-import { DecidixIcon } from '../../components/DecidixIcon';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../components/Toast';
+import { DecidixIcon } from '../../components/DecidixIcon';
+import { decisionsService } from '../../services/decisionsService';
+import { SimulationResponse } from '../../types';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Cell,
+} from 'recharts';
 
 export const SimulatorScreen: React.FC = () => {
-  const { isRTL, t } = useLanguage();
-  const [regions, setRegions] = useState<RegionListItem[]>([]);
-  const [selectedRegionId, setSelectedRegionId] = useState<string>('frontier');
+  const { isRTL } = useLanguage();
+  const { requireAuth } = useAuth();
+  const toast = useToast();
 
-  // Budget allocations in USD
-  const [education, setEducation] = useState<number>(30000000);
-  const [healthcare, setHealthcare] = useState<number>(45000000);
-  const [infrastructure, setInfrastructure] = useState<number>(20000000);
-  const [economy, setEconomy] = useState<number>(25000000);
+  const [selectedRegion, setSelectedRegion] = useState<string>('cairo');
+  const [healthVal, setHealthVal] = useState<number>(15);
+  const [eduVal, setEduVal] = useState<number>(10);
+  const [infraVal, setInfraVal] = useState<number>(8);
+  const [econVal, setEconVal] = useState<number>(5);
 
-  const [simulation, setSimulation] = useState<SimulationResult | null>(null);
-  const [isSimulating, setIsSimulating] = useState<boolean>(false);
+  const [simResult, setSimResult] = useState<SimulationResponse | null>(null);
 
+  const REGIONS = [
+    { id: 'cairo', name: 'Cairo', arabic_name: 'القاهرة' },
+    { id: 'alexandria', name: 'Alexandria', arabic_name: 'الإسكندرية' },
+    { id: 'giza', name: 'Giza', arabic_name: 'الجيزة' },
+    { id: 'aswan', name: 'Aswan', arabic_name: 'أسوان' },
+    { id: 'port_said', name: 'Port Said', arabic_name: 'بورسعيد' },
+  ];
+
+  // Run backend simulation whenever region or sliders change
   useEffect(() => {
-    const fetchRegions = async () => {
+    let isMounted = true;
+    const runSimulation = async () => {
       try {
-        const res = await overviewService.getRegions({ per_page: 50 });
-        if (res.items && res.items.length > 0) {
-          setRegions(res.items);
-          setSelectedRegionId(res.items[0].region_id);
-        }
+        const res = await decisionsService.simulate(selectedRegion, {
+          education: eduVal,
+          healthcare: healthVal,
+          infrastructure: infraVal,
+          economy: econVal,
+        });
+        if (isMounted) setSimResult(res);
       } catch (err) {
-        console.error(err);
+        console.warn('Simulation error:', err);
       }
     };
-    fetchRegions();
-  }, []);
 
-  const runSimulation = async () => {
-    if (!selectedRegionId) return;
-    try {
-      setIsSimulating(true);
-      const res = await decisionsService.simulate(selectedRegionId, {
-        education,
-        healthcare,
-        infrastructure,
-        economy,
-      });
-      setSimulation(res);
-    } catch (err) {
-      console.error('Simulation error:', err);
-    } finally {
-      setIsSimulating(false);
-    }
+    const timer = setTimeout(runSimulation, 250);
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [selectedRegion, healthVal, eduVal, infraVal, econVal]);
+
+  const baseline = simResult?.today_score ?? 75;
+  const projected = simResult?.projected_score ?? 75;
+  const gain = simResult?.gain ?? 0;
+  const totalPackage = simResult?.total_package?.amount ?? healthVal + eduVal + infraVal + econVal;
+
+  const leverChartData = [
+    {
+      name: isRTL ? 'الصحة' : 'Health',
+      amount: healthVal,
+      color: '#059669',
+      domain: 'healthcare',
+    },
+    {
+      name: isRTL ? 'التعليم' : 'Education',
+      amount: eduVal,
+      color: '#2563EB',
+      domain: 'education',
+    },
+    {
+      name: isRTL ? 'البنية التحتية' : 'Infra',
+      amount: infraVal,
+      color: '#D97706',
+      domain: 'infrastructure',
+    },
+    {
+      name: isRTL ? 'الاقتصاد' : 'Economy',
+      amount: econVal,
+      color: '#7C3AED',
+      domain: 'economy',
+    },
+  ];
+
+  const handleSaveScenario = () => {
+    requireAuth(
+      isRTL
+        ? 'يتطلب حفظ سيناريوهات المحاكاة واستراتيجيات السياسات تسجيل الدخول.'
+        : 'Sign in to save policy simulation scenarios and link them to regional intervention plans.',
+      () => {
+        toast.success(
+          isRTL
+            ? `تم حفظ السيناريو لمحافظة (${REGIONS.find((r) => r.id === selectedRegion)?.arabic_name || selectedRegion}) بحزمة استثمارية إجمالية قدرها $${totalPackage}M.`
+            : `Simulation scenario saved successfully with total package of $${totalPackage}M.`
+        );
+      },
+      isRTL ? 'حفظ السيناريو' : 'Save Policy Scenario'
+    );
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      runSimulation();
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [selectedRegionId, education, healthcare, infrastructure, economy]);
-
-  const totalBudget = education + healthcare + infrastructure + economy;
-
   return (
-    <div className="space-y-7 animate-in fade-in duration-300">
-      {/* Top Header & Region Target */}
+    <div className="space-y-6 animate-fadeIn pb-8">
+      {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="type-eyebrow mb-1">
-            {isRTL
-              ? 'محاكاة أثر إعادة توزيع المخصصات المالية على المؤشر التنموي'
-              : 'Interactive What-If budget allocation modeling with marginal return calculation'}
+          <div className="text-[11px] font-bold uppercase tracking-wider text-blue mb-1">
+            {isRTL ? 'دعم القرار والسياسات' : 'DECISIONS'}
           </div>
-          <TwoToneHeading
-            first={isRTL ? 'محاكي' : 'Policy & Budget'}
-            second={isRTL ? 'السياسات والميزانية' : 'Simulator'}
-            level={1}
-            className="type-heading-page"
-          />
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-navy">
+            {isRTL ? 'محاكي السياسات والاستثمارات (ماذا لو)' : 'What-If Policy Simulator'}
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            {isRTL
+              ? 'نمذجة أثر حزم التخصيص الاستثماري عبر الروافع القطاعية لحساب العائد الحدي على مؤشر التنمية.'
+              : 'Simulate alternative investment packages across sector levers to calculate marginal yield.'}
+          </p>
         </div>
 
-        {/* Region Picker */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-faded-ink">{isRTL ? 'المنطقة المستهدفة:' : 'Target Region:'}</span>
-          <select
-            value={selectedRegionId}
-            onChange={(e) => setSelectedRegionId(e.target.value)}
-            className="decidix-input font-bold text-xs py-2 px-3.5 w-auto bg-white border-hairline shadow-sm"
-          >
-            {regions.map((r) => (
-              <option key={r.region_id} value={r.region_id}>
-                {t(r, 'name')}
-              </option>
-            ))}
-          </select>
-        </div>
+        <button
+          onClick={handleSaveScenario}
+          className="h-9 px-4 rounded-lg bg-blue hover:bg-blue-hover text-white text-xs font-semibold shadow-2xs active:scale-[0.98] transition-all duration-150"
+        >
+          {isRTL ? 'حفظ السيناريو' : 'Save scenario'}
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Sliders Control Panel */}
-        <DecidixCard variant="card" className="lg:col-span-7 space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-hairline">
-            <h3 className="type-heading-section text-navy">
-              {isRTL ? 'توزيع المخصصات المالية (USD)' : 'Domain Capital Allocations'}
-            </h3>
-            <div className="text-xs font-bold px-3 py-1 rounded-pill bg-blue/10 text-blue">
-              {isRTL ? 'الموازنة الإجمالية: ' : 'Total: '}${(totalBudget / 1_000_000).toFixed(1)}M
+      {/* Provenance Banner */}
+      {simResult?.provenance && (
+        <div className="bg-blue-50/70 border border-blue-200/80 rounded-xl px-4 py-3 flex items-center justify-between text-xs text-blue-900 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue inline-block animate-pulse" />
+            <span className="font-semibold">
+              {isRTL ? 'نموذج المحاكاة التناقصي:' : 'Simulation Model:'}
+            </span>
+            <span>Concave Diminishing Yield (Decidix v1)</span>
+          </div>
+          <div className="text-[11px] text-blue font-medium">
+            {simResult.provenance.source} · {simResult.provenance.data_classification}
+          </div>
+        </div>
+      )}
+
+      {/* Main Grid: Parameters + Projected Outcome */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        {/* Left: Scenario Parameters (7 cols) */}
+        <div className="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div>
+                <h2 className="text-base font-bold text-navy">
+                  {isRTL ? 'معاملات السيناريو التنموي' : 'Scenario Parameters'}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {isRTL
+                    ? 'حدد المحافظة وعدل مخصصات الاستثمار بملايين الدولارات'
+                    : 'Select governorate and adjust funding allocations in $ Millions'}
+                </p>
+              </div>
+
+              {/* Region Selector */}
+              <select
+                value={selectedRegion}
+                onChange={(e) => setSelectedRegion(e.target.value)}
+                className="bg-slate-50 border border-slate-200/80 rounded-lg px-2.5 py-1.5 text-xs font-bold text-navy outline-none cursor-pointer focus:ring-2 focus:ring-blue/15 focus:border-blue transition-colors"
+              >
+                {REGIONS.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {isRTL ? r.arabic_name : r.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-4 pt-2">
+              {/* Healthcare */}
+              <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/70">
+                <div className="flex items-center justify-between text-xs font-semibold text-navy mb-2">
+                  <span className="flex items-center gap-1.5">
+                    <DecidixIcon name="healthcare" size={14} color="var(--color-blue)" />
+                    <span>{isRTL ? 'استثمارات الرعاية الصحية' : 'Healthcare Allocation'}</span>
+                  </span>
+                  <span className="text-blue bg-blue-50 px-2 py-0.5 rounded-full font-bold tabular-nums">
+                    ${healthVal}M
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="50"
+                  value={healthVal}
+                  onChange={(e) => setHealthVal(Number(e.target.value))}
+                  className="w-full accent-blue cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-semibold tabular-nums">
+                  <span>$0M</span>
+                  <span>$25M</span>
+                  <span>$50M</span>
+                </div>
+              </div>
+
+              {/* Education */}
+              <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/70">
+                <div className="flex items-center justify-between text-xs font-semibold text-navy mb-2">
+                  <span className="flex items-center gap-1.5">
+                    <DecidixIcon name="education" size={14} color="var(--color-blue)" />
+                    <span>{isRTL ? 'الإنفاق على التعليم والتدريب' : 'Education Spending'}</span>
+                  </span>
+                  <span className="text-blue bg-blue-50 px-2 py-0.5 rounded-full font-bold tabular-nums">
+                    ${eduVal}M
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="50"
+                  value={eduVal}
+                  onChange={(e) => setEduVal(Number(e.target.value))}
+                  className="w-full accent-blue cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-semibold tabular-nums">
+                  <span>$0M</span>
+                  <span>$25M</span>
+                  <span>$50M</span>
+                </div>
+              </div>
+
+              {/* Infrastructure */}
+              <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/70">
+                <div className="flex items-center justify-between text-xs font-semibold text-navy mb-2">
+                  <span className="flex items-center gap-1.5">
+                    <DecidixIcon name="infrastructure" size={14} color="var(--color-blue)" />
+                    <span>{isRTL ? 'مشروعات البنية التحتية والربط' : 'Infrastructure Access'}</span>
+                  </span>
+                  <span className="text-blue bg-blue-50 px-2 py-0.5 rounded-full font-bold tabular-nums">
+                    ${infraVal}M
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="50"
+                  value={infraVal}
+                  onChange={(e) => setInfraVal(Number(e.target.value))}
+                  className="w-full accent-blue cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-semibold tabular-nums">
+                  <span>$0M</span>
+                  <span>$25M</span>
+                  <span>$50M</span>
+                </div>
+              </div>
+
+              {/* Economy */}
+              <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/70">
+                <div className="flex items-center justify-between text-xs font-semibold text-navy mb-2">
+                  <span className="flex items-center gap-1.5">
+                    <DecidixIcon name="economy" size={14} color="var(--color-blue)" />
+                    <span>{isRTL ? 'دعم المشروعات الصغيرة والتوظيف' : 'Economy & Jobs'}</span>
+                  </span>
+                  <span className="text-blue bg-blue-50 px-2 py-0.5 rounded-full font-bold tabular-nums">
+                    ${econVal}M
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="50"
+                  value={econVal}
+                  onChange={(e) => setEconVal(Number(e.target.value))}
+                  className="w-full accent-blue cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-semibold tabular-nums">
+                  <span>$0M</span>
+                  <span>$25M</span>
+                  <span>$50M</span>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Education Slider */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs font-semibold">
-              <span className="text-navy flex items-center gap-2">
-                <DecidixIcon name="education" size={15} color="var(--color-blue)" />
-                {isRTL ? 'التعليم وبناء القدرات' : 'Education & Skills'}
-              </span>
-              <span className="font-bold text-blue">${(education / 1_000_000).toFixed(1)}M</span>
+        {/* Right: Projected Outcome & Marginal Yield Analysis (5 cols) */}
+        <div className="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <div>
+            <h2 className="text-base font-bold text-navy mb-0.5">
+              {isRTL ? 'النتيجة والعائد الحدي المتوقع' : 'Projected Yield & Outcome'}
+            </h2>
+            <p className="text-xs text-slate-500 mb-5">
+              {isRTL
+                ? 'محاكاة رياضية تناقصية لتقدير كفاءة المخصصات'
+                : 'Concave diminishing returns mathematical model'}
+            </p>
+
+            {/* Score Comparison Box */}
+            <div className="border-b border-slate-100 pb-5 mb-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
+                    {isRTL ? 'المؤشر الحالي' : 'BASELINE SCORE'}
+                  </div>
+                  <div className="text-2xl font-bold text-slate-400 tabular-nums">{baseline}/100</div>
+                </div>
+
+                <div className="text-right">
+                  <div className="text-[10px] font-bold text-blue uppercase tracking-wider mb-0.5">
+                    {isRTL ? 'المؤشر بعد المحاكاة' : 'SIMULATED SCORE'}
+                  </div>
+                  <div className="text-3xl font-bold tracking-tight text-navy tabular-nums">
+                    {projected}
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full ml-2 border border-emerald-200/60">
+                      +{gain} pts
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg bg-blue-50/70 border border-blue-200/60 flex items-center justify-between text-xs text-blue-900 font-medium">
+                <span>{isRTL ? 'إجمالي الحزمة الاستثمارية:' : 'Total Investment Package:'}</span>
+                <span className="font-bold text-blue tabular-nums">${totalPackage}M USD</span>
+              </div>
             </div>
-            <input
-              type="range"
-              min="0"
-              max="100000000"
-              step="1000000"
-              value={education}
-              onChange={(e) => setEducation(Number(e.target.value))}
-              className="w-full accent-blue cursor-pointer h-2 bg-well rounded-pill appearance-none"
-            />
-          </div>
 
-          {/* Healthcare Slider */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs font-semibold">
-              <span className="text-navy flex items-center gap-2">
-                <DecidixIcon name="healthcare" size={15} color="var(--color-blue)" />
-                {isRTL ? 'الرعاية الصحية والمستشفيات' : 'Healthcare & Wellbeing'}
-              </span>
-              <span className="font-bold text-blue">${(healthcare / 1_000_000).toFixed(1)}M</span>
+            {/* Dynamic Sector Allocation Visual Chart */}
+            <div className="mb-5 p-3 rounded-xl bg-slate-50/60 border border-slate-200/70">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  {isRTL ? 'توزيع المخصصات القطاعية ($ ملايين)' : 'SECTOR ALLOCATION ($M)'}
+                </span>
+                <span className="text-[10px] font-bold text-navy tabular-nums">
+                  100% {isRTL ? 'موزعة' : 'allocated'}
+                </span>
+              </div>
+              <div className="h-36 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={leverChartData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <XAxis
+                      dataKey="name"
+                      stroke="#94A3B8"
+                      fontSize={10}
+                      tickLine={false}
+                      axisLine={{ stroke: '#E2E8F0' }}
+                    />
+                    <YAxis
+                      stroke="#94A3B8"
+                      fontSize={10}
+                      domain={[0, 50]}
+                      tickLine={false}
+                      axisLine={{ stroke: '#E2E8F0' }}
+                      tickFormatter={(v) => `$${v}M`}
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const item = payload[0].payload;
+                          return (
+                            <div className="bg-white/95 backdrop-blur-md border border-slate-200 rounded-lg p-2 shadow-md text-xs">
+                              <span className="font-bold text-navy block">{item.name}</span>
+                              <span className="text-blue font-bold tabular-nums">${item.amount}M USD</span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="amount" radius={[4, 4, 0, 0]} maxBarSize={36}>
+                      {leverChartData.map((entry, index) => (
+                        <Cell key={`lever-cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <input
-              type="range"
-              min="0"
-              max="100000000"
-              step="1000000"
-              value={healthcare}
-              onChange={(e) => setHealthcare(Number(e.target.value))}
-              className="w-full accent-blue cursor-pointer h-2 bg-well rounded-pill appearance-none"
-            />
-          </div>
 
-          {/* Infrastructure Slider */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs font-semibold">
-              <span className="text-navy flex items-center gap-2">
-                <DecidixIcon name="infrastructure" size={15} color="var(--color-blue)" />
-                {isRTL ? 'البنية التحتية والمرافق' : 'Infrastructure & Utilities'}
-              </span>
-              <span className="font-bold text-blue">${(infrastructure / 1_000_000).toFixed(1)}M</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100000000"
-              step="1000000"
-              value={infrastructure}
-              onChange={(e) => setInfrastructure(Number(e.target.value))}
-              className="w-full accent-blue cursor-pointer h-2 bg-well rounded-pill appearance-none"
-            />
-          </div>
+            {/* Levers Yield Breakdown */}
+            <div className="space-y-2 mb-5">
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                {isRTL ? 'العائد الحدي لكل مليون دولار' : 'MARGINAL YIELD PER $1M'}
+              </div>
 
-          {/* Economy Slider */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs font-semibold">
-              <span className="text-navy flex items-center gap-2">
-                <DecidixIcon name="economy" size={15} color="var(--color-blue)" />
-                {isRTL ? 'الاقتصاد وتوفير فرص العمل' : 'Economy & Job Creation'}
-              </span>
-              <span className="font-bold text-blue">${(economy / 1_000_000).toFixed(1)}M</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100000000"
-              step="1000000"
-              value={economy}
-              onChange={(e) => setEconomy(Number(e.target.value))}
-              className="w-full accent-blue cursor-pointer h-2 bg-well rounded-pill appearance-none"
-            />
-          </div>
-
-          <div className="pt-3 flex justify-end">
-            <DecidixButton
-              variant="outlined"
-              compact
-              onClick={runSimulation}
-              disabled={isSimulating}
-            >
-              {isSimulating ? (isRTL ? 'جارٍ الحساب...' : 'Recalculating...') : (isRTL ? 'إعادة الحساب ⟳' : 'Recalculate ⟳')}
-            </DecidixButton>
-          </div>
-        </DecidixCard>
-
-        {/* Real-time Projected Outcome Card */}
-        <HeroCard className="lg:col-span-5 flex flex-col justify-between">
-          <div className="space-y-5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-faded-ink">
-                {isRTL ? 'الأثر التنموي المتوقع' : 'Projected Policy Gain'}
-              </span>
-              {isSimulating && (
-                <div className="w-3.5 h-3.5 border-2 border-blue border-t-transparent rounded-full animate-spin"></div>
+              {simResult?.levers ? (
+                simResult.levers.map((lv) => (
+                  <div
+                    key={lv.domain}
+                    className="flex items-center justify-between text-xs p-2.5 rounded-lg bg-slate-50/70 border border-slate-200/70"
+                  >
+                    <span className="font-semibold text-navy capitalize">{lv.domain}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-slate-400 tabular-nums">${lv.amount}M</span>
+                      <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-[11px] border border-emerald-200/60 tabular-nums">
+                        +{lv.yield_per_million} pts / $1M
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-slate-400 py-2">
+                  {isRTL ? 'جاري حساب العوائد...' : 'Calculating yields...'}
+                </div>
               )}
             </div>
 
-            {simulation ? (
-              (() => {
-                const netGain = (simulation as any).gain ?? simulation.net_gain ?? 0;
-                const baseline = (simulation as any).today_score ?? simulation.current_score ?? 0;
-                const levers = (simulation as any).levers;
-
-                return (
-                  <>
-                    <div className="space-y-3">
-                      <div className="flex items-baseline gap-3">
-                        <span className="type-heading-page font-bold text-navy">
-                          {simulation.projected_score.toFixed(1)}
-                        </span>
-                        <span className="text-xs font-semibold text-faded-ink">/ 100</span>
-                        <TrendIndicator value={netGain} suffix=" pts" />
-                      </div>
-
-                      <div className="text-xs text-ink">
-                        {isRTL ? 'المستوى الحالي: ' : 'Baseline Score: '}
-                        <strong className="text-navy">{baseline.toFixed(1)}</strong>
-                      </div>
-                    </div>
-
-                    {/* Sectoral Marginal Yields with Hatched Bars */}
-                    {levers && Array.isArray(levers) && (
-                      <div className="space-y-3 pt-3.5 border-t border-hairline">
-                        <div className="text-xs font-bold text-navy">
-                          {isRTL ? 'عائد الروافع القطاعية:' : 'Sectoral Marginal Yields:'}
-                        </div>
-                        {levers.map((lev: any) => (
-                          <div key={lev.domain} className="space-y-1">
-                            <div className="flex justify-between text-xs">
-                              <span className="text-ink capitalize font-medium">{lev.domain}</span>
-                              <span className="font-bold text-emerald-600">+{lev.expected_gain?.toFixed(1) || '0.0'} pts</span>
-                            </div>
-                            <HatchedBar percentage={Math.min(100, (lev.expected_gain || 1) * 15)} height={6} />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                );
-              })()
-            ) : (
-              <div className="py-12 text-center text-xs text-faded-ink">
-                {isRTL ? 'جارٍ احتساب سيناريو المحاكاة...' : 'Simulating scenario...'}
+            {/* AI Simulation Note */}
+            {simResult?.note && (
+              <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/70 text-xs text-slate-600">
+                <div className="font-bold text-navy mb-1 flex items-center gap-1.5">
+                  <DecidixIcon name="robot" size={14} color="var(--color-blue)" />
+                  <span>{isRTL ? 'تحليل الرافعة الأكفأ' : 'Optimal Lever Analysis'}</span>
+                </div>
+                <p className="leading-relaxed">
+                  {isRTL ? simResult.note.arabic_text || simResult.note.text : simResult.note.text}
+                </p>
               </div>
             )}
           </div>
-
-          <div className="pt-4 border-t border-hairline text-xs text-faded-ink">
-            {isRTL
-              ? 'تعتمد معادلات المحاكاة على دوال الاستجابة الهامشية المقدرة من السلاسل الزمنية.'
-              : 'Estimates calculated from non-linear marginal response curves.'}
-          </div>
-        </HeroCard>
+        </div>
       </div>
-
-      {/* Simulation AI Note */}
-      {simulation && (
-        <AiInsightPanel
-          label={isRTL ? 'ملاحظة المحاكاة' : 'Simulation Note'}
-          body={
-            isRTL
-              ? `يظهر النموذج أن توجيه الاستثمار نحو قطاع الرعاية الصحية في هذه المنطقة يعطي العائد الأسرع على المؤشر المركب، بينما يحقق قطاع التعليم عائداً تراكمياً أعلى على المدى المتوسط.`
-              : `The model reveals healthcare investments yield the most acute immediate index gain in this region (+${((simulation as any).gain ?? 2.4).toFixed(1)} pts), whereas educational allocations accumulate compounding long-horizon benefits.`
-          }
-        />
-      )}
-
-      {/* Provenance */}
-      <ProvenanceCard provenance={simulation?.provenance} />
     </div>
   );
 };

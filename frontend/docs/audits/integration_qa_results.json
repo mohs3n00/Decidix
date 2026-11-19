@@ -1,0 +1,165 @@
+{
+  "timestamp": "2026-11-08T16:20:09.486Z",
+  "frontend": "https://web.decidixapp.tech",
+  "backend": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1",
+  "testUser": {
+    "name": "Integration QA Tester",
+    "email": "qa_live_1794154757157@decidixapp.tech",
+    "password": "Password123!@#"
+  },
+  "testMatrix": [
+    {
+      "id": "INT_01_GUEST_BROWSING",
+      "title": "Guest Browsing on Dashboard without Forced Login Gate",
+      "status": "PASS",
+      "evidence": "Title: \"Decidix — Intelligent Regional Decision Support System\", Header visible: true, Sidebar visible: true"
+    },
+    {
+      "id": "INT_02_AUTH_GATE",
+      "title": "Protected Action triggers non-blocking Guest Auth Gate Modal",
+      "status": "PASS",
+      "evidence": "Auth Gate trigger attempted on dataset upload"
+    },
+    {
+      "id": "INT_03_REGISTRATION",
+      "title": "Real-time Account Registration against Heroku Backend",
+      "status": "PASS",
+      "evidence": "Token stored: true, User: qa_live_1794154757157@decidixapp.tech, URL: https://web.decidixapp.tech/"
+    },
+    {
+      "id": "INT_04_SESSION_PERSISTENCE",
+      "title": "User Profile & Session Persistence across Routes",
+      "status": "PASS",
+      "evidence": "Profile loaded: true, Email visible: true"
+    },
+    {
+      "id": "INT_05_LOGOUT_CONTROL",
+      "title": "Logout Clears Session Tokens and State Cleanly",
+      "status": "PASS",
+      "evidence": "Token cleared from localStorage: true"
+    },
+    {
+      "id": "INT_06_INVALID_LOGIN_ALERT",
+      "title": "Invalid Credentials returns HTTP 401 and displays clear in-app error alert",
+      "status": "PASS",
+      "evidence": "Alert rendered: true"
+    },
+    {
+      "id": "INT_07_VALID_LOGIN",
+      "title": "Valid Login with Registered Account Restores User Session",
+      "status": "PASS",
+      "evidence": "Access Token retrieved: true"
+    },
+    {
+      "id": "INT_08_GOOGLE_SIGNIN_INTERACTIVE",
+      "title": "Google Sign-In Button triggers interactive feedback and popup without remaining inert",
+      "status": "PASS",
+      "evidence": "Google Sign-In button clicked, popup / feedback confirmed"
+    }
+  ],
+  "networkTrafficSummary": [
+    {
+      "type": "REQUEST",
+      "method": "GET",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/overview?range=7Y",
+      "timestamp": "2026-11-08T16:19:31.060Z"
+    },
+    {
+      "type": "REQUEST",
+      "method": "POST",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/auth/register",
+      "timestamp": "2026-11-08T16:19:43.278Z"
+    },
+    {
+      "type": "REQUEST",
+      "method": "GET",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/overview?range=7Y",
+      "timestamp": "2026-11-08T16:19:49.566Z"
+    },
+    {
+      "type": "RESPONSE",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/auth/register",
+      "status": 201,
+      "corsOrigin": "https://web.decidixapp.tech",
+      "timestamp": "2026-11-08T16:19:49.568Z"
+    },
+    {
+      "type": "REQUEST",
+      "method": "GET",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/auth/me",
+      "timestamp": "2026-11-08T16:19:52.257Z"
+    },
+    {
+      "type": "RESPONSE",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/auth/me",
+      "status": 200,
+      "corsOrigin": "https://web.decidixapp.tech",
+      "timestamp": "2026-11-08T16:19:53.131Z"
+    },
+    {
+      "type": "REQUEST",
+      "method": "POST",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/auth/logout",
+      "timestamp": "2026-11-08T16:19:53.904Z"
+    },
+    {
+      "type": "RESPONSE",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/auth/logout",
+      "status": 200,
+      "corsOrigin": "https://web.decidixapp.tech",
+      "timestamp": "2026-11-08T16:19:54.869Z"
+    },
+    {
+      "type": "REQUEST",
+      "method": "POST",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/auth/login",
+      "timestamp": "2026-11-08T16:19:59.470Z"
+    },
+    {
+      "type": "RESPONSE",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/auth/login",
+      "status": 401,
+      "corsOrigin": "https://web.decidixapp.tech",
+      "timestamp": "2026-11-08T16:20:00.591Z"
+    },
+    {
+      "type": "REQUEST",
+      "method": "POST",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/auth/login",
+      "timestamp": "2026-11-08T16:20:01.720Z"
+    },
+    {
+      "type": "RESPONSE",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/auth/login",
+      "status": 200,
+      "corsOrigin": "https://web.decidixapp.tech",
+      "timestamp": "2026-11-08T16:20:02.396Z"
+    },
+    {
+      "type": "REQUEST",
+      "method": "GET",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/overview?range=7Y",
+      "timestamp": "2026-11-08T16:20:02.420Z"
+    },
+    {
+      "type": "RESPONSE",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/overview?range=7Y",
+      "status": 200,
+      "corsOrigin": "https://web.decidixapp.tech",
+      "timestamp": "2026-11-08T16:20:05.553Z"
+    },
+    {
+      "type": "REQUEST",
+      "method": "GET",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/auth/me",
+      "timestamp": "2026-11-08T16:20:06.762Z"
+    },
+    {
+      "type": "RESPONSE",
+      "url": "https://decidix-backend-staging-cfa3445b7c14.herokuapp.com/v1/auth/me",
+      "status": 200,
+      "corsOrigin": "https://web.decidixapp.tech",
+      "timestamp": "2026-11-08T16:20:08.435Z"
+    }
+  ]
+}

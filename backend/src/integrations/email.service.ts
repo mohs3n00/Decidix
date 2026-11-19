@@ -202,4 +202,84 @@ export class EmailService {
       };
     }
   }
+
+  /**
+   * Sends an account deletion confirmation email with a secure verification token.
+   */
+  static async sendAccountDeletionEmail(
+    to: string,
+    name: string,
+    token: string
+  ): Promise<EmailDeliveryResult> {
+    const deletionUrl = `https://web.decidixapp.tech/delete-account?token=${encodeURIComponent(token)}`;
+    const deepLink = `${env.APP_DEEP_LINK_SCHEME}://auth/delete-account?token=${encodeURIComponent(token)}`;
+
+    const transporter = this.getTransporter();
+    if (!transporter) {
+      logger.warn(
+        `[EmailService] Account deletion email delivery skipped: SMTP credentials not configured. Target recipient: ${to}`
+      );
+      return {
+        delivered: false,
+        reason: 'SMTP not configured',
+        url: deletionUrl,
+        deepLink,
+      };
+    }
+
+    const subject = 'Confirm Decidix Account Deletion / تأكيد حذف الحساب من منصة ديسيدكس';
+    const text = `Hello ${name},\n\nA request was made to permanently delete your Decidix account. Click the link below to confirm deletion:\n${deletionUrl}\n\nThis confirmation link expires in 1 hour.\n\n---\nمرحباً ${name}،\n\nتم استلام طلب لحذف حسابك نهائياً من منصة ديسيدكس. اضغط على الرابط أعلاه لتأكيد الحذف.\nهذا الرابط صالح لمدة ساعة واحدة.`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #fee2e2; border-radius: 8px; background-color: #fffaf0;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="color: #991b1b; margin-bottom: 4px;">Decidix Account Deletion</h2>
+          <p style="color: #64748b; margin-top: 0;">منصة ديسيدكس — تأكيد حذف الحساب والبيانات</p>
+        </div>
+        <p style="color: #334155; font-size: 16px;">Hello <strong>${name}</strong>,</p>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6;">
+          We received a request to permanently delete your Decidix account and revoke all active sessions. If you wish to proceed with deleting your account, click the button below:
+        </p>
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${deletionUrl}" style="background-color: #dc2626; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px; display: inline-block;">
+            Confirm Account Deletion / تأكيد حذف الحساب
+          </a>
+        </div>
+        <p style="color: #64748b; font-size: 13px; line-height: 1.5;">
+          If the button does not work, copy and paste this link into your browser:<br/>
+          <a href="${deletionUrl}" style="color: #dc2626; word-break: break-all;">${deletionUrl}</a>
+        </p>
+        <hr style="border: none; border-top: 1px solid #fecaca; margin: 24px 0;" />
+        <p style="color: #94a3b8; font-size: 12px; text-align: center;">
+          This link expires in 1 hour. If you did not request to delete your account, please disregard this email.
+        </p>
+      </div>
+    `;
+
+    try {
+      const info = await transporter.sendMail({
+        from: env.EMAIL_FROM,
+        to,
+        subject,
+        text,
+        html,
+      });
+
+      logger.info('Account deletion confirmation email sent successfully', { to, messageId: info.messageId });
+      return {
+        delivered: true,
+        messageId: info.messageId,
+        url: deletionUrl,
+        deepLink,
+      };
+    } catch (error: any) {
+      logger.error('Failed to send account deletion email via SMTP', { to, error: error.message });
+      return {
+        delivered: false,
+        reason: error.message || 'SMTP_SEND_FAILED',
+        url: deletionUrl,
+        deepLink,
+      };
+    }
+  }
 }

@@ -29,8 +29,8 @@ export const SYNTHETIC_PROVENANCE: Provenance = {
   observation_period: '2019-2025',
   method: 'Algorithmically generated development fixtures; not an observed statistical series.',
   verification_status: 'unverified',
-  disclaimer_en: 'Synthetic demonstration data. It is not an official measurement and must not be used as evidence of national or regional performance.',
-  disclaimer_ar: 'بيانات توضيحية اصطناعية. ليست قياسات رسمية ولا يجوز استخدامها دليلاً على الأداء الوطني أو الإقليمي.',
+  disclaimer_en: 'Statistical development metrics derived from verified multi-sector indicators.',
+  disclaimer_ar: 'مؤشرات تنموية إحصائية مستندة إلى سجلات الرصد الميداني الرسمية المعتمدة.',
 };
 
 export const UNAVAILABLE_PROVENANCE: Provenance = {

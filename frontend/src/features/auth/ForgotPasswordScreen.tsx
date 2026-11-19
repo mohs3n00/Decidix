@@ -41,8 +41,8 @@ export const ForgotPasswordScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-navy flex flex-col items-center justify-center p-4 relative overflow-hidden select-none">
-      <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4 relative overflow-hidden select-none">
+      <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-cyan/15 rounded-full blur-3xl pointer-events-none"></div>
 
       {/* Language Switcher */}
@@ -50,46 +50,44 @@ export const ForgotPasswordScreen: React.FC = () => {
         <button
           type="button"
           onClick={toggleLanguage}
-          className="px-3.5 py-1.5 text-xs font-semibold rounded-pill bg-white/10 hover:bg-white/20 text-white transition border border-white/20 shadow-sm backdrop-blur-sm"
+          className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white hover:bg-slate-50 text-navy transition-colors border border-slate-200/80 shadow-2xs"
         >
           {language === 'en' ? 'العربية' : 'English'}
         </button>
       </div>
 
-      <div className="w-full max-w-md bg-white rounded-hero p-8 shadow-decidix-hero border border-hairline relative z-10 animate-in fade-in zoom-in-95 duration-300">
+      <div className="w-full max-w-md bg-white rounded-2xl p-8 shadow-xs border border-slate-200/80 relative z-10 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-14 h-14 bg-navy rounded-2xl flex items-center justify-center p-3 shadow-lg mb-3 border border-white/10">
-            <DecidixIcon name="logo_white" size={32} />
-          </div>
-          <h1 className="text-xl font-black text-navy tracking-tight font-display">
+          <DecidixIcon name="splash_mark" size={54} className="mb-3" />
+          <h1 className="text-xl font-bold text-navy tracking-tight font-display">
             {isRTL ? 'استعادة كلمة المرور' : 'Reset Your Password'}
           </h1>
-          <p className="text-xs text-faded-ink mt-1 max-w-xs leading-relaxed">
+          <p className="text-xs text-slate-500 mt-1 max-w-xs leading-relaxed">
             {isRTL
               ? 'أدخل بريدك الإلكتروني وسنرسل لك رابطاً آمناً لإعادة تعيين كلمة المرور'
-              : 'Enter your email address and we will dispatch a secure reset link via Resend SMTP'}
+              : 'Enter your email address to receive a secure password reset link'}
           </p>
         </div>
 
         {errorMessage && (
-          <div className="p-3.5 mb-5 rounded-well bg-rose-50 text-danger text-xs font-semibold border border-rose-200/80 flex items-start gap-2 animate-in fade-in">
-            <span className="shrink-0 text-base leading-none">⚠️</span>
-            <div className="flex-1">{errorMessage}</div>
+          <div className="p-3.5 mb-5 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200/80 flex items-start gap-2.5 animate-in fade-in">
+            <DecidixIcon name="warning" size={16} color="#E11D48" />
+            <div className="flex-1 leading-relaxed">{errorMessage}</div>
           </div>
         )}
 
         {successMessage ? (
           <div className="text-center py-4 space-y-4 animate-in fade-in">
-            <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center text-2xl mx-auto shadow-sm">
-              ✓
+            <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/80 flex items-center justify-center mx-auto shadow-2xs">
+              <DecidixIcon name="check" size={24} color="#059669" />
             </div>
             <h3 className="font-bold text-navy text-sm">
               {isRTL ? 'تم إرسال الرابط بنجاح!' : 'Reset Link Dispatched!'}
             </h3>
-            <p className="text-xs text-ink leading-relaxed">
+            <p className="text-xs text-slate-600 leading-relaxed">
               {successMessage}
             </p>
-            <p className="text-[11px] text-faded-ink">
+            <p className="text-[11px] text-slate-400">
               {isRTL
                 ? 'يرجى فحص صندوق الوارد ورسائل الترويج/غير المرغوب فيها (صلاحية الرابط 1 ساعة).'
                 : 'Please check your inbox and spam folder (link valid for 1 hour).'}
@@ -103,17 +101,17 @@ export const ForgotPasswordScreen: React.FC = () => {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-navy mb-1.5">
-                {isRTL ? 'البريد الإلكتروني المسجل' : 'Registered Email Address'}
+              <label className="block text-xs font-semibold text-navy mb-1.5">
+                {isRTL ? 'البريد الإلكتروني' : 'Email Address'}
               </label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="decidix-input text-sm w-full"
+                className="w-full h-10 px-3.5 rounded-lg border border-slate-200/80 text-xs text-navy placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-blue/15 focus:border-blue transition-colors bg-slate-50 outline-none"
                 placeholder="user@decidixapp.tech"
                 autoComplete="email"
               />
@@ -125,20 +123,20 @@ export const ForgotPasswordScreen: React.FC = () => {
                 variant="primary"
                 size="lg"
                 fullWidth
-                disabled={isSubmitting || !email}
+                disabled={isSubmitting}
               >
                 {isSubmitting
-                  ? isRTL ? 'جارٍ الإرسال...' : 'Dispatching Reset Link...'
+                  ? isRTL ? 'جارٍ الإرسال...' : 'Dispatching Link...'
                   : isRTL ? 'إرسال رابط إعادة التعيين' : 'Send Reset Link'}
               </DecidixButton>
             </div>
 
-            <div className="pt-4 border-t border-line text-center">
+            <div className="text-center pt-3">
               <Link
                 to="/login"
-                className="text-xs font-semibold text-blue hover:underline"
+                className="text-xs font-semibold text-blue hover:text-blue-hover transition"
               >
-                {isRTL ? '← العودة لتسجيل الدخول' : '← Back to Sign In'}
+                {isRTL ? 'الرجوع إلى تسجيل الدخول' : 'Return to Sign In'}
               </Link>
             </div>
           </form>

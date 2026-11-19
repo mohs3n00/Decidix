@@ -8,9 +8,9 @@ interface HeroCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * HeroCard: Flagship Decidix hero container.
- * Features 32px radius, pale white-to-heroTint gradient, 1px white hairline,
- * floating hero shadow, and an authentic top-right radial cyan glow.
+ * HeroCard: Flagship Decidix hero container with crisp SaaS aesthetic.
+ * Features 16px (rounded-2xl) radius, pale white-to-light-blue gradient,
+ * crisp 1px border, ultra-subtle shadow, and subtle radial cyan glow.
  */
 export const HeroCard: React.FC<HeroCardProps> = ({
   children,
@@ -22,15 +22,12 @@ export const HeroCard: React.FC<HeroCardProps> = ({
   return (
     <div
       className={clsx(
-        'decidix-hero-card relative overflow-hidden transition-all duration-300',
+        'decidix-hero-card relative overflow-hidden transition-all duration-200 rounded-2xl border border-slate-200/80 shadow-xs',
         padding,
         className
       )}
       style={{
-        borderRadius: 'var(--radius-hero)',
-        background: 'linear-gradient(135deg, #FFFFFF 0%, var(--color-hero-tint) 100%)',
-        border: '1px solid rgba(255, 255, 255, 0.9)',
-        boxShadow: 'var(--shadow-hero)',
+        background: 'linear-gradient(135deg, #FFFFFF 0%, #EFF6FF 100%)',
         ...style,
       }}
       {...props}
@@ -38,9 +35,9 @@ export const HeroCard: React.FC<HeroCardProps> = ({
       {/* Signature Top-Right Cyan Radial Glow */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-16 -right-12 rtl:-right-auto rtl:-left-12 w-60 h-60 rounded-full"
+        className="pointer-events-none absolute -top-20 -right-16 rtl:-right-auto rtl:-left-16 w-64 h-64 rounded-full opacity-60"
         style={{
-          background: 'radial-gradient(circle, rgba(33, 234, 244, 0.32) 0%, rgba(33, 234, 244, 0) 70%)',
+          background: 'radial-gradient(circle, rgba(33, 234, 244, 0.25) 0%, rgba(37, 99, 235, 0.05) 45%, transparent 70%)',
         }}
       />
       <div className="relative z-10">{children}</div>

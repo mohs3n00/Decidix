@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "50086376748-a4mm9dr6k832iqc18jfjmb63jtfocfk3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.decidixteam.app",
+            "certificate_hash": "a16266896c032db9bb6cbef1b4e3a6d17ea002fa"
+          }
+        },
+        {
           "client_id": "50086376748-676lft8efht29skofqs9ouk3ic8nldue.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -25,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "50086376748-676lft8efht29skofqs9ouk3ic8nldue.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

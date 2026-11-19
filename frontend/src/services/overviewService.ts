@@ -24,8 +24,9 @@ export const overviewService = {
     if (params?.page) query.set('page', params.page.toString());
     if (params?.per_page) query.set('per_page', params.per_page.toString());
 
-    const res = await apiClient.get<RegionListItem[]>(`/regions?${query.toString()}`);
-    return { items: res.data, meta: res.meta };
+    const res = await apiClient.get<any>(`/regions?${query.toString()}`);
+    const items = Array.isArray(res.data) ? res.data : (res.data?.items || []);
+    return { items, meta: res.meta };
   },
 
   async getRegionProfile(id: string): Promise<RegionProfile> {

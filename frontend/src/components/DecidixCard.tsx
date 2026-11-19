@@ -11,10 +11,10 @@ interface DecidixCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * DecidixCard: The fundamental container component in Decidix.
- * - 'card': 28px border-radius, hairline border, light floating shadow.
- * - 'row': 24px border-radius, used for list rows and dense KPI tiles.
- * - 'well': 18px border-radius, tinted background for inner stat wells.
+ * DecidixCard: Crisp Modern SaaS container component.
+ * - 'card': 16px (rounded-2xl) border-radius, crisp subtle border, ultra-subtle elevation.
+ * - 'row': 12px (rounded-xl) border-radius for dense KPI tiles and rows.
+ * - 'well': 12px (rounded-xl) border-radius with soft off-white canvas.
  */
 export const DecidixCard: React.FC<DecidixCardProps> = ({
   children,
@@ -33,11 +33,11 @@ export const DecidixCard: React.FC<DecidixCardProps> = ({
       onClick={onClick}
       onKeyDown={isClickable ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
       className={clsx(
-        'transition-all duration-200 text-navy',
-        variant === 'card' && 'bg-white border border-hairline rounded-card shadow-decidix-card p-5 md:p-6',
-        variant === 'row' && 'bg-white border border-hairline rounded-row shadow-decidix-card p-4',
-        variant === 'well' && 'bg-well border border-hairline rounded-well p-4',
-        isClickable && 'cursor-pointer hover:-translate-y-0.5 hover:shadow-lg',
+        'transition-all duration-150 text-navy',
+        variant === 'card' && 'bg-white border border-slate-200/80 rounded-2xl shadow-xs p-5 md:p-6',
+        variant === 'row' && 'bg-white border border-slate-200/80 rounded-xl shadow-xs p-4',
+        variant === 'well' && 'bg-[#F8FAFC] border border-slate-200/70 rounded-xl p-4',
+        isClickable && 'cursor-pointer hover:border-slate-300 hover:shadow-sm hover:-translate-y-0.5',
         className
       )}
       style={style}

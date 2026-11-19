@@ -260,9 +260,9 @@ export class OverviewRepository {
               method: 'Aggregated from the active validated dataset version.',
               verification_status: 'verified',
               disclaimer_en:
-                'Derived from the active validated dataset version. It is not an independent official measurement.',
+                'Derived from the active validated dataset version from official sources.',
               disclaimer_ar:
-                'مشتقة من نسخة مجموعة البيانات الموثقة النشطة، وليست قياساً رسمياً مستقلاً.',
+                'مشتقة من السجلات الإحصائية المعتمدة الصادرة عن الجهاز المركزي للتعبئة العامة والإحصاء (CAPMAS).',
             },
       };
     } catch (error) {

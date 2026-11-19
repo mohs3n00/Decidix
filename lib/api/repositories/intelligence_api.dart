@@ -26,6 +26,7 @@ class IntelligenceApi {
     required String message,
     required String language,
     String? conversationId,
+    Map<String, dynamic>? datasetContext,
   }) async {
     final response = await _transport.post(
       ApiEndpoints.assistantChat,
@@ -33,6 +34,7 @@ class IntelligenceApi {
         'message': message,
         'language': language,
         'conversation_id': conversationId,
+        'dataset_context': ?datasetContext,
       },
     );
     return ChatReply.fromJson(asMap(response.data, 'data'));

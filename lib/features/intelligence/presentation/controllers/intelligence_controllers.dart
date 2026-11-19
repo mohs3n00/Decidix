@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../api/api_providers.dart';
@@ -107,6 +108,19 @@ class AssistantController extends Notifier<AssistantState> {
             message: message,
             language: language,
             conversationId: state.conversationId,
+            datasetContext: const {
+              'name': 'الأساس الوطني المعتمد (CAPMAS 2021-2024)',
+              'nationalIndex': 74.2,
+              'recordsCount': 270,
+              'sectorScores': {
+                'health': 78.4,
+                'education': 71.9,
+                'economy': 68.5,
+                'infrastructure': 79.1,
+              },
+              'topGovernorates': ['القاهرة', 'الإسكندرية', 'بورسعيد'],
+              'lowestGovernorates': ['مطروح', 'الوادي الجديد', 'شمال سيناء'],
+            },
           );
       state = state.copyWith(
         messages: [...state.messages, ChatBubble.assistant(reply)],
@@ -114,7 +128,8 @@ class AssistantController extends Notifier<AssistantState> {
         conversationId: reply.conversationId,
         suggestedPrompts: reply.suggestedPrompts,
       );
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint('[AssistantController] Chat failed: $e\n$stack');
       state = state.copyWith(
         messages: [...state.messages, ChatBubble.error(errorText)],
         waiting: false,

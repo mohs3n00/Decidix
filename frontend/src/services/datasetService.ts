@@ -51,4 +51,14 @@ export const datasetService = {
     );
     return res.data;
   },
+
+  async approve(datasetId: string): Promise<any> {
+    const res = await apiClient.post<any>(`/datasets/${encodeURIComponent(datasetId)}/approve`);
+    return res.data;
+  },
+
+  async reject(datasetId: string, reason?: string): Promise<any> {
+    const res = await apiClient.post<any>(`/datasets/${encodeURIComponent(datasetId)}/reject`, { reason });
+    return res.data;
+  },
 };

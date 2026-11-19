@@ -19,6 +19,7 @@ import { AppError } from '../../utils/response.js';
 
 
 import { AuthRepository, UserEntity } from '../../repositories/auth.repository.js';
+import { DeviceTokenRepository } from '../../repositories/device_token.repository.js';
 import { EmailService } from '../../integrations/email.service.js';
 import { logger } from '../../utils/logger.js';
 
@@ -807,19 +808,16 @@ export class AuthService {
 
 
 
-    const isMatch = await bcrypt.compare(input.password, user.password_hash);
-
-
-
-    if (!isMatch) {
-      throw AppError.unauthorized('Invalid email or password', 'INVALID_CREDENTIALS');
+    if (user.status === 'deleted') {
+      throw AppError.forbidden('This account has been deleted.', 'ACCOUNT_DELETED');
     }
-
     if (user.status === 'suspended' || user.is_active === false) {
       throw AppError.forbidden('Your account has been suspended. Please contact the administrator.', 'ACCOUNT_SUSPENDED');
     }
-    if (user.status === 'deleted') {
-      throw AppError.forbidden('This account has been deleted.', 'ACCOUNT_DELETED');
+
+    const isMatch = await bcrypt.compare(input.password, user.password_hash);
+    if (!isMatch) {
+      throw AppError.unauthorized('Invalid email or password', 'INVALID_CREDENTIALS');
     }
 
     const tokens = await this.createSessionAndTokens(user, meta);
@@ -1474,5 +1472,87 @@ export class AuthService {
 
     logger.info('Password reset successfully and sessions revoked', { userId: record.userId });
     return { message: 'Password has been reset successfully. Please sign in with your new password.' };
+  }
+
+  /**
+   * Permanently deletes a user's account, revokes all sessions, and deactivates device tokens.
+   */
+  static async deleteMyAccount(userId: string): Promise<{ message: string }> {
+    const user = await AuthRepository.findById(userId);
+    if (!user) {
+      throw AppError.notFound('User not found', 'USER_NOT_FOUND');
+    }
+
+    // Set user status to deleted and permanently purge personal data
+    await AuthRepository.anonymizeAndPurgeUser(userId);
+
+    // Revoke all active sessions
+    await AuthRepository.revokeAllUserSessions(userId);
+
+    // Deactivate push notification device tokens
+    try {
+      const activeTokens = await DeviceTokenRepository.findActiveTokensByUser(userId);
+      if (activeTokens && activeTokens.length > 0) {
+        await DeviceTokenRepository.deactivateTokens(activeTokens.map((t) => t.token));
+      }
+    } catch (err: any) {
+      logger.warn('[AuthService] Deactivating device tokens on deletion encountered warning', { err: err?.message });
+    }
+
+    logger.info('Account deleted successfully and all sessions revoked', { userId });
+    return { message: 'Account and associated personal sessions have been successfully deleted.' };
+  }
+
+  /**
+   * Requests account deletion confirmation via email (for unauthenticated external users / Google Play compliance).
+   */
+  static async requestAccountDeletion(email: string): Promise<{ message: string }> {
+    if (!email || typeof email !== 'string' || !email.trim()) {
+      throw AppError.badRequest('Email is required', 'EMAIL_REQUIRED');
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await AuthRepository.findByEmail(normalizedEmail);
+
+    // Anti-enumeration: If user does not exist or is already deleted, do not disclose
+    if (!user || user.status === 'deleted') {
+      return { message: 'If this email belongs to an active account, deletion confirmation instructions have been sent.' };
+    }
+
+    const deletionToken = jwt.sign(
+      { userId: user.id, purpose: 'account_deletion' },
+      env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    try {
+      await EmailService.sendAccountDeletionEmail(user.email, user.name, deletionToken);
+    } catch (err: any) {
+      logger.warn('[AuthService] Account deletion email delivery failed', { err: err?.message });
+    }
+
+    return { message: 'If this email belongs to an active account, deletion confirmation instructions have been sent.' };
+  }
+
+  /**
+   * Confirms account deletion with a secure signed deletion token.
+   */
+  static async confirmAccountDeletion(rawToken: string): Promise<{ message: string }> {
+    if (!rawToken || typeof rawToken !== 'string' || !rawToken.trim()) {
+      throw AppError.badRequest('Deletion token is required', 'TOKEN_REQUIRED');
+    }
+
+    let payload: { userId: string; purpose: string };
+    try {
+      payload = jwt.verify(rawToken.trim(), env.JWT_SECRET) as { userId: string; purpose: string };
+    } catch (err) {
+      throw AppError.badRequest('Invalid or expired deletion token', 'INVALID_DELETION_TOKEN');
+    }
+
+    if (payload.purpose !== 'account_deletion' || !payload.userId) {
+      throw AppError.badRequest('Invalid deletion token purpose', 'INVALID_DELETION_TOKEN');
+    }
+
+    return await this.deleteMyAccount(payload.userId);
   }
 }

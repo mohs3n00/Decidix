@@ -8,7 +8,7 @@ import { DecidixCard } from '../../components/DecidixCard';
 import { DecidixButton } from '../../components/DecidixButton';
 import { PriorityBadge } from '../../components/PriorityBadge';
 import { HatchedBar } from '../../components/HatchedBar';
-import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { SkeletonCard } from '../../components/Skeleton';
 import { DecidixIcon } from '../../components/DecidixIcon';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -45,20 +45,20 @@ export const DecisionsScreen: React.FC = () => {
   }, []);
 
   return (
-    <div className="space-y-7 animate-in fade-in duration-300">
+    <div className="space-y-7 animate-in fade-in duration-200">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="type-eyebrow mb-1">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-blue mb-1">
             {isRTL
               ? 'أدوات المحاكاة الاستراتيجية وتتبع المشاريع'
-              : 'Strategic policy simulation & capital projects tracking'}
+              : 'STRATEGIC POLICY SIMULATION & CAPITAL PROJECTS'}
           </div>
           <TwoToneHeading
             first={isRTL ? 'صنع' : 'Decisions'}
             second={isRTL ? 'القرار والتخطيط' : 'Hub'}
             level={1}
-            className="type-heading-page"
+            className="text-2xl md:text-3xl font-bold"
           />
         </div>
 
@@ -73,18 +73,18 @@ export const DecisionsScreen: React.FC = () => {
       {/* Signature Hero Card for Budget Simulator */}
       <HeroCard>
         <div className="max-w-2xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-pill bg-white/90 border border-white text-blue text-xs font-bold shadow-sm">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/90 border border-slate-200/80 text-blue text-xs font-bold shadow-2xs">
             <DecidixIcon name="spark" size={14} color="var(--color-blue)" />
             <span>{isRTL ? 'محاكاة السياسات والميزانية' : 'Quantitative Policy Simulation'}</span>
           </div>
 
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-navy">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-navy">
             {isRTL
               ? 'كيف تؤثر استثماراتك على مؤشرات التنمية؟'
               : 'Simulate Budget Reallocations in Real Time'}
           </h2>
 
-          <p className="type-body-m text-ink leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
             {isRTL
               ? 'اختبر سيناريوهات إعادة توزيع مخصصات الموازنة العامة بين الصحة والتعليم والبنية التحتية، وشاهد التأثير الرياضي المتوقع على المؤشر التنموي المركب.'
               : 'Model dynamic budget interventions across health, education, and infrastructure to observe statistically predicted regional index outcomes.'}
@@ -94,7 +94,7 @@ export const DecisionsScreen: React.FC = () => {
             <Link to="/decisions/simulator">
               <DecidixButton variant="brand" compact>
                 <span>{isRTL ? 'بدء تشغيل المحاكي التفاعلي' : 'Start What-If Simulation'}</span>
-                <span>→</span>
+                <DecidixIcon name="arrow_right" size={13} color="currentColor" />
               </DecidixButton>
             </Link>
           </div>
@@ -102,16 +102,16 @@ export const DecisionsScreen: React.FC = () => {
       </HeroCard>
 
       {/* Dual Grid: Projects Portfolio & Frontline Citizen Reports */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Projects Portfolio */}
         <DecidixCard variant="card" className="flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="type-heading-section text-navy">
+                <h3 className="text-base font-bold text-navy">
                   {isRTL ? 'سجل المشاريع التنموية' : 'Development Capital Projects'}
                 </h3>
-                <p className="text-xs text-faded-ink mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   {isRTL ? 'متابعة نسب إنجاز المشروعات الميدانية' : 'Active public investments and execution progress'}
                 </p>
               </div>
@@ -121,11 +121,12 @@ export const DecisionsScreen: React.FC = () => {
             </div>
 
             {isLoading ? (
-              <div className="py-12 flex justify-center">
-                <LoadingSpinner message={isRTL ? 'جارٍ تحميل المشاريع...' : 'Loading projects...'} />
+              <div className="space-y-3">
+                <div className="h-14 bg-slate-100 rounded-xl animate-pulse" />
+                <div className="h-14 bg-slate-100 rounded-xl animate-pulse" />
               </div>
             ) : projects.length === 0 ? (
-              <div className="p-8 text-center text-xs text-faded-ink">
+              <div className="p-8 text-center text-xs text-slate-400">
                 {isRTL ? 'لا توجد مشاريع مسجلة حالياً' : 'No active projects found.'}
               </div>
             ) : (
@@ -133,36 +134,25 @@ export const DecisionsScreen: React.FC = () => {
                 {projects.map((proj) => (
                   <div
                     key={proj.id}
-                    className="p-3.5 rounded-row bg-well border border-hairline space-y-2"
+                    className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/70 hover:border-slate-300 transition-colors duration-150 space-y-2"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-navy truncate max-w-[200px]">
                           {isRTL && proj.arabic_title ? proj.arabic_title : proj.title}
                         </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-pill bg-white text-ink border border-hairline uppercase">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-slate-600 border border-slate-200/80 uppercase">
                           {proj.domain}
                         </span>
                       </div>
-                      <span className="text-xs font-black text-blue">{proj.progress_percent}%</span>
+                      <span className="text-xs font-bold text-blue tabular-nums">{proj.progress_percent}%</span>
                     </div>
 
-                    <HatchedBar percentage={proj.progress_percent} height={7} />
-
-                    <div className="flex justify-between text-[11px] text-faded-ink pt-0.5">
-                      <span>Budget: ${(proj.budget / 1_000_000).toFixed(1)}M</span>
-                      <span className="capitalize">{proj.status.replace('_', ' ')}</span>
-                    </div>
+                    <HatchedBar percentage={proj.progress_percent} height={6} />
                   </div>
                 ))}
               </div>
             )}
-          </div>
-
-          <div className="mt-5 pt-3.5 border-t border-hairline text-xs text-faded-ink">
-            {isRTL
-              ? 'محدثة بالتنسيق مع غرف المتابعة الإقليمية والوزارات المعنية.'
-              : 'Synchronized with provincial execution registries.'}
           </div>
         </DecidixCard>
 
@@ -171,11 +161,11 @@ export const DecisionsScreen: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="type-heading-section text-navy">
-                  {isRTL ? 'بلاغات المواطنين الميدانية' : 'Citizen Frontline Feedback'}
+                <h3 className="text-base font-bold text-navy">
+                  {isRTL ? 'مشاركات وتقارير المواطنين' : 'Citizen Intelligence Reports'}
                 </h3>
-                <p className="text-xs text-faded-ink mt-0.5">
-                  {isRTL ? 'مؤشرات الرضا والشكاوى من أرض الواقع' : 'Ground-truth service deficits reported by citizens'}
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {isRTL ? 'ملاحظات ميدانية وبلاغات سد الفجوات' : 'Crowdsourced observations and localized feedback'}
                 </p>
               </div>
               <Link to="/decisions/citizen-reports" className="text-xs font-semibold text-blue hover:underline">
@@ -184,31 +174,28 @@ export const DecisionsScreen: React.FC = () => {
             </div>
 
             {isLoading ? (
-              <div className="py-12 flex justify-center">
-                <LoadingSpinner message={isRTL ? 'جارٍ تحميل البلاغات...' : 'Loading citizen signals...'} />
+              <div className="space-y-3">
+                <div className="h-14 bg-slate-100 rounded-xl animate-pulse" />
+                <div className="h-14 bg-slate-100 rounded-xl animate-pulse" />
               </div>
             ) : reports.length === 0 ? (
-              <div className="p-8 text-center text-xs text-faded-ink">
-                {isRTL ? 'لا توجد بلاغات مسجلة حالياً' : 'No citizen reports logged.'}
+              <div className="p-8 text-center text-xs text-slate-400">
+                {isRTL ? 'لا توجد تقارير واردة حالياً' : 'No citizen reports found.'}
               </div>
             ) : (
               <div className="space-y-3">
                 {reports.map((rep) => (
                   <div
                     key={rep.id}
-                    className="p-3.5 rounded-row bg-well border border-hairline space-y-1.5"
+                    className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/70 hover:border-slate-300 transition-colors duration-150 space-y-1.5"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <PriorityBadge priority={rep.priority} isArabic={isRTL} />
-                        <span className="text-xs font-bold text-navy capitalize">{rep.category}</span>
-                      </div>
-                      <span className="text-[11px] font-semibold text-faded-ink">
-                        Region: {rep.region_id}
+                      <span className="text-xs font-bold text-navy truncate max-w-[220px]">
+                        {isRTL && rep.arabic_title ? rep.arabic_title : rep.title}
                       </span>
+                      <PriorityBadge priority={rep.priority} isArabic={isRTL} />
                     </div>
-
-                    <p className="type-body-m text-ink line-clamp-2">
+                    <p className="text-xs text-slate-500 line-clamp-1">
                       {isRTL && rep.arabic_description ? rep.arabic_description : rep.description}
                     </p>
                   </div>
@@ -217,7 +204,7 @@ export const DecisionsScreen: React.FC = () => {
             )}
           </div>
 
-          <div className="mt-5 pt-3.5 border-t border-hairline text-xs text-faded-ink">
+          <div className="mt-5 pt-3.5 border-t border-slate-100 text-xs text-slate-500">
             {isRTL
               ? 'تخضع البلاغات للتحقق الجغرافي والربط التلقائي بأولويات التدخل.'
               : 'Signals are geocoded and mapped to priority intervention matrices.'}

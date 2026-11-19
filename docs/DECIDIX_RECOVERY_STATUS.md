@@ -1,11 +1,21 @@
 # Decidix Recovery Status
 
-**Last updated:** 2026-11-06  
+**Last updated:** 2026-11-08  
 **Branch:** `recovery/stabilization`  
 **Canonical roadmap:** [DECIDIX_RECOVERY_MASTER_PLAN.md](./DECIDIX_RECOVERY_MASTER_PLAN.md)  
-**Current phase:** Phase 6 — Cloudflare R2 Storage & Dataset Governance (Storage & Upload Pipeline Completed)  
-**Current task:** T6.4 — Android Release APK Staging Build & On-Device Deployment Verified  
-**Last verified checkpoint:** 2026-11-06 Android Release APK built with AGP 9 built-in Kotlin (`0FB20A6665FE409A25701215A503FCA11973DD62A93B3A27ABED30EDFF51D7E0`); installed and running on physical device CPH2579 (Android 15, API 35); Flutter analyze 0 issues, Flutter test suite 228/228 passed; Deployed Staging APIs verified 10/10 checks passing.
+**Current phase:** Phase 7 — Google Play Store Release Readiness & Android Production Build  
+**Current task:** T7.1 — Google Play Release Audit, 16 KB Page Compatibility & Android Release Bundle Verified  
+**Last verified checkpoint:** 2026-11-08 Signed Android App Bundle built (`build/app/outputs/bundle/release/app-release.aab`, 59.28 MB, SHA-256 `40745A3C659CE93D87237538EE57315D01D72E5BA00043B7A31C0A3439906E29`); independently verified with `jarsigner -verify` and `keytool -printcert` matching genuine upload certificate (DN: `CN=Decidix Mobile Team, OU=Engineering, O=Decidix, C=EG`, SHA-1 `F8:02:17:BD:4D:0D:6C:B1:30:84:53:C0:8F:A9:6F:4E:4A:53:D1:C4`); Android 16 (Target SDK 36, Compile SDK 36); 16 KB ELF page-size alignment 100% verified across arm64-v8a and x86_64; release APK verified on 16 KB page-size Android 16/17 emulator (`16384` page size, PID 4240, 0 crashes); in-app and backend account deletion implemented; `flutter analyze` 0 issues, `flutter test` 251/251 passed; release readiness report and Play Console submission checklist published.
+
+## Google Play Store Release Readiness Audit & Production Bundle — 2026-11-08
+
+- **Toolchain & Target API:** Flutter 3.47.6, Dart 3.13.5, Java 24.0.1, AGP 9.1.0, Gradle 9.3.1, Kotlin 2.4.0. `minSdkVersion 24`, `compileSdkVersion 36`, `targetSdkVersion 36`.
+- **16 KB Memory Page Size Compatibility & Runtime Validation:** Audited program header `PT_LOAD` segments for all 64-bit native `.so` files in the release bundle (`libapp.so`, `libdartjni.so`, `libdatastore_shared_counter.so`, `libflutter.so`). All libraries meet `p_align >= 0x4000` (16 KB) or `0x10000` (64 KB). Executed live release test on Android 16/17 emulator with `getconf PAGE_SIZE` = 16384 bytes, 0 crashes. Status: PASS.
+- **In-App Account Deletion:** Added `deleteAccount()` in `lib/core/auth/auth_controller.dart` connecting to backend `DELETE /v1/auth/me`. Integrated bilingual confirmation alert dialog in `lib/core/routing/app_shell.dart`. Backend personal data scrubbing verified with Vitest in `backend/tests/account_deletion.test.ts`.
+- **Release Signing & Keystore Resolution:** Upload keystore generated via `scripts/setup_upload_keystore.ps1` upon user confirmation of first-time Play Console submission. Stored at `android/decidix-release.jks`, configured in `android/key.properties` (BOM-free), backed up to `C:\Users\draz\.decidix_keys_backup`. Release AAB and APK verified signed with upload certificate (SHA-1: `F8:02:17:BD:4D:0D:6C:B1:30:84:53:C0:8F:A9:6F:4E:4A:53:D1:C4`).
+- **Quality Gates:** `flutter analyze` 0 issues; `flutter test` 251 passed (0 failed, 2 skipped).
+- **Deliverables:** Published `docs/release/google_play_release_readiness_report.md` and `docs/release/play_console_submission_checklist.md`. Signed AAB at `build/app/outputs/bundle/release/app-release.aab`.
+
 
 ## Google Sign-In failure — root cause and fix — 2026-11-06
 

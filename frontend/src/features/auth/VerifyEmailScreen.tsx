@@ -70,8 +70,8 @@ export const VerifyEmailScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-navy flex flex-col items-center justify-center p-4 relative overflow-hidden select-none">
-      <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4 relative overflow-hidden select-none">
+      <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue/10 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-cyan/15 rounded-full blur-3xl pointer-events-none"></div>
 
       {/* Language Toggle */}
@@ -79,21 +79,19 @@ export const VerifyEmailScreen: React.FC = () => {
         <button
           type="button"
           onClick={toggleLanguage}
-          className="px-3.5 py-1.5 text-xs font-semibold rounded-pill bg-white/10 hover:bg-white/20 text-white transition border border-white/20 shadow-sm backdrop-blur-sm"
+          className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white hover:bg-slate-50 text-navy transition-colors border border-slate-200/80 shadow-2xs"
         >
           {language === 'en' ? 'العربية' : 'English'}
         </button>
       </div>
 
-      <div className="w-full max-w-md bg-white rounded-hero p-8 shadow-decidix-hero border border-hairline relative z-10 animate-in fade-in zoom-in-95 duration-300">
+      <div className="w-full max-w-md bg-white rounded-2xl p-8 shadow-xs border border-slate-200/80 relative z-10 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-14 h-14 bg-navy rounded-2xl flex items-center justify-center p-3 shadow-lg mb-3 border border-white/10">
-            <DecidixIcon name="logo_white" size={32} />
-          </div>
-          <h1 className="text-xl font-black text-navy tracking-tight font-display">
+          <DecidixIcon name="splash_mark" size={54} className="mb-3" />
+          <h1 className="text-xl font-bold text-navy tracking-tight font-display">
             {isRTL ? 'تأكيد البريد الإلكتروني' : 'Email Verification'}
           </h1>
-          <p className="text-xs text-faded-ink mt-1 max-w-xs leading-relaxed">
+          <p className="text-xs text-slate-500 mt-1 max-w-xs leading-relaxed">
             {isRTL
               ? 'تأكيد ملكية الحساب لتفعيل كافة الصلاحيات التحليلية في منصة ديسيدكس'
               : 'Verify your email to activate full analytical access across the Decidix platform'}
@@ -107,13 +105,13 @@ export const VerifyEmailScreen: React.FC = () => {
           </div>
         ) : verifySuccess ? (
           <div className="text-center py-4 space-y-4 animate-in fade-in">
-            <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center text-3xl mx-auto shadow-sm">
-              ✓
+            <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/80 flex items-center justify-center mx-auto shadow-2xs">
+              <DecidixIcon name="check" size={24} color="#059669" />
             </div>
-            <h2 className="text-lg font-black text-navy">
+            <h2 className="text-lg font-bold text-navy">
               {isRTL ? 'تم توثيق الحساب بنجاح!' : 'Email Verified Successfully!'}
             </h2>
-            <p className="text-xs text-ink leading-relaxed">
+            <p className="text-xs text-slate-600 leading-relaxed">
               {verifySuccess}
             </p>
             <div className="pt-2">
@@ -130,15 +128,15 @@ export const VerifyEmailScreen: React.FC = () => {
         ) : (
           <div className="space-y-6">
             {verifyError && (
-              <div className="p-3.5 rounded-well bg-rose-50 text-danger text-xs font-semibold border border-rose-200/80 flex items-start gap-2 animate-in fade-in">
-                <span className="shrink-0 text-base leading-none">⚠️</span>
-                <div className="flex-1">{verifyError}</div>
+              <div className="p-3.5 mb-5 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200/80 flex items-start gap-2.5 animate-in fade-in">
+                <DecidixIcon name="warning" size={16} color="#E11D48" />
+                <div className="flex-1 leading-relaxed">{verifyError}</div>
               </div>
             )}
 
             {/* Manual Token Verification Form */}
             <form onSubmit={handleManualVerify} className="space-y-3">
-              <label className="block text-xs font-bold text-navy">
+              <label className="block text-xs font-semibold text-navy">
                 {isRTL ? 'رمز التأكيد (من الرابط)' : 'Verification Token'}
               </label>
               <input
@@ -147,7 +145,7 @@ export const VerifyEmailScreen: React.FC = () => {
                 value={tokenInput}
                 onChange={(e) => setTokenInput(e.target.value)}
                 placeholder="e.g. 64-char hex token"
-                className="decidix-input font-mono text-xs w-full"
+                className="w-full h-10 px-3.5 rounded-lg border border-slate-200/80 font-mono text-xs text-navy placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-blue/15 focus:border-blue transition-colors bg-slate-50 outline-none"
               />
               <DecidixButton
                 type="submit"
@@ -161,20 +159,22 @@ export const VerifyEmailScreen: React.FC = () => {
             </form>
 
             {/* Resend Section */}
-            <div className="pt-5 border-t border-line space-y-3">
-              <h3 className="text-xs font-bold text-navy">
+            <div className="pt-5 border-t border-slate-100 space-y-3">
+              <h3 className="text-xs font-semibold text-navy">
                 {isRTL ? 'لم تستلم رسالة التأكيد؟' : "Didn't receive the email?"}
               </h3>
 
               {resendSuccess && (
-                <div className="p-3 rounded-well bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200">
-                  ✓ {resendSuccess}
+                <div className="p-3 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200/80 flex items-center gap-2">
+                  <DecidixIcon name="check" size={14} color="#059669" />
+                  <span>{resendSuccess}</span>
                 </div>
               )}
 
               {resendError && (
-                <div className="p-3 rounded-well bg-rose-50 text-danger text-xs font-semibold border border-rose-200">
-                  ✕ {resendError}
+                <div className="p-3 rounded-lg bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200/80 flex items-center gap-2">
+                  <DecidixIcon name="close" size={14} color="#E11D48" />
+                  <span>{resendError}</span>
                 </div>
               )}
 
@@ -185,7 +185,7 @@ export const VerifyEmailScreen: React.FC = () => {
                   value={resendEmail}
                   onChange={(e) => setResendEmail(e.target.value)}
                   placeholder="user@decidixapp.tech"
-                  className="decidix-input text-xs w-full"
+                  className="w-full h-10 px-3.5 rounded-lg border border-slate-200/80 text-xs text-navy placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-blue/15 focus:border-blue transition-colors bg-slate-50 outline-none"
                 />
                 <DecidixButton
                   type="submit"
@@ -202,8 +202,9 @@ export const VerifyEmailScreen: React.FC = () => {
             </div>
 
             <div className="pt-2 text-center">
-              <Link to="/" className="text-xs font-semibold text-blue hover:underline">
-                {isRTL ? '← العودة إلى المنصة' : '← Back to Platform'}
+              <Link to="/" className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue hover:underline">
+                <DecidixIcon name="arrow_left" size={13} color="#2563EB" />
+                <span>{isRTL ? 'العودة إلى المنصة' : 'Back to Platform'}</span>
               </Link>
             </div>
           </div>

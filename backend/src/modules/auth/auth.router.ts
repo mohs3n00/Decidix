@@ -324,6 +324,23 @@ authRouter.get(
 
 );
 
+/**
+ * DELETE /v1/auth/me
+ * Permanently deletes the authenticated user's account and revokes all active sessions.
+ */
+authRouter.delete(
+  '/me',
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await AuthService.deleteMyAccount(req.user!.id);
+      sendSuccess(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 
 
 /**
@@ -670,6 +687,52 @@ authRouter.post(
     try {
       const { token, password } = req.body;
       const result = await AuthService.resetPassword(token, password);
+      sendSuccess(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+const requestDeletionSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
+const confirmDeletionSchema = z.object({
+  token: z.string().min(10, 'Token is required'),
+});
+
+/**
+ * POST /v1/auth/request-deletion
+ * Initiates an account deletion verification flow via email (Google Play external URL compliance).
+ */
+authRouter.post(
+  '/request-deletion',
+  authRateLimiter,
+  validateRequest({ body: requestDeletionSchema }),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email } = req.body;
+      const result = await AuthService.requestAccountDeletion(email);
+      sendSuccess(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /v1/auth/confirm-deletion
+ * Confirms account deletion using the signed token.
+ */
+authRouter.post(
+  '/confirm-deletion',
+  authRateLimiter,
+  validateRequest({ body: confirmDeletionSchema }),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { token } = req.body;
+      const result = await AuthService.confirmAccountDeletion(token);
       sendSuccess(res, result);
     } catch (error) {
       next(error);

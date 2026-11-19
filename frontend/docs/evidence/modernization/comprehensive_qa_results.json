@@ -1,0 +1,578 @@
+[
+  {
+    "route": "/",
+    "name": "01_overview",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\01_overview_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/assistant",
+    "name": "02_assistant_chat",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\02_assistant_chat_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/insights",
+    "name": "03_insights_education",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\03_insights_education_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/insights/comparison?a=cairo&b=alexandria",
+    "name": "04_insights_comparison",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\04_insights_comparison_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/insights/historical",
+    "name": "05_insights_historical",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\05_insights_historical_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/insights/priority",
+    "name": "06_insights_priority",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\06_insights_priority_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/insights/data-quality",
+    "name": "07_insights_data_quality",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\07_insights_data_quality_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/intelligence/predictions",
+    "name": "08_intelligence_predictions",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\08_intelligence_predictions_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/intelligence/recommendations",
+    "name": "09_intelligence_recommendations",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\09_intelligence_recommendations_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/decisions/simulator",
+    "name": "10_decisions_simulator",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\10_decisions_simulator_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/decisions/projects",
+    "name": "11_decisions_projects",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\11_decisions_projects_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/decisions/citizen-reports",
+    "name": "12_decisions_citizen_reports",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\12_decisions_citizen_reports_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/regions",
+    "name": "13_regions_list",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\13_regions_list_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/map",
+    "name": "14_interactive_map",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\14_interactive_map_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/regions/cairo",
+    "name": "15_region_profile_cairo",
+    "viewport": "desktop-1920",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\15_region_profile_cairo_desktop-1920_ltr.png"
+  },
+  {
+    "route": "/",
+    "name": "01_overview_rtl",
+    "viewport": "desktop-1920",
+    "lang": "ar",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\01_overview_rtl_desktop-1920.png"
+  },
+  {
+    "route": "/assistant",
+    "name": "02_assistant_chat_rtl",
+    "viewport": "desktop-1920",
+    "lang": "ar",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\02_assistant_chat_rtl_desktop-1920.png"
+  },
+  {
+    "route": "/insights",
+    "name": "03_insights_education_rtl",
+    "viewport": "desktop-1920",
+    "lang": "ar",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\03_insights_education_rtl_desktop-1920.png"
+  },
+  {
+    "route": "/insights/comparison?a=cairo&b=alexandria",
+    "name": "04_insights_comparison_rtl",
+    "viewport": "desktop-1920",
+    "lang": "ar",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\04_insights_comparison_rtl_desktop-1920.png"
+  },
+  {
+    "route": "/decisions/simulator",
+    "name": "10_decisions_simulator_rtl",
+    "viewport": "desktop-1920",
+    "lang": "ar",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\10_decisions_simulator_rtl_desktop-1920.png"
+  },
+  {
+    "route": "/regions/cairo",
+    "name": "15_region_profile_cairo_rtl",
+    "viewport": "desktop-1920",
+    "lang": "ar",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\15_region_profile_cairo_rtl_desktop-1920.png"
+  },
+  {
+    "route": "/",
+    "name": "01_overview",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\01_overview_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/assistant",
+    "name": "02_assistant_chat",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\02_assistant_chat_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/insights",
+    "name": "03_insights_education",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\03_insights_education_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/insights/comparison?a=cairo&b=alexandria",
+    "name": "04_insights_comparison",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\04_insights_comparison_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/insights/historical",
+    "name": "05_insights_historical",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\05_insights_historical_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/insights/priority",
+    "name": "06_insights_priority",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\06_insights_priority_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/insights/data-quality",
+    "name": "07_insights_data_quality",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\07_insights_data_quality_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/intelligence/predictions",
+    "name": "08_intelligence_predictions",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\08_intelligence_predictions_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/intelligence/recommendations",
+    "name": "09_intelligence_recommendations",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\09_intelligence_recommendations_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/decisions/simulator",
+    "name": "10_decisions_simulator",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\10_decisions_simulator_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/decisions/projects",
+    "name": "11_decisions_projects",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\11_decisions_projects_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/decisions/citizen-reports",
+    "name": "12_decisions_citizen_reports",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\12_decisions_citizen_reports_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/regions",
+    "name": "13_regions_list",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\13_regions_list_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/map",
+    "name": "14_interactive_map",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\14_interactive_map_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/regions/cairo",
+    "name": "15_region_profile_cairo",
+    "viewport": "laptop-1440",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\15_region_profile_cairo_laptop-1440_ltr.png"
+  },
+  {
+    "route": "/",
+    "name": "01_overview",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\01_overview_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/assistant",
+    "name": "02_assistant_chat",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\02_assistant_chat_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/insights",
+    "name": "03_insights_education",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\03_insights_education_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/insights/comparison?a=cairo&b=alexandria",
+    "name": "04_insights_comparison",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\04_insights_comparison_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/insights/historical",
+    "name": "05_insights_historical",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\05_insights_historical_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/insights/priority",
+    "name": "06_insights_priority",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\06_insights_priority_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/insights/data-quality",
+    "name": "07_insights_data_quality",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\07_insights_data_quality_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/intelligence/predictions",
+    "name": "08_intelligence_predictions",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\08_intelligence_predictions_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/intelligence/recommendations",
+    "name": "09_intelligence_recommendations",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\09_intelligence_recommendations_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/decisions/simulator",
+    "name": "10_decisions_simulator",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\10_decisions_simulator_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/decisions/projects",
+    "name": "11_decisions_projects",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\11_decisions_projects_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/decisions/citizen-reports",
+    "name": "12_decisions_citizen_reports",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\12_decisions_citizen_reports_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/regions",
+    "name": "13_regions_list",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\13_regions_list_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/map",
+    "name": "14_interactive_map",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\14_interactive_map_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/regions/cairo",
+    "name": "15_region_profile_cairo",
+    "viewport": "tablet-1024",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\15_region_profile_cairo_tablet-1024_ltr.png"
+  },
+  {
+    "route": "/",
+    "name": "01_overview",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\01_overview_mobile-390_ltr.png"
+  },
+  {
+    "route": "/assistant",
+    "name": "02_assistant_chat",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\02_assistant_chat_mobile-390_ltr.png"
+  },
+  {
+    "route": "/insights",
+    "name": "03_insights_education",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\03_insights_education_mobile-390_ltr.png"
+  },
+  {
+    "route": "/insights/comparison?a=cairo&b=alexandria",
+    "name": "04_insights_comparison",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\04_insights_comparison_mobile-390_ltr.png"
+  },
+  {
+    "route": "/insights/historical",
+    "name": "05_insights_historical",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\05_insights_historical_mobile-390_ltr.png"
+  },
+  {
+    "route": "/insights/priority",
+    "name": "06_insights_priority",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\06_insights_priority_mobile-390_ltr.png"
+  },
+  {
+    "route": "/insights/data-quality",
+    "name": "07_insights_data_quality",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\07_insights_data_quality_mobile-390_ltr.png"
+  },
+  {
+    "route": "/intelligence/predictions",
+    "name": "08_intelligence_predictions",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\08_intelligence_predictions_mobile-390_ltr.png"
+  },
+  {
+    "route": "/intelligence/recommendations",
+    "name": "09_intelligence_recommendations",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\09_intelligence_recommendations_mobile-390_ltr.png"
+  },
+  {
+    "route": "/decisions/simulator",
+    "name": "10_decisions_simulator",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\10_decisions_simulator_mobile-390_ltr.png"
+  },
+  {
+    "route": "/decisions/projects",
+    "name": "11_decisions_projects",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\11_decisions_projects_mobile-390_ltr.png"
+  },
+  {
+    "route": "/decisions/citizen-reports",
+    "name": "12_decisions_citizen_reports",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\12_decisions_citizen_reports_mobile-390_ltr.png"
+  },
+  {
+    "route": "/regions",
+    "name": "13_regions_list",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\13_regions_list_mobile-390_ltr.png"
+  },
+  {
+    "route": "/map",
+    "name": "14_interactive_map",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\14_interactive_map_mobile-390_ltr.png"
+  },
+  {
+    "route": "/regions/cairo",
+    "name": "15_region_profile_cairo",
+    "viewport": "mobile-390",
+    "lang": "en",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\15_region_profile_cairo_mobile-390_ltr.png"
+  },
+  {
+    "route": "/",
+    "name": "01_overview_rtl",
+    "viewport": "mobile-390",
+    "lang": "ar",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\01_overview_rtl_mobile-390.png"
+  },
+  {
+    "route": "/assistant",
+    "name": "02_assistant_chat_rtl",
+    "viewport": "mobile-390",
+    "lang": "ar",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\02_assistant_chat_rtl_mobile-390.png"
+  },
+  {
+    "route": "/insights",
+    "name": "03_insights_education_rtl",
+    "viewport": "mobile-390",
+    "lang": "ar",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\03_insights_education_rtl_mobile-390.png"
+  },
+  {
+    "route": "/insights/comparison?a=cairo&b=alexandria",
+    "name": "04_insights_comparison_rtl",
+    "viewport": "mobile-390",
+    "lang": "ar",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\04_insights_comparison_rtl_mobile-390.png"
+  },
+  {
+    "route": "/decisions/simulator",
+    "name": "10_decisions_simulator_rtl",
+    "viewport": "mobile-390",
+    "lang": "ar",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\10_decisions_simulator_rtl_mobile-390.png"
+  },
+  {
+    "route": "/regions/cairo",
+    "name": "15_region_profile_cairo_rtl",
+    "viewport": "mobile-390",
+    "lang": "ar",
+    "status": "PASS",
+    "screenshot": "E:\\decidix_app\\frontend\\docs\\evidence\\modernization\\15_region_profile_cairo_rtl_mobile-390.png"
+  }
+]

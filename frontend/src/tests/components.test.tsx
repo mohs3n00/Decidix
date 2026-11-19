@@ -18,6 +18,19 @@ describe('Decidix Core Components', () => {
     expect(iconSpan).toBeInTheDocument();
   });
 
+  it('renders DecidixIcon vector SVG icons and splash_mark', () => {
+    const { container: checkContainer } = render(<DecidixIcon name="check" size={16} />);
+    expect(checkContainer.querySelector('svg')).toBeInTheDocument();
+
+    const { container: arrowContainer } = render(<DecidixIcon name="arrow_right" size={16} />);
+    expect(arrowContainer.querySelector('svg')).toBeInTheDocument();
+
+    const { container: splashContainer } = render(<DecidixIcon name="splash_mark" size={32} />);
+    const img = splashContainer.querySelector('img');
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute('src', '/splash_mark.png');
+  });
+
   it('renders TwoToneHeading with first word and second word styling', () => {
     render(<TwoToneHeading eyebrow="REGIONAL METRICS" first="Regional" second="Overview" level={1} />);
     expect(screen.getByText('REGIONAL METRICS')).toBeInTheDocument();

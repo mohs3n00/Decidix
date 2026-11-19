@@ -393,6 +393,18 @@ class AppShell extends ConsumerWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.of(modalContext).pop();
+                    _confirmAccountDeletion(context, ref, isAr);
+                  },
+                  icon: const Icon(Icons.delete_forever_outlined, size: 16, color: AppColors.danger),
+                  label: Text(
+                    isAr ? 'حذف الحساب نهائياً' : 'Delete Account',
+                    style: AppTypography.captionMedium.copyWith(color: AppColors.danger),
+                  ),
+                ),
               ] else ...[
                 const Icon(Icons.account_circle_outlined, size: 56, color: AppColors.fadedInk),
                 const SizedBox(height: 12),
@@ -450,5 +462,55 @@ class AppShell extends ConsumerWidget {
         );
       },
     );
+  }
+
+  Future<void> _confirmAccountDeletion(
+    BuildContext context,
+    WidgetRef ref,
+    bool isAr,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: Text(
+          isAr ? 'حذف الحساب نهائياً' : 'Delete Account Permanently',
+          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.danger),
+        ),
+        content: Text(
+          isAr
+              ? 'هل أنت متأكد من رغبتك في حذف حسابك نهائياً؟ سيتم إلغاء تفعيل حسابك، وإنهاء جميع الجلسات النشطة، وحذف ارتباطات الأجهزة فوراً. هذا الإجراء نهائي ولا يمكن التراجع عنه.'
+              : 'Are you sure you want to permanently delete your account? Your account will be deactivated, all active sessions revoked, and device tokens removed immediately. This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
+            child: Text(isAr ? 'إلغاء' : 'Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.danger,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(isAr ? 'تأكيد الحذف' : 'Confirm Deletion'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      final result = await ref.read(authNotifierProvider.notifier).deleteAccount();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: result.success ? AppColors.navy : AppColors.danger,
+          ),
+        );
+        if (result.success) {
+          context.go('/login');
+        }
+      }
+    }
   }
 }

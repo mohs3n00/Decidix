@@ -3,12 +3,23 @@ import { User, AuthResponse } from '../types';
 import { authService } from '../services/authService';
 import { apiClient } from '../services/apiClient';
 
+export interface AuthGateRequest {
+  title?: string;
+  message: string;
+  actionName?: string;
+  onProceed?: () => void;
+}
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   isAdmin: boolean;
   isAnalyst: boolean;
+  authGateRequest: AuthGateRequest | null;
+  openAuthGate: (request: AuthGateRequest) => void;
+  closeAuthGate: () => void;
+  requireAuth: (message?: string, onProceed?: () => void, title?: string) => boolean;
   login: (email: string, pass: string) => Promise<AuthResponse>;
   register: (data: { name: string; email: string; password: string; role?: string; arabic_name?: string }) => Promise<AuthResponse>;
   googleLogin: (idToken: string) => Promise<AuthResponse>;
@@ -16,13 +27,36 @@ interface AuthContextType {
   refreshProfile: () => Promise<void>;
   resendVerification: (email: string) => Promise<{ message: string }>;
   changePassword: (current_password: string, new_password: string) => Promise<{ message: string }>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => authService.getCurrentUser());
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(!authService.getCurrentUser() && !!apiClient.getAccessToken());
+  const [authGateRequest, setAuthGateRequest] = useState<AuthGateRequest | null>(null);
+
+  const openAuthGate = (request: AuthGateRequest) => {
+    setAuthGateRequest(request);
+  };
+
+  const closeAuthGate = () => {
+    setAuthGateRequest(null);
+  };
+
+  const requireAuth = (
+    message = 'Authentication is required to perform this action.',
+    onProceed?: () => void,
+    title = 'Sign In Required'
+  ): boolean => {
+    if (user) {
+      if (onProceed) onProceed();
+      return true;
+    }
+    openAuthGate({ message, onProceed, title });
+    return false;
+  };
 
   const fetchProfile = async () => {
     const token = apiClient.getAccessToken();
@@ -97,6 +131,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return await authService.changePassword(current_password, new_password);
   };
 
+  const deleteAccount = async (): Promise<void> => {
+    await authService.deleteAccount();
+    setUser(null);
+  };
+
   const isAdmin = user?.role === 'admin';
   const isAnalyst = user?.role === 'analyst' || user?.role === 'admin';
   const isAuthenticated = !!user;
@@ -109,6 +148,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         isAdmin,
         isAnalyst,
+        authGateRequest,
+        openAuthGate,
+        closeAuthGate,
+        requireAuth,
         login,
         register,
         googleLogin,
@@ -116,6 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         refreshProfile,
         resendVerification,
         changePassword,
+        deleteAccount,
       }}
     >
       {children}

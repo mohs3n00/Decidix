@@ -19,16 +19,22 @@ export const TwoToneHeading: React.FC<TwoToneHeadingProps> = ({
   const Tag = `h${level}` as keyof JSX.IntrinsicElements;
 
   const content = (
-    <Tag className={clsx('heading-twotone tracking-tight', className)}>
+    <Tag
+      className={clsx(
+        'heading-twotone tracking-tight',
+        level === 1 ? 'text-2xl md:text-3xl font-bold' : '',
+        className
+      )}
+    >
       <span className="first-word font-bold text-navy">{first}</span>{' '}
-      <span className="second-word font-normal text-faded-ink">{second}</span>
+      <span className="second-word font-normal text-slate-500">{second}</span>
     </Tag>
   );
 
   if (eyebrow) {
     return (
       <div className="flex flex-col">
-        <span className="text-[12px] font-semibold tracking-wider text-blue uppercase mb-1">
+        <span className="text-[11px] font-bold tracking-wider text-blue uppercase mb-1">
           {eyebrow}
         </span>
         {content}

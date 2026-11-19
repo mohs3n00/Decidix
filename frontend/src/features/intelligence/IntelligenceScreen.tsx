@@ -7,14 +7,16 @@ import { DecidixCard } from '../../components/DecidixCard';
 import { DecidixButton } from '../../components/DecidixButton';
 import { PriorityBadge } from '../../components/PriorityBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { SkeletonCard } from '../../components/Skeleton';
 import { DecidixIcon } from '../../components/DecidixIcon';
 import { useLanguage } from '../../context/LanguageContext';
+import { useToast } from '../../components/Toast';
 
 export const IntelligenceScreen: React.FC = () => {
   const { isRTL, t } = useLanguage();
+  const { success, error: toastError } = useToast();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   const fetchRecs = async () => {
     try {
@@ -35,11 +37,13 @@ export const IntelligenceScreen: React.FC = () => {
   const handleAccept = async (id: string) => {
     try {
       await intelligenceService.acceptRecommendation(id);
-      setActionMessage(isRTL ? 'تمت إضافة التوصية إلى خطة العمل الإقليمية بنجاح!' : 'Added recommendation to plan successfully!');
+      success(
+        isRTL ? 'تمت إضافة التوصية إلى خطة العمل الإقليمية بنجاح!' : 'Added recommendation to regional plan successfully!',
+        isRTL ? 'تم الاعتماد' : 'Adopted'
+      );
       setRecommendations((prev) => prev.filter((r) => r.id !== id));
-      setTimeout(() => setActionMessage(null), 3000);
     } catch (err: any) {
-      alert(err?.message || 'Failed to accept recommendation');
+      toastError(err?.message || 'Failed to accept recommendation');
     }
   };
 
@@ -48,32 +52,33 @@ export const IntelligenceScreen: React.FC = () => {
       await intelligenceService.dismissRecommendation(id);
       setRecommendations((prev) => prev.filter((r) => r.id !== id));
     } catch (err: any) {
-      alert(err?.message || 'Failed to dismiss');
+      toastError(err?.message || 'Failed to dismiss');
     }
   };
 
   return (
-    <div className="space-y-7 animate-in fade-in duration-300">
+    <div className="space-y-7 animate-in fade-in duration-200">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="type-eyebrow mb-1">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-blue mb-1">
             {isRTL
               ? 'توقعات نماذج تعلم الآلة وتوصيات السياسات'
-              : 'Machine learning forecasting & automated policy recommendations'}
+              : 'MACHINE LEARNING FORECASTING & POLICY DECISIONS'}
           </div>
           <TwoToneHeading
             first={isRTL ? 'مركز' : 'Intelligence'}
             second={isRTL ? 'الذكاء والتحليل' : 'Hub'}
             level={1}
-            className="type-heading-page"
+            className="text-2xl md:text-3xl font-bold"
           />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <Link to="/intelligence/predictions">
-            <DecidixButton variant="outlined" compact>
-              {isRTL ? 'عرض التوقعات التفصيلية ↗' : 'View Full Predictions ↗'}
+            <DecidixButton variant="outlined" compact className="flex items-center gap-1.5">
+              <span>{isRTL ? 'عرض التوقعات التفصيلية' : 'View Full Predictions'}</span>
+              <DecidixIcon name="arrow_up_right" size={13} color="currentColor" />
             </DecidixButton>
           </Link>
           <Link to="/assistant">
@@ -84,13 +89,6 @@ export const IntelligenceScreen: React.FC = () => {
           </Link>
         </div>
       </div>
-
-      {actionMessage && (
-        <div className="p-4 rounded-row bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between">
-          <span>✓ {actionMessage}</span>
-          <button onClick={() => setActionMessage(null)} className="text-emerald-600 font-bold">✕</button>
-        </div>
-      )}
 
       {/* Intelligence Pillar Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -110,10 +108,10 @@ export const IntelligenceScreen: React.FC = () => {
           </div>
           <Link
             to="/intelligence/predictions"
-            className="text-xs font-bold text-blue hover:underline inline-flex items-center gap-1"
+            className="text-xs font-bold text-blue hover:underline inline-flex items-center gap-1.5"
           >
             <span>{isRTL ? 'استعراض النماذج' : 'Explore Models'}</span>
-            <span>→</span>
+            <DecidixIcon name="arrow_right" size={13} color="currentColor" />
           </Link>
         </DecidixCard>
 
@@ -127,16 +125,16 @@ export const IntelligenceScreen: React.FC = () => {
             </h3>
             <p className="type-body-m text-ink mb-4">
               {isRTL
-                ? 'محرك استرجاع مؤسس على بيانات المحافظات المصرية مع سياسة التكلفة الصفرية.'
-                : 'Zero-cost OpenRouter model grounded strictly in canonical database records.'}
+                ? 'محرك استرجاع تحليلي مؤصل على سجلات المحافظات المصرية لدعم وتوجيه القرارات الإنمائية.'
+                : 'Intelligent decision support engine grounded strictly in verified national and regional records.'}
             </p>
           </div>
           <Link
             to="/assistant"
-            className="text-xs font-bold text-blue hover:underline inline-flex items-center gap-1"
+            className="text-xs font-bold text-blue hover:underline inline-flex items-center gap-1.5"
           >
             <span>{isRTL ? 'فتح المحادثة' : 'Start Discussion'}</span>
-            <span>→</span>
+            <DecidixIcon name="arrow_right" size={13} color="currentColor" />
           </Link>
         </DecidixCard>
 
@@ -156,10 +154,10 @@ export const IntelligenceScreen: React.FC = () => {
           </div>
           <Link
             to="/decisions/simulator"
-            className="text-xs font-bold text-blue hover:underline inline-flex items-center gap-1"
+            className="text-xs font-bold text-blue hover:underline inline-flex items-center gap-1.5"
           >
             <span>{isRTL ? 'بدء المحاكاة' : 'Launch Simulator'}</span>
-            <span>→</span>
+            <DecidixIcon name="arrow_right" size={13} color="currentColor" />
           </Link>
         </DecidixCard>
       </div>
@@ -186,8 +184,9 @@ export const IntelligenceScreen: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <div className="py-12 flex justify-center">
-            <LoadingSpinner message={isRTL ? 'جارٍ تحميل التوصيات...' : 'Loading recommendations...'} />
+          <div className="space-y-3">
+            <SkeletonCard />
+            <SkeletonCard />
           </div>
         ) : recommendations.length === 0 ? (
           <DecidixCard variant="card" className="p-8 text-center text-ink">

@@ -12,17 +12,21 @@
   font-display: swap;
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   /* Decidix Exact Color Tokens (from lib/core/constants/app_colors.dart) */
   --color-navy: #061A3A;
   --color-blue: #2563EB;
   --color-cyan: #21EAF4;
   --color-white: #FFFFFF;
-  --color-mist: #F5F7FA;
-  --color-line: #E3E9F2;
-  --color-hairline: #E9EEF5;
-  --color-well: #F1F5FA;
-  --color-hero-tint: #D9ECFF;
+  --color-mist: #F8FAFC;
+  --color-line: #E2E8F0;
+  --color-hairline: rgba(226, 232, 240, 0.8);
+  --color-well: #F8FAFC;
+  --color-hero-tint: #EFF6FF;
   --color-track: #EAF0F8;
   --color-ink: #5B6B85;
   --color-faded-ink: #7D8AA0;
@@ -46,36 +50,49 @@
   --color-cyan-soft: #E0FBFC;
   --color-navy-soft: #EEF2F6;
 
-  /* Radius Tokens (from lib/core/constants/app_radius.dart) */
+  /* Standardized Radius Tokens: 16px cards, 12px containers, 8px inputs/buttons */
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-well: 18px;
-  --radius-inner: 18px;
-  --radius-row: 24px;
-  --radius-card: 28px;
-  --radius-hero: 32px;
-  --radius-bottom-nav: 36px;
+  --radius-md: 8px;
+  --radius-well: 12px;
+  --radius-inner: 12px;
+  --radius-row: 12px;
+  --radius-card: 16px;
+  --radius-hero: 16px;
+  --radius-bottom-nav: 24px;
   --radius-avatar: 44px;
   --radius-pill: 9999px;
 
-  /* Shadow Tokens (from lib/core/constants/app_shadows.dart) */
-  --shadow-card: 0 10px 30px -10px rgba(6, 26, 58, 0.08);
-  --shadow-hero: 0 16px 40px -12px rgba(6, 26, 58, 0.12);
-  --shadow-bottom-nav: 0 12px 32px -8px rgba(6, 26, 58, 0.16);
-  --shadow-pill: 0 4px 12px 0 rgba(6, 26, 58, 0.08);
-  --shadow-avatar: 0 4px 10px -2px rgba(6, 26, 58, 0.20);
-  --shadow-active-tab: 0 6px 16px 0 rgba(6, 26, 58, 0.14);
+  /* Standardized Crisp Shadows: ultra-subtle SaaS elevation */
+  --shadow-card: 0 1px 3px 0 rgba(6, 26, 58, 0.04), 0 1px 2px -1px rgba(6, 26, 58, 0.03);
+  --shadow-hero: 0 4px 20px -4px rgba(6, 26, 58, 0.06);
+  --shadow-bottom-nav: 0 4px 20px -4px rgba(6, 26, 58, 0.08);
+  --shadow-pill: 0 2px 6px 0 rgba(6, 26, 58, 0.06);
+  --shadow-avatar: 0 2px 6px -1px rgba(6, 26, 58, 0.15);
+  --shadow-active-tab: 0 1px 2px 0 rgba(6, 26, 58, 0.06);
 
-  /* Fonts */
-  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-arabic: 'Cairo', 'Outfit', sans-serif;
+  /* Fonts: Pure Cairo Typography across the entire system with full weight scale */
+  --font-sans: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-arabic: 'Cairo', sans-serif;
 
   font-family: var(--font-sans);
   color-scheme: light;
 }
 
+body, html, * {
+  font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
 [dir="rtl"] {
-  font-family: var(--font-arabic);
+  font-family: 'Cairo', sans-serif;
+  line-height: 1.625;
+}
+
+[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3 {
+  line-height: 1.35;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 * {
@@ -168,34 +185,37 @@ body {
   font-weight: 300;
 }
 
-/* Decidix Typography Ramp (from lib/core/constants/app_typography.dart) */
+/* Decidix Typography Ramp */
 .type-heading-page {
-  font-size: 34px;
-  font-weight: 300;
-  line-height: 36px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 34px;
   letter-spacing: -0.025em;
 }
 
 .type-heading-section {
-  font-size: 17px;
-  font-weight: 600;
-  line-height: 24px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
 }
 
 .type-number-l {
-  font-size: 28px;
-  font-weight: 500;
+  font-size: 26px;
+  font-weight: 700;
   letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
 }
 
 .type-number-m {
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .type-number-s {
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .type-title-m {
@@ -264,16 +284,17 @@ body {
   text-transform: none;
 }
 
-/* Decidix Authentic Container Classes */
+/* Decidix Authentic Container Classes - Crisp Enterprise SaaS Aesthetic */
 .decidix-card {
   background-color: var(--color-white);
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.15s ease-in-out;
 }
 .decidix-card:hover {
-  box-shadow: 0 14px 36px -8px rgba(6, 26, 58, 0.10);
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 12px -2px rgba(6, 26, 58, 0.05);
 }
 
 .decidix-card-row {
@@ -281,7 +302,10 @@ body {
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-row);
   box-shadow: var(--shadow-card);
-  transition: all 0.2s ease;
+  transition: all 0.15s ease-in-out;
+}
+.decidix-card-row:hover {
+  border-color: #CBD5E1;
 }
 
 .decidix-well {
@@ -292,9 +316,9 @@ body {
 
 .decidix-hero-card {
   background: linear-gradient(135deg, #FFFFFF 0%, var(--color-hero-tint) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-hero);
-  box-shadow: var(--shadow-hero);
+  box-shadow: var(--shadow-card);
   position: relative;
   overflow: hidden;
 }
@@ -433,20 +457,20 @@ body {
 }
 
 .decidix-input {
-  background-color: var(--color-well);
-  border: 1px solid var(--color-hairline);
-  border-radius: var(--radius-well);
-  padding: 12px 18px;
+  background-color: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 10px 14px;
   color: var(--color-navy);
-  font-size: 14px;
+  font-size: 13px;
   outline: none;
-  transition: all 0.15s ease;
+  transition: all 0.15s ease-in-out;
   width: 100%;
 }
 .decidix-input:focus {
   border-color: var(--color-blue);
-  background-color: var(--color-white);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .decidix-badge-high {

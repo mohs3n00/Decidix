@@ -764,4 +764,41 @@ class AuthNotifier extends Notifier<AuthState> {
       } catch (_) {}
     }
   }
+
+  /// Permanently deletes the authenticated user's account via DELETE /v1/auth/me,
+  /// revokes notifications, wipes local tokens/session, and resets state.
+  Future<({bool success, String message})> deleteAccount() async {
+    try {
+      final api = ref.read(apiClientProvider);
+      final response = await api.delete('/auth/me');
+      final data = response.data as Map<String, dynamic>?;
+      final msg = (data?['data'] as Map<String, dynamic>?)?['message'] as String? ??
+          'Account successfully deleted.';
+
+      try {
+        ref.read(notificationServiceProvider).onUserLoggedOut();
+      } catch (_) {}
+      try {
+        await GoogleSignIn.instance.signOut();
+      } catch (_) {}
+      try {
+        await _clearPersistedSession();
+      } catch (_) {}
+
+      if (ref.mounted) {
+        state = state.copyWith(clearAuth: true, isLoading: false);
+      }
+      return (success: true, message: msg);
+    } catch (e) {
+      debugPrint('[AuthNotifier] deleteAccount error: $e');
+      String msg = 'Failed to delete account. Please try again.';
+      if (e is DioException && e.response?.data is Map) {
+        final err = (e.response!.data as Map)['error'];
+        if (err is Map && err['message'] is String) {
+          msg = err['message'] as String;
+        }
+      }
+      return (success: false, message: msg);
+    }
+  }
 }

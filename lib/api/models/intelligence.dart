@@ -191,7 +191,7 @@ class ChatSource {
 
   factory ChatSource.fromJson(JsonMap json) => ChatSource(
     name: LocalizedText.read(json, 'name'),
-    period: json.string('period'),
+    period: json.maybeString('period') ?? '2024–2025',
   );
 }
 

@@ -963,6 +963,46 @@ export class AuthRepository {
   }
 
   /**
+   * Permanently purges and anonymizes a user's personal data upon account deletion (GDPR & Google Play compliance).
+   */
+  static async anonymizeAndPurgeUser(userId: string): Promise<void> {
+    const isDbReady = await testPrismaConnection();
+
+    if (env.NODE_ENV === 'test') {
+      for (const u of localUsers.values()) {
+        if (u.id === userId) {
+          u.status = 'deleted';
+          u.is_active = false;
+          u.name = 'Deleted User';
+          u.arabic_name = undefined;
+          u.password_hash = '$2b$10$DELETED_ACCOUNT_SCRUBBED_HASH_DISABLED';
+        }
+      }
+    }
+
+    if (isDbReady) {
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            status: 'deleted',
+            isActive: false,
+            name: 'Deleted User',
+            arabicName: null,
+            passwordHash: '$2b$10$DELETED_ACCOUNT_SCRUBBED_HASH_DISABLED',
+          },
+        });
+        await prisma.citizenReport.updateMany({
+          where: { authorId: userId },
+          data: { authorId: null },
+        });
+      } catch (err) {
+        if (env.NODE_ENV !== 'test') throw err;
+      }
+    }
+  }
+
+  /**
    * Counts active administrators to protect against locking out the platform.
    */
   static async countActiveAdmins(): Promise<number> {
