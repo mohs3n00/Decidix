@@ -59,6 +59,8 @@ export default {
         xl: '12px',
         '2xl': '16px',
         '3xl': '20px',
+        '4xl': '2rem',
+        '5xl': '2.5rem',
         well: '14px',
         row: '16px',
         card: '16px',
@@ -74,11 +76,26 @@ export default {
         pill: '0 2px 6px 0 rgba(6, 26, 58, 0.06)',
         nav: '0 4px 20px -4px rgba(6, 26, 58, 0.08)',
         dropdown: '0 10px 25px -5px rgba(6, 26, 58, 0.1), 0 8px 10px -6px rgba(6, 26, 58, 0.06)',
+        'glass-dark': '0 8px 32px 0 rgba(3,13,31,0.37)',
+        'glass-light': '0 4px 24px 0 rgba(6,26,58,0.08)',
       },
       fontFamily: {
         sans: ['Cairo', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         cairo: ['Cairo', 'sans-serif'],
         arabic: ['Cairo', 'sans-serif'],
+      },
+      backgroundImage: {
+        'navy-gradient': 'linear-gradient(180deg, #092147 0%, #061A3A 55%, #030D1F 100%)',
+        'navy-gradient-elevated': 'linear-gradient(180deg, #0B244D 0%, #061A3A 100%)',
+      },
+      animation: {
+        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+      },
+      keyframes: {
+        fadeInUp: {
+          from: { opacity: '0', transform: 'translateY(20px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
       },
     },
   },

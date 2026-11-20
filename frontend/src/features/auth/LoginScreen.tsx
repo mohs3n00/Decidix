@@ -5,6 +5,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { DecidixIcon } from '../../components/DecidixIcon';
 import { DecidixButton } from '../../components/DecidixButton';
 import { GoogleSignInButton } from '../../components/GoogleSignInButton';
+import { GrainOverlay } from '../../components/GrainOverlay';
 
 export const LoginScreen: React.FC = () => {
   const { login, googleLogin } = useAuth();
@@ -68,7 +69,8 @@ export const LoginScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col lg:flex-row select-none font-cairo overflow-x-hidden">
       {/* 1. Visual Showcase Column (Desktop Hero Panel) */}
-      <div className="hidden lg:flex lg:w-1/2 xl:w-7/12 bg-gradient-to-br from-[#061A3A] via-[#082250] to-[#041028] text-white p-8 xl:p-14 flex-col justify-between relative overflow-hidden border-e border-slate-800/40">
+      <div className="hidden lg:flex lg:w-1/2 xl:w-7/12 bg-hero-dark text-white p-8 xl:p-14 flex-col justify-between relative overflow-hidden border-e border-slate-800/40">
+        <GrainOverlay />
         {/* Subtle Ambient Glowing Spheres */}
         <div className="absolute -top-32 -start-32 w-96 h-96 bg-blue/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-32 -end-32 w-96 h-96 bg-cyan/15 rounded-full blur-3xl pointer-events-none" />
@@ -89,7 +91,7 @@ export const LoginScreen: React.FC = () => {
           </div>
 
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] text-cyan-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span className="w-2 h-2 rounded-full bg-[#21EAF4] animate-ping" />
             <span>{isRTL ? 'إحصاءات موثقة 2024' : 'Verified Statistics 2024'}</span>
           </div>
         </div>
@@ -127,7 +129,7 @@ export const LoginScreen: React.FC = () => {
                   </div>
                   <div className="text-lg font-bold text-white font-mono flex items-center gap-2">
                     <span>74.2 / 100</span>
-                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                    <span className="text-[10px] text-[#21EAF4] font-bold bg-[#21EAF4]/20 px-2 py-0.5 rounded-full border border-[#21EAF4]/30">
                       +1.8% {isRTL ? 'نمو سنوي' : 'YoY'}
                     </span>
                   </div>
@@ -145,10 +147,10 @@ export const LoginScreen: React.FC = () => {
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-slate-300">{isRTL ? 'الرعاية الصحية' : 'Healthcare'}</span>
-                  <span className="text-emerald-400 font-bold font-mono">78.4%</span>
+                  <span className="text-[#21EAF4] font-bold font-mono">78.4%</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full rounded-full bg-emerald-400 w-[78%]" />
+                  <div className="h-full rounded-full bg-[#21EAF4] w-[78%]" />
                 </div>
               </div>
 

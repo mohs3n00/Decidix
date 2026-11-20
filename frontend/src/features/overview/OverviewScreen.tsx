@@ -8,6 +8,8 @@ import { useWorkspace } from '../../context/WorkspaceContext';
 import { DecidixIcon } from '../../components/DecidixIcon';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { SkeletonMetrics, SkeletonChart } from '../../components/Skeleton';
+import { GrainOverlay } from '../../components/GrainOverlay';
+import { GlassStatCard } from '../../components/GlassStatCard';
 import {
   AreaChart,
   Area,
@@ -119,6 +121,32 @@ export const OverviewScreen: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200 pb-8 select-none">
+      {/* Executive National Index Banner */}
+      <div className="relative bg-navy-gradient rounded-[2rem] overflow-hidden p-6 sm:p-8 mb-2">
+        <GrainOverlay />
+        <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <GlassStatCard
+            metric={devIndex}
+            caption={isRTL ? 'المؤشر الوطني المركب' : 'National Index'}
+            delta={data?.index?.band?.toUpperCase() || 'MODERATE'}
+          />
+          <GlassStatCard
+            metric={regionsCount}
+            caption={isRTL ? 'محافظة مرصودة' : 'Monitored Regions'}
+            delta="100%"
+          />
+          <GlassStatCard
+            metric={priorityCount}
+            caption={isRTL ? 'مناطق تحتاج تدخل' : 'Regions at Risk'}
+          />
+          <GlassStatCard
+            metric={indicatorsCount}
+            caption={isRTL ? 'المؤشرات النشطة' : 'Active Indicators'}
+            delta={`${completenessPercent}%`}
+          />
+        </div>
+      </div>
+
       {/* Header Eyebrow, Title & Metadata */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
@@ -127,8 +155,8 @@ export const OverviewScreen: React.FC = () => {
               {isRTL ? 'الذكاء التنموي الوطني' : 'NATIONAL DEVELOPMENT INTELLIGENCE'}
             </span>
             {data?.provenance?.verification_status && (
-              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
-                <DecidixIcon name="check" size={10} color="#047857" />
+              <span className="text-[10px] font-semibold text-[#2563EB] bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200/60 flex items-center gap-1">
+                <DecidixIcon name="check" size={10} color="#2563EB" />
                 <span>{isRTL ? 'بيانات حكومية موثقة' : 'Verified Dataset'}</span>
               </span>
             )}
@@ -164,7 +192,7 @@ export const OverviewScreen: React.FC = () => {
       </div>
 
       {/* Active Dataset System Banner */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-blue/5 via-slate-50 to-white border border-blue/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+      <div className="p-4 rounded-2xl bg-white border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-glass-light">
         <div className="flex items-center gap-3">
           <span className="w-9 h-9 rounded-xl bg-blue text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs">
             <DecidixIcon name="dataset" size={16} color="#FFFFFF" />
@@ -175,7 +203,7 @@ export const OverviewScreen: React.FC = () => {
               <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-white border border-blue/20 text-blue shadow-2xs">
                 {activeDataset?.name || workspaceKpi.sourceName}
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue border border-blue-200">
                 {isRTL ? 'معتمدة' : 'Approved'}
               </span>
             </div>
@@ -464,7 +492,8 @@ export const OverviewScreen: React.FC = () => {
       </div>
 
       {/* Bottom Row: AI Insight Banner */}
-      <div className="bg-navy rounded-2xl p-6 sm:p-7 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden shadow-xs border border-navy/80">
+      <div className="relative bg-navy-gradient rounded-[2rem] p-6 sm:p-7 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6 overflow-hidden shadow-glass-dark border border-white/10">
+        <GrainOverlay />
         {/* Glow backdrop */}
         <div className="absolute -right-20 -top-20 w-80 h-80 bg-cyan/15 rounded-full blur-3xl pointer-events-none" />
 

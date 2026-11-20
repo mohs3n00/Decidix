@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { intelligenceService } from '../../services/intelligenceService';
 import { useLanguage } from '../../context/LanguageContext';
 import { DecidixIcon } from '../../components/DecidixIcon';
+import { GrainOverlay } from '../../components/GrainOverlay';
+import { GlassStatCard } from '../../components/GlassStatCard';
 import {
   AreaChart,
   Area,
@@ -76,6 +78,21 @@ export const PredictionsScreen: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn pb-8">
+      {/* Forecast Horizon - Dark Navy Glass */}
+      <div className="relative bg-navy-gradient rounded-[2rem] overflow-hidden p-6 mb-6">
+        <GrainOverlay />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="text-eyebrow text-[#21EAF4] mb-1">{isRTL ? 'الاستشراف الإحصائي' : 'Forecast Horizon'}</div>
+            <div className="text-xl font-bold text-white">{isRTL ? 'التنبؤات حتى 2028-2030' : 'Trajectory Projections to 2028–2030'}</div>
+          </div>
+          <div className="flex gap-3">
+            <GlassStatCard metric="2030" caption={isRTL ? 'أفق التنبؤ' : 'Target Year'} />
+            <GlassStatCard metric="95%" caption={isRTL ? 'ثقة إحصائية' : 'Confidence'} delta="+CI" />
+          </div>
+        </div>
+      </div>
+
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>

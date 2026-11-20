@@ -3,6 +3,9 @@ import { NavLink } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { DecidixIcon } from '../../components/DecidixIcon';
+import { GrainOverlay } from '../../components/GrainOverlay';
+import { GlassStatCard } from '../../components/GlassStatCard';
+import { InteractiveActionButton } from '../../components/InteractiveActionButton';
 
 export const LandingPage: React.FC = () => {
   const { isRTL, language, toggleLanguage } = useLanguage();
@@ -121,7 +124,7 @@ export const LandingPage: React.FC = () => {
 
   const testimonials = [
     {
-      quoteEn: '“Decidix transformed how our regional planning committee prioritizes capital interventions. The What-If Simulator lets us evaluate marginal yields across sectors before committing a single pound of public investment.”',
+      quoteEn: '"Decidix transformed how our regional planning committee prioritizes capital interventions. The What-If Simulator lets us evaluate marginal yields across sectors before committing a single pound of public investment."',
       quoteAr: '«غيّرت منصة ديسيدكس منهجية عمل لجنة التخطيط الإقليمي في ترتيب أولويات المشروعات. محاكي السياسات يتيح لنا تقييم العائد الحدي بدقة عبر القطاعات قبل اعتماد المخصصات المالية.»',
       authorEn: 'Dr. Mona El-Sherif',
       authorAr: 'د. منى الشريف',
@@ -131,7 +134,7 @@ export const LandingPage: React.FC = () => {
       featured: true,
     },
     {
-      quoteEn: '“The strict data governance and verifiable CAPMAS data provenance give our analysts complete academic confidence. Every indicator links directly to official sources.”',
+      quoteEn: '"The strict data governance and verifiable CAPMAS data provenance give our analysts complete academic confidence. Every indicator links directly to official sources."',
       quoteAr: '«حوكمة البيانات الصارمة وموثوقية سجلات الإحصاء الرسمية تمنح باحثينا ومحللينا ثقة علمية كاملة. كل مؤشر مرتبط مباشرة بمصدره المعتمد.»',
       authorEn: 'Eng. Tarek Abdelrahman',
       authorAr: 'م. طارق عبد الرحمن',
@@ -141,7 +144,7 @@ export const LandingPage: React.FC = () => {
       featured: false,
     },
     {
-      quoteEn: '“Comparing Upper Egypt and Delta governorates in a unified composite index with tabular figures provides unprecedented clarity for regional equity research.”',
+      quoteEn: '"Comparing Upper Egypt and Delta governorates in a unified composite index with tabular figures provides unprecedented clarity for regional equity research."',
       quoteAr: '«مقارنة محافظات الصعيد والدلتا عبر مؤشر مركب موحد يوفر وضوحاً إحصائياً غير مسبوق لأبحاث العدالة المكانية والتنمية المستدامة.»',
       authorEn: 'Prof. Hisham El-Kady',
       authorAr: 'أ.د. هشام القاضي',
@@ -280,49 +283,43 @@ export const LandingPage: React.FC = () => {
   ];
 
   return (
-    <div className={`min-h-screen bg-[#F8FAFC] flex flex-col text-navy font-sans ${isRTL ? 'rtl' : 'ltr'}`}>
-      {/* 1. TOP NAVIGATION BAR */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-2xs transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Brand Logo & Name */}
-          <NavLink to="/" className="flex items-center gap-3 group">
-            <DecidixIcon name="splash_mark" size={32} className="shrink-0 transition-transform group-hover:scale-105" />
-            <div>
-              <span className="font-bold text-lg tracking-tight text-navy block leading-none font-display">
-                DECIDIX
-              </span>
-              <span className="text-[10px] text-slate-500 font-semibold tracking-wider uppercase block mt-0.5">
-                {isRTL ? 'المنصة الوطنية للذكاء التنموي' : 'National Intelligence Platform'}
-              </span>
-            </div>
+    <div className={`min-h-screen bg-[#F8FAFC] flex flex-col text-navy font-sans overflow-x-hidden ${isRTL ? 'rtl' : 'ltr'}`}>
+
+      {/* ===== 1. FLOATING GLASS NAVBAR ===== */}
+      <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl">
+        <div className="glass-nav rounded-full px-4 py-1.5 shadow-glass-dark flex items-center justify-between gap-2">
+
+          {/* Logo — bare icon, no box */}
+          <NavLink to="/" className="flex items-center gap-2 shrink-0" aria-label="Decidix Home">
+            <DecidixIcon name="splash_mark" size={34} />
+            <span className="hidden sm:block font-bold text-sm tracking-tight text-white font-display">DECIDIX</span>
           </NavLink>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600">
-            <a href="#capabilities" className="hover:text-blue transition-colors duration-150">
-              {isRTL ? 'القدرات والحلول' : 'Capabilities'}
+          {/* Desktop Nav Links */}
+          <nav className="hidden md:flex items-center gap-1 text-xs font-semibold">
+            <a href="#capabilities" className="text-white/80 hover:bg-white/10 rounded-full px-3 py-1.5 transition">
+              {isRTL ? 'القدرات' : 'Capabilities'}
             </a>
-            <a href="#features" className="hover:text-blue transition-colors duration-150">
-              {isRTL ? 'الميزات التنموية' : 'Features'}
+            <a href="#features" className="text-white/80 hover:bg-white/10 rounded-full px-3 py-1.5 transition">
+              {isRTL ? 'الميزات' : 'Features'}
             </a>
-            <a href="#process" className="hover:text-blue transition-colors duration-150">
+            <a href="#process" className="text-white/80 hover:bg-white/10 rounded-full px-3 py-1.5 transition">
               {isRTL ? 'آلية العمل' : 'How It Works'}
             </a>
-            <a href="#pricing" className="hover:text-blue transition-colors duration-150">
+            <a href="#pricing" className="text-white/80 hover:bg-white/10 rounded-full px-3 py-1.5 transition">
               {isRTL ? 'باقات الوصول' : 'Access Tiers'}
             </a>
-            <a href="#faq" className="hover:text-blue transition-colors duration-150">
-              {isRTL ? 'الأسئلة الشائعة' : 'FAQ'}
+            <a href="#faq" className="text-white/80 hover:bg-white/10 rounded-full px-3 py-1.5 transition">
+              {isRTL ? 'الأسئلة' : 'FAQ'}
             </a>
           </nav>
 
-          {/* Right Action Controls */}
-          <div className="flex items-center gap-2.5">
-            {/* Dynamic Language Switcher */}
+          {/* Right Controls */}
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={toggleLanguage}
-              className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200/80 text-navy text-xs font-semibold border border-slate-200/80 transition-colors shadow-2xs whitespace-nowrap"
+              className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition"
               aria-label="Switch Language"
             >
               {language === 'en' ? 'العربية' : 'English'}
@@ -331,94 +328,74 @@ export const LandingPage: React.FC = () => {
             {isAuthenticated ? (
               <NavLink
                 to="/overview"
-                className="px-4 py-2 rounded-full bg-blue hover:bg-blue-hover text-white text-xs font-bold transition-all shadow-2xs active:scale-[0.98] flex items-center gap-1.5 whitespace-nowrap"
+                className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold px-4 py-2 rounded-full transition hidden sm:flex items-center gap-1.5 whitespace-nowrap"
               >
                 <span>{isRTL ? 'لوحة التحكم' : 'Workspace'}</span>
-                <DecidixIcon name="arrow_right" size={13} color="#FFFFFF" />
+                <DecidixIcon name="arrow_right" size={12} color="#FFFFFF" />
               </NavLink>
             ) : (
-              <div className="hidden sm:flex items-center gap-2">
+              <>
                 <NavLink
                   to="/login"
-                  className="px-3.5 py-1.5 rounded-full text-slate-600 hover:text-navy hover:bg-slate-50 text-xs font-semibold transition-colors whitespace-nowrap"
+                  className="text-white/80 hover:bg-white/10 rounded-full px-3 py-1.5 text-xs font-semibold transition hidden sm:block whitespace-nowrap"
                 >
                   {isRTL ? 'تسجيل الدخول' : 'Sign In'}
                 </NavLink>
                 <NavLink
                   to="/overview"
-                  className="px-4 py-2 rounded-full bg-blue hover:bg-blue-hover text-white text-xs font-bold transition-all shadow-2xs active:scale-[0.98] flex items-center gap-1.5 whitespace-nowrap"
+                  className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold px-4 py-2 rounded-full transition hidden sm:flex items-center gap-1.5 whitespace-nowrap"
                 >
-                  <span>{isRTL ? 'استعراض المنصة' : 'Explore Platform'}</span>
-                  <DecidixIcon name="arrow_right" size={13} color="#FFFFFF" />
+                  <span>{isRTL ? 'استعراض المنصة' : 'Explore'}</span>
+                  <DecidixIcon name="arrow_right" size={12} color="#FFFFFF" />
                 </NavLink>
-              </div>
+              </>
             )}
 
-            {/* Mobile Menu Toggle Button */}
+            {/* Mobile Hamburger */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-navy transition"
+              className="md:hidden p-1.5 rounded-full text-white/80 hover:bg-white/10 transition"
               aria-label="Toggle Mobile Menu"
             >
-              <DecidixIcon name={mobileMenuOpen ? 'close' : 'filter'} size={18} />
+              <DecidixIcon name={mobileMenuOpen ? 'close' : 'filter'} size={18} color="#FFFFFF" />
             </button>
           </div>
         </div>
 
-        {/* Mobile Dropdown Drawer */}
+        {/* Mobile Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-b border-slate-200/80 px-4 py-4 space-y-3 animate-fadeIn shadow-sm">
-            <nav className="flex flex-col space-y-2 text-sm font-semibold text-slate-700">
-              <a
-                href="#capabilities"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1.5 px-2 rounded-md hover:bg-slate-50 hover:text-blue transition"
-              >
-                {isRTL ? 'القدرات والحلول' : 'Capabilities'}
-              </a>
-              <a
-                href="#features"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1.5 px-2 rounded-md hover:bg-slate-50 hover:text-blue transition"
-              >
-                {isRTL ? 'الميزات التنموية' : 'Features'}
-              </a>
-              <a
-                href="#process"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1.5 px-2 rounded-md hover:bg-slate-50 hover:text-blue transition"
-              >
-                {isRTL ? 'آلية العمل' : 'How It Works'}
-              </a>
-              <a
-                href="#pricing"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1.5 px-2 rounded-md hover:bg-slate-50 hover:text-blue transition"
-              >
-                {isRTL ? 'باقات الوصول' : 'Access Tiers'}
-              </a>
-              <a
-                href="#faq"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1.5 px-2 rounded-md hover:bg-slate-50 hover:text-blue transition"
-              >
-                {isRTL ? 'الأسئلة الشائعة' : 'FAQ'}
-              </a>
+          <div className="md:hidden mt-2 glass-nav rounded-2xl px-4 py-4 space-y-3 shadow-glass-dark">
+            <nav className="flex flex-col space-y-1 text-sm font-semibold">
+              {[
+                { href: '#capabilities', en: 'Capabilities', ar: 'القدرات والحلول' },
+                { href: '#features', en: 'Features', ar: 'الميزات التنموية' },
+                { href: '#process', en: 'How It Works', ar: 'آلية العمل' },
+                { href: '#pricing', en: 'Access Tiers', ar: 'باقات الوصول' },
+                { href: '#faq', en: 'FAQ', ar: 'الأسئلة الشائعة' },
+              ].map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="py-2 px-3 rounded-xl text-white/80 hover:bg-white/10 transition text-xs"
+                >
+                  {isRTL ? item.ar : item.en}
+                </a>
+              ))}
             </nav>
-
-            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
               <NavLink
                 to="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-2 rounded-lg border border-slate-200/80 text-xs font-semibold text-navy hover:bg-slate-50 transition"
+                className="w-full text-center py-2 rounded-xl bg-white/10 text-white text-xs font-semibold hover:bg-white/20 transition"
               >
                 {isRTL ? 'تسجيل الدخول' : 'Sign In'}
               </NavLink>
               <NavLink
                 to="/overview"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-2.5 rounded-lg bg-blue text-white text-xs font-bold hover:bg-blue-hover transition shadow-2xs"
+                className="w-full text-center py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold transition"
               >
                 {isRTL ? 'استعراض المنصة كزائر' : 'Explore Platform as Guest'}
               </NavLink>
@@ -427,281 +404,153 @@ export const LandingPage: React.FC = () => {
         )}
       </header>
 
-      {/* 2. HERO SECTION */}
-      <section className="relative overflow-hidden pt-12 pb-16 lg:pt-16 lg:pb-24 border-b border-slate-200/80 bg-gradient-to-b from-white via-[#F8FAFC] to-[#F1F5F9]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-            {/* Hero Left / Text Side */}
-            <div className="lg:col-span-6 space-y-6">
-              {/* Authoritative Headline */}
-              <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-bold tracking-tight text-navy leading-[1.25] font-display">
-                {isRTL ? (
-                  <>
-                    المنصة الوطنية لدعم القرار التنموي والتخطيط الإقليمي
-                  </>
-                ) : (
-                  <>
-                    National Intelligent Decision Support & Regional Planning Platform
-                  </>
-                )}
-              </h1>
+      {/* ===== 2. HERO SECTION ===== */}
+      <section className="relative overflow-hidden min-h-[92vh] bg-hero-dark rounded-[2.5rem] mt-20 mx-4 sm:mx-6 lg:mx-8 flex items-center">
+        {/* Grain texture */}
+        <GrainOverlay />
 
-              {/* Subtitle */}
-              <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl">
-                {isRTL
-                  ? 'منظومة وطنية متكاملة لرصد مؤشرات التنمية المستدامة، كشف الفجوات الإقليمية للمحافظات الـ 27، ومحاكاة أثر المشروعات والموازنات لدعم اتخاذ القرار المبني على الأدلة والدراسات الميدانية.'
-                  : 'An authoritative national intelligence system uniting official indicators across all 27 governorates, modeling policy alternatives, and enabling institutional team collaboration for evidence-based governance.'}
-              </p>
+        {/* Background wordmark */}
+        <div className="bg-wordmark select-none pointer-events-none" aria-hidden="true">DECIDIX</div>
 
-              {/* Dual Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-1">
-                <NavLink
-                  to="/overview"
-                  className="h-11 px-6 rounded-full bg-blue hover:bg-blue-hover text-white text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-[0.98] flex items-center gap-2 whitespace-nowrap"
-                >
-                  <span>{isRTL ? 'استعراض المنصة كزائر' : 'Explore Platform as Guest'}</span>
-                  <DecidixIcon name="arrow_right" size={15} color="#FFFFFF" />
-                </NavLink>
+        {/* Geometric grid overlay */}
+        <div className="absolute inset-0 grid-lineart opacity-30 pointer-events-none" />
 
-                <NavLink
-                  to="/login"
-                  className="h-11 px-5 rounded-full bg-white hover:bg-slate-50 border border-slate-200/80 text-navy text-xs sm:text-sm font-semibold transition-colors shadow-2xs whitespace-nowrap"
-                >
-                  {isRTL ? 'طلب الوصول المؤسسي' : 'Request Institutional Access'}
-                </NavLink>
-              </div>
+        {/* Ambient glow */}
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-[#2563EB]/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-[#21EAF4]/10 rounded-full blur-3xl pointer-events-none" />
 
-              {/* Trust Indicators */}
-              <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-slate-500">
-                <div className="flex items-center gap-1.5">
-                  <DecidixIcon name="check" size={14} color="#2563EB" />
-                  <span>{isRTL ? 'بيانات رسمية معتمدة من CAPMAS' : 'CAPMAS verified statistical baseline'}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <DecidixIcon name="shield" size={14} color="#2563EB" />
-                  <span>{isRTL ? 'حوكمة وعزل كامل لمساحات العمل' : 'Isolated Workspace Tenancy'}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <DecidixIcon name="location" size={14} color="#2563EB" />
-                  <span>{isRTL ? 'تغطية شاملة لـ 27 محافظة مصرية' : '27 Governorates Coverage'}</span>
-                </div>
-              </div>
+        <div className="relative z-10 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center px-8 sm:px-12 lg:px-16 py-16">
 
-              {/* Key Numbers Strip */}
-              <div className="pt-4 border-t border-slate-200/80 grid grid-cols-3 gap-3">
-                <div className="p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-                  <div className="text-2xl font-bold tracking-tight text-navy tabular-nums">74.2</div>
-                  <div className="text-[10px] text-slate-500 font-semibold uppercase mt-0.5">
-                    {isRTL ? 'المؤشر الوطني المركب' : 'National Index'}
-                  </div>
-                </div>
-                <div className="p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-                  <div className="text-2xl font-bold tracking-tight text-navy tabular-nums">27</div>
-                  <div className="text-[10px] text-slate-500 font-semibold uppercase mt-0.5">
-                    {isRTL ? 'محافظة مرصودة' : 'Monitored Regions'}
-                  </div>
-                </div>
-                <div className="p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs">
-                  <div className="text-2xl font-bold tracking-tight text-emerald-600 tabular-nums">100%</div>
-                  <div className="text-[10px] text-slate-500 font-semibold uppercase mt-0.5">
-                    {isRTL ? 'مطابقة المؤشرات الرسمية' : 'Official Data Baseline'}
-                  </div>
-                </div>
-              </div>
+          {/* LEFT COLUMN */}
+          <div className="space-y-6">
+            {/* Eyebrow */}
+            <div className="text-eyebrow text-[#21EAF4] mb-4">
+              {isRTL ? 'ذكاء التنمية الوطنية' : 'National Development Intelligence'}
             </div>
 
-            {/* Hero Right / High-Fidelity UI Product Preview */}
-            <div className="lg:col-span-6">
-              <div className="bg-white rounded-2xl border border-slate-200/80 shadow-card overflow-hidden">
-                {/* Browser Frame Top Bar */}
-                <div className="bg-slate-50 border-b border-slate-200/80 px-4 py-3 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block" />
-                  </div>
-                  <div className="px-3 py-1 rounded-md bg-white border border-slate-200 text-[11px] font-mono text-slate-500 text-center w-52 truncate">
-                    decidix.gov.eg/overview/national
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
-                    Live v1.0
-                  </span>
-                </div>
+            {/* Headline */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white display-heading animate-fade-in-up">
+              {isRTL
+                ? 'المنصة الوطنية لدعم القرار التنموي والتخطيط الإقليمي'
+                : 'National Intelligent Decision Support & Regional Planning Platform'}
+            </h1>
 
-                {/* Dashboard Inner Canvas */}
-                <div className="p-5 space-y-4 bg-slate-50/50">
-                  {/* Top Bar inside preview */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-[10px] font-bold text-blue uppercase tracking-wider">
-                        {isRTL ? 'لوحة القيادة التنموية الموحدة' : 'National Overview'}
-                      </div>
-                      <div className="text-sm font-bold text-navy">
-                        {isRTL ? 'جمهورية مصر العربية · مؤشرات الأداء' : 'Arab Republic of Egypt · Indicators'}
-                      </div>
-                    </div>
-                    <span className="text-xs font-bold text-blue bg-blue-50 px-2.5 py-0.5 rounded-full">
-                      CAPMAS 2021-2024
-                    </span>
-                  </div>
+            {/* Subtitle */}
+            <p className="text-white/70 text-base leading-relaxed mt-4 max-w-lg animate-fade-in-up animation-delay-100">
+              {isRTL
+                ? 'منظومة وطنية متكاملة لرصد مؤشرات التنمية المستدامة، كشف الفجوات الإقليمية للمحافظات الـ 27، ومحاكاة أثر المشروعات والموازنات لدعم اتخاذ القرار المبني على الأدلة.'
+                : 'An authoritative national intelligence system uniting official indicators across all 27 governorates, modeling policy alternatives, and enabling evidence-based governance.'}
+            </p>
 
-                  {/* Stylized Mini Map with Egypt Geo Pins */}
-                  <div className="relative h-44 rounded-xl bg-blue-50/40 border border-blue-100 overflow-hidden p-3 flex items-center justify-center">
-                    {/* Nile curve SVG representation */}
-                    <svg className="absolute inset-0 w-full h-full opacity-25" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      <path d="M 50 100 Q 52 75 56 60 Q 54 40 50 35 Q 46 25 43 12 M 50 35 Q 54 25 57 12" fill="none" stroke="#2563EB" strokeWidth="3" />
-                    </svg>
-
-                    {/* Governorates Interactive Badges */}
-                    <div className="absolute top-8 left-[45%] -translate-x-1/2 flex items-center gap-1 bg-navy text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs ring-2 ring-cyan/40">
-                      <span>{isRTL ? 'القاهرة' : 'Cairo'}</span>
-                      <span className="text-cyan tabular-nums">75</span>
-                    </div>
-
-                    <div className="absolute top-4 left-[35%] flex items-center gap-1 bg-white text-navy border border-blue text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
-                      <span>{isRTL ? 'الإسكندرية' : 'Alexandria'}</span>
-                      <span className="text-blue tabular-nums">78</span>
-                    </div>
-
-                    <div className="absolute top-16 left-[50%] flex items-center gap-1 bg-white text-navy border border-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
-                      <span>{isRTL ? 'الجيزة' : 'Giza'}</span>
-                      <span className="text-slate-700 tabular-nums">72</span>
-                    </div>
-
-                    <div className="absolute bottom-6 left-[62%] flex items-center gap-1 bg-white text-navy border border-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
-                      <span>{isRTL ? 'أسوان' : 'Aswan'}</span>
-                      <span className="text-slate-700 tabular-nums">68</span>
-                    </div>
-
-                    <div className="absolute top-5 left-[60%] flex items-center gap-1 bg-white text-navy border border-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
-                      <span>{isRTL ? 'بورسعيد' : 'Port Said'}</span>
-                      <span className="text-blue tabular-nums">81</span>
-                    </div>
-                  </div>
-
-                  {/* 4 Sector Mini Progress Rows */}
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="p-2.5 rounded-lg bg-white border border-slate-200/80 space-y-1">
-                      <div className="flex justify-between text-[11px] font-semibold">
-                        <span className="text-slate-600">{isRTL ? 'التعليم' : 'Education'}</span>
-                        <span className="font-bold text-navy tabular-nums">78%</span>
-                      </div>
-                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue rounded-full" style={{ width: '78%' }} />
-                      </div>
-                    </div>
-
-                    <div className="p-2.5 rounded-lg bg-white border border-slate-200/80 space-y-1">
-                      <div className="flex justify-between text-[11px] font-semibold">
-                        <span className="text-slate-600">{isRTL ? 'الصحة' : 'Healthcare'}</span>
-                        <span className="font-bold text-navy tabular-nums">82%</span>
-                      </div>
-                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue rounded-full" style={{ width: '82%' }} />
-                      </div>
-                    </div>
-
-                    <div className="p-2.5 rounded-lg bg-white border border-slate-200/80 space-y-1">
-                      <div className="flex justify-between text-[11px] font-semibold">
-                        <span className="text-slate-600">{isRTL ? 'الاقتصاد' : 'Economy'}</span>
-                        <span className="font-bold text-navy tabular-nums">71%</span>
-                      </div>
-                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue rounded-full" style={{ width: '71%' }} />
-                      </div>
-                    </div>
-
-                    <div className="p-2.5 rounded-lg bg-white border border-slate-200/80 space-y-1">
-                      <div className="flex justify-between text-[11px] font-semibold">
-                        <span className="text-slate-600">{isRTL ? 'البنية التحتية' : 'Infrastructure'}</span>
-                        <span className="font-bold text-navy tabular-nums">65%</span>
-                      </div>
-                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue rounded-full" style={{ width: '65%' }} />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Simulator callout */}
-                  <div className="p-3 rounded-lg bg-blue-50/70 border border-blue-200/80 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <DecidixIcon name="spark" size={14} color="#2563EB" />
-                      <span className="font-semibold text-blue-900">
-                        {isRTL ? 'محاكاة السياسات: عائد حدي +3.2 نقطة' : 'What-If Yield: +3.2 pts gain'}
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue text-white">
-                      +$25M USD
-                    </span>
-                  </div>
-                </div>
-              </div>
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap items-center gap-3 mt-6 animate-fade-in-up animation-delay-200">
+              <NavLink to="/overview">
+                <InteractiveActionButton variant="dark">
+                  {isRTL ? 'استعراض المنصة كزائر' : 'Explore Platform as Guest'}
+                </InteractiveActionButton>
+              </NavLink>
+              <NavLink
+                to="/login"
+                className="h-12 px-6 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs sm:text-sm font-semibold transition flex items-center justify-center whitespace-nowrap"
+              >
+                {isRTL ? 'طلب الوصول المؤسسي' : 'Request Institutional Access'}
+              </NavLink>
             </div>
+
+            {/* Trust chips */}
+            <div className="flex flex-wrap gap-2 mt-4 animate-fade-in-up animation-delay-300">
+              {[
+                { icon: 'check', en: 'CAPMAS verified baseline', ar: 'بيانات رسمية معتمدة من CAPMAS' },
+                { icon: 'shield', en: 'Isolated Workspace Tenancy', ar: 'حوكمة وعزل كامل للبيانات' },
+                { icon: 'location', en: '27 Governorates Coverage', ar: 'تغطية شاملة لـ 27 محافظة' },
+              ].map((chip) => (
+                <span
+                  key={chip.en}
+                  className="border border-white/10 rounded-full px-3 py-1 text-xs text-white/60 flex items-center gap-1.5"
+                >
+                  <DecidixIcon name={chip.icon} size={12} color="#21EAF4" />
+                  {isRTL ? chip.ar : chip.en}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN — Glass Stat Cards */}
+          <div className="flex flex-col gap-4">
+            <GlassStatCard
+              metric="74.2"
+              caption={isRTL ? 'المؤشر الوطني المركب' : 'National Index'}
+            />
+            <GlassStatCard
+              metric="27"
+              caption={isRTL ? 'محافظة مرصودة' : 'Monitored Regions'}
+            />
+            <GlassStatCard
+              metric="100%"
+              caption={isRTL ? 'مطابقة المؤشرات الرسمية' : 'Official Data Baseline'}
+              delta={isRTL ? '4 قطاعات أساسية' : '4 Core Sectors'}
+            />
           </div>
         </div>
       </section>
 
-      {/* 3. LOGO CLOUD (Trust & Technologies) */}
-      <section className="py-12 bg-white border-b border-slate-200/80">
+      {/* ===== 3. LOGO CLOUD ===== */}
+      <section id="capabilities" className="py-12 bg-white scroll-mt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-xs font-semibold text-slate-500 uppercase tracking-wider mb-8">
             {isRTL
               ? 'بنية تحتية موثوقة ومصادر بيانات وطنية معتمدة'
               : 'POWERED BY VERIFIED DATA SOURCES & AUTHORITATIVE ARCHITECTURE'}
           </p>
-
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 items-center">
             {logos.map((lg, i) => (
               <div
                 key={i}
-                className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/70 hover:border-slate-300 transition-colors flex flex-col items-center text-center shadow-2xs"
+                className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/60 hover:border-slate-300 transition-colors flex flex-col items-center text-center shadow-2xs"
               >
                 <span className="text-xs font-bold text-navy mb-0.5">
                   {isRTL ? lg.arabicName : lg.name}
                 </span>
-                <span className="text-[10px] text-slate-400 font-medium">
-                  {lg.role}
-                </span>
+                <span className="text-[10px] text-slate-400 font-medium">{lg.role}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 4. FEATURES (3 Alternating Rows) */}
-      <section id="features" className="py-20 lg:py-28 bg-[#F8FAFC] border-b border-slate-200/80 scroll-mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
-          {/* Section Header */}
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue text-xs font-bold border border-blue-200/80 shadow-2xs">
-              <DecidixIcon name="insights" size={13} color="#2563EB" />
-              <span>{isRTL ? 'القدرات والحلول التنموية' : 'CORE CAPABILITIES'}</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-navy font-display">
-              {isRTL
-                ? 'منظومة متكاملة من البيانات إلى القرار'
-                : 'From Heterogeneous Data to Confident Decisions'}
-            </h2>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {isRTL
-                ? 'محاور مترابطة تجمع بين دقة الرصد الإحصائي، وقوة النمذجة الرياضية، ومرونة محاكاة أثر المخصصات المالية.'
-                : 'Integrated analytical pillars combining statistical precision, predictive machine learning, and dynamic policy modeling.'}
-            </p>
+      {/* ===== 4. FEATURES SECTION ===== */}
+      <section
+        id="features"
+        className="bg-[#F5F7FA] rounded-[2.5rem] mx-4 sm:mx-6 lg:mx-8 my-8 py-20 px-8 sm:px-12 lg:px-16 scroll-mt-24"
+      >
+        {/* Section Header */}
+        <div className="text-center max-w-2xl mx-auto space-y-3 mb-16">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#2563EB] text-xs font-bold border border-blue-200/80">
+            <DecidixIcon name="insights" size={13} color="#2563EB" />
+            <span>{isRTL ? 'القدرات والحلول التنموية' : 'CORE CAPABILITIES'}</span>
           </div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-navy font-display">
+            {isRTL ? 'منظومة متكاملة من البيانات إلى القرار' : 'From Heterogeneous Data to Confident Decisions'}
+          </h2>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            {isRTL
+              ? 'محاور مترابطة تجمع بين دقة الرصد الإحصائي، وقوة النمذجة الرياضية، ومرونة محاكاة أثر المخصصات المالية.'
+              : 'Integrated analytical pillars combining statistical precision, predictive machine learning, and dynamic policy modeling.'}
+          </p>
+        </div>
 
-          {/* 3 Alternating Feature Rows */}
+        {/* Feature rows */}
+        <div className="space-y-16">
           {features.map((feat, idx) => {
             const isEven = idx % 2 === 1;
             return (
               <div
                 key={feat.id}
-                className={`grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center ${
-                  isEven ? 'lg:flex-row-reverse' : ''
-                }`}
+                className={`grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center`}
               >
                 {/* Feature Text */}
-                <div className={`lg:col-span-6 space-y-5 ${isEven ? 'lg:order-2' : 'lg:order-1'}`}>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-blue">
+                <div className={`space-y-5 ${isEven ? 'lg:order-2' : 'lg:order-1'}`}>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB]">
                     {isRTL ? feat.badgeAr : feat.badgeEn}
                   </span>
                   <h3 className="text-xl sm:text-2xl font-bold text-navy tracking-tight font-display">
@@ -710,22 +559,20 @@ export const LandingPage: React.FC = () => {
                   <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                     {isRTL ? feat.descAr : feat.descEn}
                   </p>
-
                   <ul className="space-y-2.5 pt-1 text-xs text-slate-700">
                     {(isRTL ? feat.bulletsAr : feat.bulletsEn).map((bullet, bIdx) => (
                       <li key={bIdx} className="flex items-start gap-2.5">
-                        <span className="w-5 h-5 rounded-md bg-blue-50 text-blue flex items-center justify-center shrink-0 mt-0.5 border border-blue-200/60">
+                        <span className="w-5 h-5 rounded-md bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0 mt-0.5 border border-blue-200/60">
                           <DecidixIcon name="check" size={12} color="#2563EB" />
                         </span>
                         <span className="leading-relaxed">{bullet}</span>
                       </li>
                     ))}
                   </ul>
-
                   <div className="pt-2">
                     <NavLink
                       to={feat.link}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-blue hover:text-blue-hover transition-colors group"
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2563EB] hover:text-[#1D4ED8] transition-colors group"
                     >
                       <span>{isRTL ? feat.linkTextAr : feat.linkTextEn}</span>
                       <DecidixIcon name="arrow_right" size={13} color="currentColor" className="transition-transform group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
@@ -733,89 +580,59 @@ export const LandingPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Feature Visual Preview Card */}
-                <div className={`lg:col-span-6 ${isEven ? 'lg:order-1' : 'lg:order-2'}`}>
-                  <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 relative overflow-hidden">
+                {/* Feature Visual — Large Showcase Card */}
+                <div className={`${isEven ? 'lg:order-1' : 'lg:order-2'}`}>
+                  <div className="bg-white rounded-[2rem] border border-slate-200/80 shadow-glass-light p-6 relative overflow-hidden">
+                    {/* Internal glass analytics panel header */}
+                    <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+                      <div>
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB] mb-0.5">
+                          {isRTL ? feat.badgeAr : feat.badgeEn}
+                        </div>
+                        <div className="text-sm font-bold text-navy">
+                          {feat.visualType === 'comparison' && (isRTL ? 'مقارنة المحافظات' : 'Governorate Comparison Matrix')}
+                          {feat.visualType === 'chart' && (isRTL ? 'المسار الزمني: الفعلي والتنبؤي' : 'Observed vs Extrapolated Trajectory')}
+                          {feat.visualType === 'simulator' && (isRTL ? 'محاكي السيناريوهات' : 'What-If Policy Simulator')}
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-[#2563EB] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/60">
+                        CAPMAS 2021-2024
+                      </span>
+                    </div>
+
                     {feat.visualType === 'comparison' && (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                          <div className="text-xs font-bold text-navy">
-                            {isRTL ? 'مقارنة المحافظات (القاهرة vs الإسكندرية)' : 'Governorate Comparison Matrix'}
-                          </div>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                            CAPMAS v1.0
-                          </span>
-                        </div>
-
-                        {/* Dual Horizontal Bars */}
-                        <div className="space-y-3">
-                          <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/70 space-y-1.5">
+                      <div className="space-y-3">
+                        {[
+                          { labelEn: 'Overall Development Index', labelAr: 'المؤشر التنموي العام', v1: 75, v2: 78, delta: '+3.0 pts' },
+                          { labelEn: 'Healthcare Services Score', labelAr: 'قطاع الرعاية الصحية', v1: 72, v2: 76.5, delta: '+4.5 pts' },
+                        ].map((row) => (
+                          <div key={row.labelEn} className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/70 space-y-2">
                             <div className="flex justify-between text-xs font-semibold text-navy">
-                              <span>{isRTL ? 'المؤشر التنموي العام' : 'Overall Development Index'}</span>
-                              <div className="flex items-center gap-3">
-                                <span className="text-blue font-bold tabular-nums">75.0</span>
-                                <span className="text-cyan font-bold tabular-nums">78.0</span>
-                                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.2 rounded border border-emerald-200/60 tabular-nums">
-                                  +3.0 pts
-                                </span>
+                              <span>{isRTL ? row.labelAr : row.labelEn}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[#2563EB] font-bold tabular-nums">{row.v1}</span>
+                                <span className="text-[#21EAF4] font-bold tabular-nums">{row.v2}</span>
+                                <span className="text-[10px] font-bold text-[#21EAF4] bg-[#21EAF4]/10 px-2 py-0.5 rounded tabular-nums">{row.delta}</span>
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-2">
-                              <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue rounded-full" style={{ width: '75%' }} />
-                              </div>
-                              <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-cyan rounded-full" style={{ width: '78%' }} />
-                              </div>
+                              <div className="sector-bar"><div className="sector-bar-fill" style={{ width: `${row.v1}%`, background: '#2563EB' }} /></div>
+                              <div className="sector-bar"><div className="sector-bar-fill" style={{ width: `${row.v2}%`, background: '#21EAF4' }} /></div>
                             </div>
                           </div>
-
-                          <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/70 space-y-1.5">
-                            <div className="flex justify-between text-xs font-semibold text-navy">
-                              <span>{isRTL ? 'قطاع الرعاية الصحية' : 'Healthcare Services Score'}</span>
-                              <div className="flex items-center gap-3">
-                                <span className="text-blue font-bold tabular-nums">72.0</span>
-                                <span className="text-cyan font-bold tabular-nums">76.5</span>
-                                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.2 rounded border border-emerald-200/60 tabular-nums">
-                                  +4.5 pts
-                                </span>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                              <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue rounded-full" style={{ width: '72%' }} />
-                              </div>
-                              <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-cyan rounded-full" style={{ width: '76.5%' }} />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
+                        ))}
                         <div className="p-3 rounded-xl bg-blue-50/70 text-xs text-blue-900 border border-blue-200/60 flex items-center justify-between">
                           <span>{isRTL ? 'أولوية التدخل الموصى بها:' : 'Recommended Priority:'}</span>
-                          <span className="font-bold text-blue">{isRTL ? 'دعم المشروعات الصغيرة' : 'SME Job Support'}</span>
+                          <span className="font-bold text-[#2563EB]">{isRTL ? 'دعم المشروعات الصغيرة' : 'SME Job Support'}</span>
                         </div>
                       </div>
                     )}
 
                     {feat.visualType === 'chart' && (
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                          <div>
-                            <div className="text-xs font-bold text-navy">
-                              {isRTL ? 'المسار الزمني: الفعلي والتنبؤي' : 'Observed vs Extrapolated Trajectory'}
-                            </div>
-                            <div className="text-[10px] text-slate-400">
-                              {isRTL ? 'أفق النمذجة: 2021 — 2028' : 'Forecast Horizon: 2021 — 2028'}
-                            </div>
-                          </div>
-                          <span className="text-[10px] font-bold text-blue bg-blue-50 px-2 py-0.5 rounded-full">
-                            95% Confidence
-                          </span>
+                        <div className="text-[10px] text-slate-400 mb-2">
+                          {isRTL ? 'أفق النمذجة: 2021 — 2028' : 'Forecast Horizon: 2021 — 2028'}
                         </div>
-
-                        {/* Trajectory Bar Visual Mockup */}
                         <div className="h-40 flex items-end justify-between gap-3 pt-4 px-2">
                           {[
                             { year: '2021', val: 55.5, kind: 'actual' },
@@ -828,15 +645,14 @@ export const LandingPage: React.FC = () => {
                             const heightPercent = ((pt.val - 50) / 10) * 100;
                             return (
                               <div key={pt.year} className="flex-1 flex flex-col items-center gap-1.5">
-                                <span className="text-[10px] font-bold tabular-nums text-slate-600">
-                                  {pt.val}
-                                </span>
+                                <span className="text-[10px] font-bold tabular-nums text-slate-600">{pt.val}</span>
                                 <div className="w-full bg-slate-100 rounded-t-md h-24 flex items-end">
                                   <div
-                                    className={`w-full rounded-t-md ${
-                                      pt.kind === 'forecast' ? 'bg-cyan' : 'bg-blue'
-                                    }`}
-                                    style={{ height: `${heightPercent}%` }}
+                                    className="w-full rounded-t-md"
+                                    style={{
+                                      height: `${heightPercent}%`,
+                                      background: pt.kind === 'forecast' ? '#21EAF4' : '#2563EB',
+                                    }}
                                   />
                                 </div>
                                 <span className="text-[10px] text-slate-400 tabular-nums">{pt.year}</span>
@@ -844,7 +660,6 @@ export const LandingPage: React.FC = () => {
                             );
                           })}
                         </div>
-
                         <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/70 text-[11px] text-amber-900 flex items-center gap-2">
                           <DecidixIcon name="info" size={14} color="#D97706" />
                           <span>{isRTL ? 'إخلاء علمي: نموذج اتجاه خطي بسيط قابل للتفسير' : 'Academic notice: Explainable linear trend fitting'}</span>
@@ -854,45 +669,26 @@ export const LandingPage: React.FC = () => {
 
                     {feat.visualType === 'simulator' && (
                       <div className="space-y-4">
-                        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                          <div>
-                            <div className="text-xs font-bold text-navy">
-                              {isRTL ? 'محاكي السيناريوهات والميزانيات' : 'What-If Policy Lever Simulator'}
-                            </div>
-                            <div className="text-[10px] text-slate-400">
-                              {isRTL ? 'نموذج العائد الحدي التناقصي' : 'Diminishing Marginal Return Model'}
-                            </div>
-                          </div>
-                          <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
-                            +1.85 pts Gain
-                          </span>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-bold text-[#2563EB] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/60 tabular-nums">+1.85 pts Gain</span>
                         </div>
-
-                        {/* Sliders Mockup */}
                         <div className="space-y-3">
-                          <div className="p-2.5 rounded-lg bg-slate-50/70 border border-slate-200/70 space-y-1">
-                            <div className="flex justify-between text-xs font-semibold text-navy">
-                              <span>{isRTL ? 'مخصصات الصحة' : 'Healthcare Allocation'}</span>
-                              <span className="font-bold text-blue tabular-nums">$15M</span>
+                          {[
+                            { labelEn: 'Healthcare Allocation', labelAr: 'مخصصات الصحة', value: '$15M', pct: 45 },
+                            { labelEn: 'Education Spending', labelAr: 'مخصصات التعليم', value: '$10M', pct: 30 },
+                          ].map((item) => (
+                            <div key={item.labelEn} className="p-2.5 rounded-lg bg-slate-50/70 border border-slate-200/70 space-y-1">
+                              <div className="flex justify-between text-xs font-semibold text-navy">
+                                <span>{isRTL ? item.labelAr : item.labelEn}</span>
+                                <span className="font-bold text-[#2563EB] tabular-nums">{item.value}</span>
+                              </div>
+                              <div className="sector-bar">
+                                <div className="sector-bar-fill" style={{ width: `${item.pct}%`, background: '#2563EB' }} />
+                              </div>
                             </div>
-                            <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-                              <div className="h-full bg-blue rounded-full" style={{ width: '45%' }} />
-                            </div>
-                          </div>
-
-                          <div className="p-2.5 rounded-lg bg-slate-50/70 border border-slate-200/70 space-y-1">
-                            <div className="flex justify-between text-xs font-semibold text-navy">
-                              <span>{isRTL ? 'مخصصات التعليم' : 'Education Spending'}</span>
-                              <span className="font-bold text-blue tabular-nums">$10M</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-                              <div className="h-full bg-blue rounded-full" style={{ width: '30%' }} />
-                            </div>
-                          </div>
+                          ))}
                         </div>
-
-                        {/* Grounded AI Assistant Response Strip */}
-                        <div className="p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs space-y-1.5">
+                        <div className="p-3 rounded-xl bg-white border border-slate-200/80 space-y-1.5">
                           <div className="flex items-center gap-1.5 text-xs font-bold text-navy">
                             <DecidixIcon name="spark" size={13} color="#2563EB" />
                             <span>{isRTL ? 'تحليل المساعد الذكي المؤصل' : 'Grounded Assistant Insight'}</span>
@@ -913,59 +709,114 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. PROCESS (3 Connected Steps) */}
-      <section id="process" className="py-20 lg:py-28 bg-white border-b border-slate-200/80 scroll-mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto space-y-3 mb-16">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue text-xs font-bold border border-blue-200/80 shadow-2xs">
-              <DecidixIcon name="overview" size={13} color="#2563EB" />
+      {/* ===== 5. HOW IT WORKS — DARK ANALYTICAL WORKFLOW ===== */}
+      <section
+        id="process"
+        className="relative bg-navy-gradient rounded-[2.5rem] overflow-hidden mx-4 sm:mx-6 lg:mx-8 my-8 py-20 px-8 sm:px-12 lg:px-16 scroll-mt-24"
+      >
+        <GrainOverlay />
+        {/* Grid lineart overlay */}
+        <div className="absolute inset-0 grid-lineart opacity-20 pointer-events-none" />
+
+        <div className="relative z-10">
+          {/* Section header */}
+          <div className="text-center max-w-2xl mx-auto space-y-3 mb-14">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-[#21EAF4] text-xs font-bold border border-white/10">
+              <DecidixIcon name="overview" size={13} color="#21EAF4" />
               <span>{isRTL ? 'منهجية العمل' : 'HOW IT OPERATES'}</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-navy font-display">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white font-display">
               {isRTL
                 ? 'ثلاث خطوات محكمة من البيانات إلى اتخاذ القرار'
                 : 'Three Verified Steps from Ingestion to Deployment'}
             </h2>
-            <p className="text-sm text-slate-600 leading-relaxed">
+            <p className="text-sm text-white/60 leading-relaxed">
               {isRTL
                 ? 'آلية عمل معيارية تضمن دقة السجلات، وموثوقية النمذجة الرياضية، وحوكمة المتابعة الميدانية.'
                 : 'A rigorous workflow ensuring data integrity, mathematical model validation, and actionable policy triage.'}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-            {steps.map((st, sIdx) => (
-              <div
-                key={sIdx}
-                className="bg-slate-50/70 rounded-2xl p-6 border border-slate-200/80 shadow-xs relative flex flex-col justify-between space-y-4"
-              >
-                <div>
-                  <div className="w-12 h-12 rounded-xl bg-blue text-white flex items-center justify-center font-bold text-lg mb-4 shadow-sm font-display">
-                    {st.num}
-                  </div>
-                  <h3 className="text-lg font-bold text-navy mb-2 font-display">
+          {/* 2-column layout: Steps + Preview */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+            {/* Left — Numbered Steps */}
+            <div className="flex flex-col gap-5">
+              {steps.map((st) => (
+                <div key={st.num} className="glass-dark rounded-2xl p-6">
+                  <div className="text-eyebrow text-[#21EAF4] mb-3">{st.num}</div>
+                  <h3 className="text-base font-bold text-white mb-2 font-display">
                     {isRTL ? st.titleAr : st.titleEn}
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p className="text-xs text-white/60 leading-relaxed">
                     {isRTL ? st.descAr : st.descEn}
                   </p>
+                  <div className="mt-4 pt-4 border-t border-white/10 text-[11px] font-semibold text-[#21EAF4] flex items-center gap-1.5">
+                    <DecidixIcon name="check" size={12} color="#21EAF4" />
+                    <span>{isRTL ? 'إجراء مؤتمت بالكامل' : 'Automated Verification'}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right — Executive Preview Card */}
+            <div className={`tilt-card-ltr ${isRTL ? 'rtl:tilt-card-rtl' : ''}`}>
+              <div className="glass-dark rounded-2xl p-6 h-full">
+                <div className="mb-4">
+                  <div className="text-eyebrow text-[#21EAF4] mb-2">
+                    {isRTL ? 'لوحة القيادة التنفيذية' : 'Executive Dashboard Preview'}
+                  </div>
+                  <div className="text-sm font-bold text-white">
+                    {isRTL ? 'جمهورية مصر العربية · نظرة عامة وطنية' : 'Arab Republic of Egypt · National Overview'}
+                  </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-200/70 text-[11px] font-semibold text-blue flex items-center gap-1.5">
-                  <DecidixIcon name="check" size={12} color="#2563EB" />
-                  <span>{isRTL ? 'إجراء مؤتمت بالكامل' : 'Automated Verification'}</span>
+                {/* Mini map mock */}
+                <div className="relative h-44 rounded-xl bg-white/5 border border-white/10 overflow-hidden mb-4 p-3 flex items-center justify-center">
+                  <svg className="absolute inset-0 w-full h-full opacity-25" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M 50 100 Q 52 75 56 60 Q 54 40 50 35 Q 46 25 43 12 M 50 35 Q 54 25 57 12" fill="none" stroke="#21EAF4" strokeWidth="3" />
+                  </svg>
+                  <div className="absolute top-8 left-[45%] -translate-x-1/2 flex items-center gap-1 bg-[#061A3A] text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs ring-1 ring-[#21EAF4]/40">
+                    <span>{isRTL ? 'القاهرة' : 'Cairo'}</span>
+                    <span className="text-[#21EAF4] tabular-nums">75</span>
+                  </div>
+                  <div className="absolute top-4 left-[35%] flex items-center gap-1 bg-white/10 text-white border border-white/20 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                    <span>{isRTL ? 'الإسكندرية' : 'Alexandria'}</span>
+                    <span className="text-[#2563EB] tabular-nums">78</span>
+                  </div>
+                  <div className="absolute bottom-6 left-[62%] flex items-center gap-1 bg-white/10 text-white border border-white/20 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                    <span>{isRTL ? 'أسوان' : 'Aswan'}</span>
+                    <span className="text-slate-300 tabular-nums">68</span>
+                  </div>
+                </div>
+
+                {/* Sector bars */}
+                <div className="space-y-2">
+                  {[
+                    { en: 'Education', ar: 'التعليم', pct: 78 },
+                    { en: 'Healthcare', ar: 'الصحة', pct: 82 },
+                    { en: 'Economy', ar: 'الاقتصاد', pct: 71 },
+                    { en: 'Infrastructure', ar: 'البنية التحتية', pct: 65 },
+                  ].map((sector) => (
+                    <div key={sector.en} className="flex items-center gap-3">
+                      <span className="text-[10px] text-white/60 w-20 shrink-0">{isRTL ? sector.ar : sector.en}</span>
+                      <div className="flex-1 sector-bar">
+                        <div className="sector-bar-fill" style={{ width: `${sector.pct}%`, background: 'linear-gradient(90deg, #2563EB, #21EAF4)' }} />
+                      </div>
+                      <span className="text-[10px] font-bold text-white tabular-nums w-7 text-right">{sector.pct}%</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 6. TESTIMONIALS (1 Prominent Quote + 2 Supporting) */}
-      <section className="py-20 lg:py-28 bg-[#F8FAFC] border-b border-slate-200/80">
+      {/* ===== 6. TESTIMONIALS ===== */}
+      <section className="py-20 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto space-y-3 mb-16">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue text-xs font-bold border border-blue-200/80 shadow-2xs">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#2563EB] text-xs font-bold border border-blue-200/80">
               <DecidixIcon name="shield" size={13} color="#2563EB" />
               <span>{isRTL ? 'آراء الخبراء وصناع القرار' : 'EXECUTIVE TESTIMONIALS'}</span>
             </div>
@@ -980,18 +831,13 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="space-y-6">
-            {/* Prominent Lead Quote */}
             {testimonials.filter((t) => t.featured).map((t, fIdx) => (
-              <div
-                key={fIdx}
-                className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-8 md:p-10 space-y-6"
-              >
-                <p className="text-base sm:text-lg lg:text-xl font-medium text-navy leading-relaxed font-serif italic">
+              <div key={fIdx} className="bg-white rounded-2xl border border-slate-200/80 shadow-glass-light p-8 md:p-10 space-y-6">
+                <p className="text-base sm:text-lg lg:text-xl font-medium text-navy leading-relaxed italic">
                   {isRTL ? t.quoteAr : t.quoteEn}
                 </p>
-
                 <div className="flex items-center gap-3 pt-2">
-                  <div className="w-11 h-11 rounded-full bg-blue text-white flex items-center justify-center font-bold text-sm shadow-2xs">
+                  <div className="w-11 h-11 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-sm">
                     {t.avatar}
                   </div>
                   <div>
@@ -1002,17 +848,12 @@ export const LandingPage: React.FC = () => {
               </div>
             ))}
 
-            {/* Two Supporting Quotes */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {testimonials.filter((t) => !t.featured).map((t, sIdx) => (
-                <div
-                  key={sIdx}
-                  className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-8 space-y-4 flex flex-col justify-between"
-                >
+                <div key={sIdx} className="bg-white rounded-2xl border border-slate-200/80 shadow-glass-light p-6 sm:p-8 space-y-4 flex flex-col justify-between">
                   <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
                     {isRTL ? t.quoteAr : t.quoteEn}
                   </p>
-
                   <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
                     <div className="w-9 h-9 rounded-full bg-slate-100 text-navy flex items-center justify-center font-bold text-xs border border-slate-200/80">
                       {t.avatar}
@@ -1029,69 +870,71 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 7. PRICING / ACCESS TIERS (3 Plans) */}
-      <section id="pricing" className="py-20 lg:py-28 bg-white border-b border-slate-200/80 scroll-mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto space-y-3 mb-16">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue text-xs font-bold border border-blue-200/80 shadow-2xs">
-              <DecidixIcon name="account" size={13} color="#2563EB" />
-              <span>{isRTL ? 'مستويات الوصول والصلاحيات' : 'ACCESS & DEPLOYMENT TIERS'}</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-navy font-display">
-              {isRTL
-                ? 'وصول مفتوح وشامل بدون حواجز دفع'
-                : 'Transparent Access Tiers Without Commercial Paywalls'}
-            </h2>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {isRTL
-                ? 'صُممت ديسيدكس كمنظومة وطنية مفتوحة قائمة على سياسة التكلفة الصفرية لخدمة المخططين والباحثين والمواطنين.'
-                : 'Designed with zero billing overhead to empower researchers, public planners, and citizens across the nation.'}
-            </p>
+      {/* ===== 7. ACCESS TIERS — BENTO CARDS ===== */}
+      <section
+        id="pricing"
+        className="bg-[#F5F7FA] rounded-[2.5rem] mx-4 sm:mx-6 lg:mx-8 my-8 py-16 px-8 sm:px-12 lg:px-16 scroll-mt-24"
+      >
+        <div className="text-center max-w-2xl mx-auto space-y-3 mb-14">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#2563EB] text-xs font-bold border border-blue-200/80">
+            <DecidixIcon name="account" size={13} color="#2563EB" />
+            <span>{isRTL ? 'مستويات الوصول والصلاحيات' : 'ACCESS & DEPLOYMENT TIERS'}</span>
           </div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-navy font-display">
+            {isRTL
+              ? 'وصول مفتوح وشامل بدون حواجز دفع'
+              : 'Transparent Access Tiers Without Commercial Paywalls'}
+          </h2>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            {isRTL
+              ? 'صُممت ديسيدكس كمنظومة وطنية مفتوحة قائمة على سياسة التكلفة الصفرية لخدمة المخططين والباحثين والمواطنين.'
+              : 'Designed with zero billing overhead to empower researchers, public planners, and citizens across the nation.'}
+          </p>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-            {tiers.map((tier, trIdx) => (
-              <div
-                key={trIdx}
-                className={`rounded-2xl p-7 flex flex-col justify-between transition-all duration-200 relative ${
-                  tier.isRecommended
-                    ? 'bg-white border-2 border-blue shadow-card ring-4 ring-blue/5'
-                    : 'bg-white border border-slate-200/80 shadow-xs hover:border-slate-300'
-                }`}
-              >
-                {tier.isRecommended && (
-                  <div className="absolute -top-3.5 ltr:right-6 rtl:left-6 px-3 py-1 rounded-full bg-blue text-white text-[11px] font-bold shadow-2xs">
-                    {isRTL ? tier.badgeAr : tier.badgeEn}
-                  </div>
-                )}
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+          {tiers.map((tier, trIdx) => (
+            <div
+              key={trIdx}
+              className={`bg-white rounded-[2rem] border border-slate-200/80 overflow-hidden shadow-glass-light flex flex-col ${
+                tier.isRecommended ? 'ring-2 ring-[#2563EB]/30' : ''
+              }`}
+            >
+              {/* Top dark strip with grain */}
+              <div className="h-24 bg-navy-gradient relative overflow-hidden">
+                <GrainOverlay opacity={0.08} />
+                <div className="relative z-10 h-full flex flex-col justify-end px-6 pb-4">
+                  {tier.isRecommended && (
+                    <span className="absolute top-3 ltr:right-4 rtl:left-4 px-2.5 py-0.5 rounded-full bg-[#2563EB] text-white text-[10px] font-bold">
                       {isRTL ? tier.badgeAr : tier.badgeEn}
                     </span>
-                  </div>
+                  )}
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-white/50">
+                    {isRTL ? tier.badgeAr : tier.badgeEn}
+                  </span>
+                </div>
+              </div>
 
-                  <h3 className="text-xl font-bold text-navy mb-2 font-display">
+              {/* Card body */}
+              <div className="p-6 flex flex-col flex-1 justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-navy mb-1 font-display">
                     {isRTL ? tier.nameAr : tier.nameEn}
                   </h3>
-
-                  <div className="flex items-baseline gap-1 my-3">
-                    <span className="text-3xl font-bold tracking-tight text-navy">
-                      {isRTL ? tier.priceAr : tier.priceEn}
-                    </span>
+                  <div className="text-2xl font-bold tracking-tight text-navy my-2 tabular-nums">
+                    {isRTL ? tier.priceAr : tier.priceEn}
                   </div>
-                  <p className="text-xs text-slate-500 mb-6">
+                  <p className="text-xs text-slate-500 mb-5">
                     {isRTL ? tier.subtextAr : tier.subtextEn}
                   </p>
 
-                  <div className="border-t border-slate-100 pt-5 space-y-3 mb-8">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                  <div className="border-t border-slate-100 pt-4 space-y-2.5 mb-6">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                       {isRTL ? 'الميزات والصلاحيات المتاحة:' : 'INCLUDED CAPABILITIES:'}
                     </span>
                     {(isRTL ? tier.featuresAr : tier.featuresEn).map((f, fIdx) => (
-                      <div key={fIdx} className="flex items-start gap-2.5 text-xs text-slate-700">
-                        <span className="w-4 h-4 rounded-full bg-blue-50 text-blue flex items-center justify-center shrink-0 mt-0.5">
+                      <div key={fIdx} className="flex items-start gap-2 text-xs text-slate-700">
+                        <span className="w-4 h-4 rounded-full bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0 mt-0.5">
                           <DecidixIcon name="check" size={11} color="#2563EB" />
                         </span>
                         <span className="leading-snug">{f}</span>
@@ -1100,28 +943,22 @@ export const LandingPage: React.FC = () => {
                   </div>
                 </div>
 
-                <NavLink
-                  to={tier.ctaLink}
-                  className={`w-full py-3 rounded-full text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 shadow-2xs active:scale-[0.98] ${
-                    tier.isPrimary
-                      ? 'bg-blue hover:bg-blue-hover text-white shadow-sm'
-                      : 'bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-navy'
-                  }`}
-                >
-                  <span>{isRTL ? tier.ctaTextAr : tier.ctaTextEn}</span>
-                  <DecidixIcon name="arrow_right" size={13} color="currentColor" />
+                <NavLink to={tier.ctaLink}>
+                  <InteractiveActionButton variant="light">
+                    {isRTL ? tier.ctaTextAr : tier.ctaTextEn}
+                  </InteractiveActionButton>
                 </NavLink>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* 8. FAQ ACCORDION (6 Questions) */}
-      <section id="faq" className="py-20 lg:py-28 bg-[#F8FAFC] border-b border-slate-200/80 scroll-mt-16">
+      {/* ===== 8. FAQ SECTION ===== */}
+      <section id="faq" className="py-20 lg:py-24 bg-white scroll-mt-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto space-y-3 mb-16">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue text-xs font-bold border border-blue-200/80 shadow-2xs">
+          <div className="text-center max-w-2xl mx-auto space-y-3 mb-14">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-[#2563EB] text-xs font-bold border border-blue-200/80">
               <DecidixIcon name="info" size={13} color="#2563EB" />
               <span>{isRTL ? 'الأسئلة الشائعة والمعلومات' : 'FREQUENTLY ASKED QUESTIONS'}</span>
             </div>
@@ -1141,7 +978,7 @@ export const LandingPage: React.FC = () => {
               return (
                 <div
                   key={idx}
-                  className="bg-white rounded-2xl border border-slate-200/80 shadow-xs transition-colors overflow-hidden"
+                  className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden transition-colors"
                 >
                   <button
                     type="button"
@@ -1151,13 +988,12 @@ export const LandingPage: React.FC = () => {
                     <span className="text-sm font-bold text-navy">
                       {isRTL ? faq.qAr : faq.qEn}
                     </span>
-                    <span className={`w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+                    <span className={`w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
                       <DecidixIcon name="chevron_down" size={14} />
                     </span>
                   </button>
-
                   {isOpen && (
-                    <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 animate-fadeIn">
+                    <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100">
                       {isRTL ? faq.aAr : faq.aEn}
                     </div>
                   )}
@@ -1168,57 +1004,56 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 9. CLOSING BANNER (High-Contrast Inverted Dark Navy) */}
-      <section className="py-16 lg:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[#0F172A] rounded-3xl p-8 sm:p-12 lg:p-16 text-white border border-slate-800 shadow-xl relative overflow-hidden text-center lg:text-start">
-            {/* Ambient cyan/blue glow circles in background */}
-            <div className="absolute -top-32 -right-32 w-80 h-80 bg-blue/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-cyan/15 rounded-full blur-3xl pointer-events-none" />
+      {/* ===== 9. CLOSING BANNER ===== */}
+      <section className="py-16 lg:py-20 bg-white mx-4 sm:mx-6 lg:mx-8 mb-8">
+        <div className="bg-navy-gradient rounded-[2.5rem] relative overflow-hidden px-8 sm:px-12 lg:px-16 py-16">
+          <GrainOverlay />
+          <div className="absolute inset-0 grid-lineart opacity-10 pointer-events-none" />
+          <div className="absolute -top-32 -right-32 w-80 h-80 bg-[#2563EB]/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-[#21EAF4]/10 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-8 space-y-4">
-                <span className="text-xs font-bold text-cyan uppercase tracking-wider">
-                  {isRTL ? 'ابدأ الاستعراض الآن' : 'IMMEDIATE OPEN ACCESS'}
-                </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white leading-tight font-display">
-                  {isRTL
-                    ? 'ابدأ بتوجيه القرارات التنموية استناداً إلى بيانات موثوقة ونماذج ذكية'
-                    : 'Drive National Development with Verified Data and Intelligent Models'}
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
-                  {isRTL
-                    ? 'انضم إلى الباحثين والمخططين في استكشاف المؤشرات التنموية لمحافظات مصر ومحاكاة السياسات الاستثمارية بدقة وبدون أي عوائق.'
-                    : 'Join planners and analysts exploring regional development indices across Egypt and simulating capital allocation scenarios with absolute clarity.'}
-                </p>
-              </div>
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center text-center lg:text-start">
+            <div className="lg:col-span-8 space-y-4">
+              <span className="text-xs font-bold text-[#21EAF4] uppercase tracking-wider">
+                {isRTL ? 'ابدأ الاستعراض الآن' : 'IMMEDIATE OPEN ACCESS'}
+              </span>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white leading-tight font-display">
+                {isRTL
+                  ? 'ابدأ بتوجيه القرارات التنموية استناداً إلى بيانات موثوقة ونماذج ذكية'
+                  : 'Drive National Development with Verified Data and Intelligent Models'}
+              </h2>
+              <p className="text-xs sm:text-sm text-white/50 max-w-2xl leading-relaxed">
+                {isRTL
+                  ? 'انضم إلى الباحثين والمخططين في استكشاف المؤشرات التنموية لمحافظات مصر ومحاكاة السياسات الاستثمارية بدقة وبدون أي عوائق.'
+                  : 'Join planners and analysts exploring regional development indices across Egypt and simulating capital allocation scenarios with absolute clarity.'}
+              </p>
+            </div>
 
-              <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3 justify-center lg:items-end">
-                <NavLink
-                  to="/overview"
-                  className="h-11 px-7 rounded-full bg-blue hover:bg-blue-hover text-white text-xs sm:text-sm font-bold transition shadow-sm active:scale-[0.98] flex items-center justify-center gap-2 whitespace-nowrap"
-                >
-                  <span>{isRTL ? 'استعراض المنظومة كزائر' : 'Explore Platform Now'}</span>
-                  <DecidixIcon name="arrow_right" size={15} color="#FFFFFF" />
-                </NavLink>
-
-                <NavLink
-                  to="/login"
-                  className="h-11 px-6 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/20 text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center whitespace-nowrap"
-                >
-                  {isRTL ? 'تسجيل الدخول المؤسسي' : 'Institutional Sign In'}
-                </NavLink>
-              </div>
+            <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3 justify-center lg:items-end">
+              <NavLink
+                to="/overview"
+                className="h-11 px-7 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <span>{isRTL ? 'استعراض المنظومة كزائر' : 'Explore Platform Now'}</span>
+                <DecidixIcon name="arrow_right" size={15} color="#FFFFFF" />
+              </NavLink>
+              <NavLink
+                to="/login"
+                className="h-11 px-6 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/20 text-xs sm:text-sm font-semibold transition flex items-center justify-center whitespace-nowrap"
+              >
+                {isRTL ? 'تسجيل الدخول المؤسسي' : 'Institutional Sign In'}
+              </NavLink>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 10. ENTERPRISE FOOTER */}
-      <footer className="bg-white border-t border-slate-200/80 pt-16 pb-12 text-xs text-slate-600">
+      {/* ===== 10. ENTERPRISE FOOTER ===== */}
+      <footer className="bg-[#F8FAFC] border-t border-slate-200/80 pt-16 pb-12 text-xs text-slate-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-100">
-            {/* Brand Presentation & Mission */}
+
+            {/* Brand */}
             <div className="lg:col-span-2 space-y-4">
               <NavLink to="/" className="flex items-center gap-2.5">
                 <DecidixIcon name="splash_mark" size={32} className="shrink-0" />
@@ -1229,116 +1064,63 @@ export const LandingPage: React.FC = () => {
                   ? 'المنصة الوطنية الذكية لدعم القرار التنموي الإقليمي. توحد مؤشرات التنمية وتوفر التحليلات التنبؤية ومحاكاة السياسات لخدمة التخطيط القومي المستدام.'
                   : 'National Regional Decision Support System. Unifying socio-economic indicators, predictive trajectories, and policy simulations for sustainable national progress.'}
               </p>
-              <div className="pt-2 text-[11px] text-slate-400">
+              <div className="text-[11px] text-slate-400">
                 {isRTL ? 'جمهورية مصر العربية · منظومة التخطيط التنموي المستدام' : 'Arab Republic of Egypt · Sustainable Development Platform'}
               </div>
             </div>
 
-            {/* Column 1: Core Hubs */}
+            {/* Platform Hubs */}
             <div className="space-y-3">
               <span className="text-xs font-bold text-navy uppercase tracking-wider block">
                 {isRTL ? 'المنظومة والحلول' : 'PLATFORM HUBS'}
               </span>
               <ul className="space-y-2">
-                <li>
-                  <NavLink to="/overview" className="hover:text-blue transition-colors">
-                    {isRTL ? 'اللوحة الوطنية الشاملة' : 'National Overview'}
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="/insights" className="hover:text-blue transition-colors">
-                    {isRTL ? 'التحليلات والمقارنات' : 'Regional Analytics'}
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="/intelligence" className="hover:text-blue transition-colors">
-                    {isRTL ? 'الذكاء الاستراتيجي والتنبؤات' : 'Predictive Intelligence'}
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="/decisions/simulator" className="hover:text-blue transition-colors">
-                    {isRTL ? 'محاكي السياسات (ماذا لو)' : 'What-If Simulator'}
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="/map" className="hover:text-blue transition-colors">
-                    {isRTL ? 'خريطة نقاط الرصد الإقليمي' : 'Interactive Map'}
-                  </NavLink>
-                </li>
+                <li><NavLink to="/overview" className="hover:text-[#2563EB] transition-colors">{isRTL ? 'اللوحة الوطنية الشاملة' : 'National Overview'}</NavLink></li>
+                <li><NavLink to="/insights" className="hover:text-[#2563EB] transition-colors">{isRTL ? 'التحليلات والمقارنات' : 'Regional Analytics'}</NavLink></li>
+                <li><NavLink to="/intelligence" className="hover:text-[#2563EB] transition-colors">{isRTL ? 'الذكاء الاستراتيجي والتنبؤات' : 'Predictive Intelligence'}</NavLink></li>
+                <li><NavLink to="/decisions/simulator" className="hover:text-[#2563EB] transition-colors">{isRTL ? 'محاكي السياسات (ماذا لو)' : 'What-If Simulator'}</NavLink></li>
+                <li><NavLink to="/map" className="hover:text-[#2563EB] transition-colors">{isRTL ? 'خريطة نقاط الرصد الإقليمي' : 'Interactive Map'}</NavLink></li>
               </ul>
             </div>
 
-            {/* Column 2: Legal & Governance */}
+            {/* Governance */}
             <div className="space-y-3">
               <span className="text-xs font-bold text-navy uppercase tracking-wider block">
                 {isRTL ? 'الحوكمة والشفافية' : 'GOVERNANCE & LEGAL'}
               </span>
               <ul className="space-y-2">
-                <li>
-                  <NavLink to="/privacy" className="hover:text-blue transition-colors">
-                    {isRTL ? 'سياسة الخصوصية وحماية البيانات' : 'Privacy Policy'}
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="/delete-account" className="hover:text-blue transition-colors">
-                    {isRTL ? 'بوابة حذف الحساب والمحو' : 'Account Deletion Portal'}
-                  </NavLink>
-                </li>
-                <li>
-                  <a href="#faq" className="hover:text-blue transition-colors">
-                    {isRTL ? 'معايير الأمان وحوكمة البيانات' : 'Security & Data Governance'}
-                  </a>
-                </li>
-                <li>
-                  <NavLink to="/insights/data-quality" className="hover:text-blue transition-colors">
-                    {isRTL ? 'تدقيق جودة البيانات ومصادرها' : 'Data Provenance Audit'}
-                  </NavLink>
-                </li>
+                <li><NavLink to="/privacy" className="hover:text-[#2563EB] transition-colors">{isRTL ? 'سياسة الخصوصية وحماية البيانات' : 'Privacy Policy'}</NavLink></li>
+                <li><NavLink to="/delete-account" className="hover:text-[#2563EB] transition-colors">{isRTL ? 'بوابة حذف الحساب والمحو' : 'Account Deletion Portal'}</NavLink></li>
+                <li><a href="#faq" className="hover:text-[#2563EB] transition-colors">{isRTL ? 'معايير الأمان وحوكمة البيانات' : 'Security & Data Governance'}</a></li>
+                <li><NavLink to="/insights/data-quality" className="hover:text-[#2563EB] transition-colors">{isRTL ? 'تدقيق جودة البيانات ومصادرها' : 'Data Provenance Audit'}</NavLink></li>
               </ul>
             </div>
 
-            {/* Column 3: Tools & Access */}
+            {/* Tools & Access */}
             <div className="space-y-3">
               <span className="text-xs font-bold text-navy uppercase tracking-wider block">
                 {isRTL ? 'الأدوات والوصول' : 'TOOLS & ACCESS'}
               </span>
               <ul className="space-y-2">
-                <li>
-                  <NavLink to="/assistant" className="hover:text-blue transition-colors">
-                    {isRTL ? 'المساعد الذكي لدعم القرار' : 'AI Assistant'}
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="/datasets" className="hover:text-blue transition-colors">
-                    {isRTL ? 'مستودع مجموعات البيانات' : 'Dataset Repository'}
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="/login" className="hover:text-blue transition-colors">
-                    {isRTL ? 'تسجيل دخول الأعضاء' : 'Sign In Portal'}
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink to="/register" className="hover:text-blue transition-colors">
-                    {isRTL ? 'إنشاء حساب محلل جديد' : 'Register Analyst'}
-                  </NavLink>
-                </li>
+                <li><NavLink to="/assistant" className="hover:text-[#2563EB] transition-colors">{isRTL ? 'المساعد الذكي لدعم القرار' : 'AI Assistant'}</NavLink></li>
+                <li><NavLink to="/datasets" className="hover:text-[#2563EB] transition-colors">{isRTL ? 'مستودع مجموعات البيانات' : 'Dataset Repository'}</NavLink></li>
+                <li><NavLink to="/login" className="hover:text-[#2563EB] transition-colors">{isRTL ? 'تسجيل دخول الأعضاء' : 'Sign In Portal'}</NavLink></li>
+                <li><NavLink to="/register" className="hover:text-[#2563EB] transition-colors">{isRTL ? 'إنشاء حساب محلل جديد' : 'Register Analyst'}</NavLink></li>
               </ul>
             </div>
           </div>
 
-          {/* Bottom Row - Clean Minimalist Professional Footer */}
-          <div className="pt-8 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          {/* Footer bottom */}
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <div>
-              © {new Date().getFullYear()} DECIDIX. {isRTL ? 'جميع الحقوق محفوظة' : 'All rights reserved.'}
+              © {new Date().getFullYear()} DECIDIX. {isRTL ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}
             </div>
-
-            <div className="flex items-center gap-4 text-xs">
-              <NavLink to="/privacy" className="hover:text-blue transition-colors">
+            <div className="flex items-center gap-4">
+              <NavLink to="/privacy" className="hover:text-[#2563EB] transition-colors">
                 {isRTL ? 'الخصوصية وحوكمة البيانات' : 'Privacy & Data Governance'}
               </NavLink>
-              <span>•</span>
-              <NavLink to="/login" className="hover:text-blue transition-colors">
+              <span>·</span>
+              <NavLink to="/login" className="hover:text-[#2563EB] transition-colors">
                 {isRTL ? 'بوابة المحللين' : 'Analyst Portal'}
               </NavLink>
             </div>

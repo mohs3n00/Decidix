@@ -3,6 +3,8 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
 import { DecidixIcon } from '../../components/DecidixIcon';
+import { GrainOverlay } from '../../components/GrainOverlay';
+import { GlassStatCard } from '../../components/GlassStatCard';
 import { decisionsService } from '../../services/decisionsService';
 import { SimulationResponse } from '../../types';
 import {
@@ -111,6 +113,21 @@ export const SimulatorScreen: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn pb-8">
+      {/* Policy Simulator Executive Strip - Dark Navy Glass */}
+      <div className="relative bg-navy-gradient rounded-[2rem] overflow-hidden p-6 mb-6">
+        <GrainOverlay />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="text-eyebrow text-[#21EAF4] mb-1">{isRTL ? 'محاكي السياسات' : 'Policy Simulator'}</div>
+            <div className="text-xl font-bold text-white">{isRTL ? 'اختبار سيناريوهات الاستثمار قبل اتخاذ القرار' : 'Model Budget Allocations Before Committing'}</div>
+          </div>
+          <div className="flex gap-3">
+            <GlassStatCard metric="4" caption={isRTL ? 'قطاعات تخصيص' : 'Budget Levers'} />
+            <GlassStatCard metric={isRTL ? 'ماذا لو' : 'What-If'} caption={isRTL ? 'نموذج المحاكاة' : 'Simulation Model'} />
+          </div>
+        </div>
+      </div>
+
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>

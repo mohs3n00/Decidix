@@ -158,7 +158,7 @@ export const DashboardLayout: React.FC = () => {
                   isCollapsed ? 'justify-center px-0' : 'justify-between px-3'
                 } min-h-[42px] py-2 rounded-xl text-xs font-semibold transition-colors duration-150 select-none ${
                   isActive
-                    ? 'bg-blue-50/80 text-blue font-bold shadow-2xs ltr:border-l-[3px] ltr:border-l-blue rtl:border-r-[3px] rtl:border-r-blue'
+                    ? 'bg-[#2563EB]/10 text-[#2563EB] font-bold rounded-xl shadow-2xs'
                     : 'text-slate-600 hover:text-navy hover:bg-slate-100/70'
                 }`}
               >
@@ -457,7 +457,7 @@ export const DashboardLayout: React.FC = () => {
       {/* 5. MAIN APPLICATION AREA (Dedicated Scrollable Viewport, Zero Double Scrollbars) */}
       <div className="flex-1 h-full md:overflow-y-auto flex flex-col min-w-0">
         {/* DESKTOP TOP HEADER (Sticky, Backdrop Blur & Subtle SaaS Polish) */}
-        <header className="hidden md:flex h-16 shrink-0 items-center justify-between px-6 md:px-8 bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-20 shadow-2xs">
+        <header className="hidden md:flex h-16 shrink-0 items-center justify-between px-6 md:px-8 header-frosted sticky top-0 z-20 shadow-2xs">
           {/* Left: Collapsible Sidebar Toggle & Breadcrumb */}
           <div className="flex items-center gap-3.5">
             <button
@@ -488,7 +488,7 @@ export const DashboardLayout: React.FC = () => {
                 className="h-8 px-2.5 rounded-lg border border-slate-200/90 bg-slate-100/80 hover:bg-slate-200/70 text-[11px] font-bold text-[#061A3A] flex items-center gap-1.5 transition shadow-2xs"
                 title={isRTL ? 'اختيار مجموعة البيانات النشطة للتحليل' : 'Select Active Dataset'}
               >
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-[#21EAF4] animate-pulse" />
                 <DecidixIcon name="dataset" size={14} color="#0052FF" />
                 <span className="max-w-[140px] sm:max-w-[180px] truncate">
                   {activeDataset?.name || (isRTL ? 'الأساس الوطني المعتمد' : 'National Baseline')}
@@ -544,7 +544,7 @@ export const DashboardLayout: React.FC = () => {
                             </div>
 
                             <div className="flex flex-col items-end gap-1 shrink-0 ms-2">
-                              <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                              <span className="text-[11px] font-bold text-[#2563EB] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
                                 {ds.kpis?.nationalIndex}
                               </span>
                               {isSelected && (
@@ -639,9 +639,9 @@ export const DashboardLayout: React.FC = () => {
         <main className="flex-1 px-4 sm:px-6 md:px-8 py-6">
           <div className="max-w-[1400px] mx-auto space-y-5">
             {location.state?.registered && (
-              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between shadow-2xs animate-in fade-in">
+              <div className="p-4 rounded-xl bg-[#2563EB]/10 border border-[#2563EB]/20 text-[#061A3A] text-xs font-semibold flex items-center justify-between shadow-2xs animate-in fade-in">
                 <div className="flex items-center gap-2.5">
-                  <DecidixIcon name="check" size={18} color="#059669" />
+                  <DecidixIcon name="check" size={18} color="#2563EB" />
                   <span className="leading-relaxed">
                     {isRTL
                       ? 'تم إنشاء الحساب بنجاح! تم تسجيل دخولك تلقائياً، وتفقد بريدك الإلكتروني لتأكيد الحساب.'

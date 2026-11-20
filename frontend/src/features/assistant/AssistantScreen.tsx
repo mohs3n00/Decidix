@@ -363,7 +363,7 @@ export const AssistantScreen: React.FC = () => {
       </div>
 
       {/* Active Dataset Intelligence Source Banner */}
-      <div className="shrink-0 my-2 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 text-xs">
+      <div className="shrink-0 my-2 px-4 py-3 rounded-2xl bg-white/80 backdrop-blur-[16px] border border-slate-200/80 shadow-glass-light flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-6 h-6 rounded-lg bg-blue/10 text-blue flex items-center justify-center shrink-0">
             <DecidixIcon name="dataset" size={13} color="#0052FF" />
@@ -375,7 +375,7 @@ export const AssistantScreen: React.FC = () => {
             <span className="font-bold text-[#061A3A] truncate">
               {activeDataset?.name || (isRTL ? 'الأساس الوطني المعتمد' : 'National Baseline')}
             </span>
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold font-mono bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20">
               {isRTL ? 'المؤشر' : 'Index'}: {activeDataset?.kpis?.nationalIndex ?? 74.2}
             </span>
           </div>
@@ -433,7 +433,7 @@ export const AssistantScreen: React.FC = () => {
                     <span className="font-bold text-navy text-xs tracking-tight">
                       {isRTL ? 'مساعد ديسيديكس' : 'Decidix AI'}
                     </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20">
                       {m.answer_source === 'model'
                         ? isRTL ? 'نموذج مباشر' : 'Live Model'
                         : isRTL ? 'أدلة موثقة' : 'Verified Evidence'}
@@ -623,7 +623,7 @@ export const AssistantScreen: React.FC = () => {
 
       {/* 5. Fixed Bottom Message Composer */}
       <div className="shrink-0 pt-1 pb-2 sticky bottom-0 bg-[#F8FAFC] z-20">
-        <div className="relative flex items-center bg-white rounded-xl border border-slate-200/80 shadow-xs focus-within:border-blue focus-within:ring-2 focus-within:ring-blue/15 transition-all">
+        <div className="relative flex items-center bg-white/90 backdrop-blur-[16px] rounded-2xl border border-slate-200/80 shadow-xs focus-within:border-blue focus-within:ring-2 focus-within:ring-blue/15 transition-all">
           <textarea
             rows={1}
             value={input}

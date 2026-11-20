@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useToast } from '../../components/Toast';
 import { DecidixIcon } from '../../components/DecidixIcon';
+import { GrainOverlay } from '../../components/GrainOverlay';
+import { GlassStatCard } from '../../components/GlassStatCard';
 
 export const DatasetManagementScreen: React.FC = () => {
   const { isRTL } = useLanguage();
@@ -144,6 +146,26 @@ export const DatasetManagementScreen: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn pb-12 font-cairo">
+      {/* Active Dataset Spotlight - Dark Navy Glass */}
+      <div className="relative bg-navy-gradient rounded-[2rem] overflow-hidden p-6 sm:p-8 mb-6">
+        <GrainOverlay />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="text-eyebrow text-[#21EAF4] mb-2">{isRTL ? 'مجموعة البيانات النشطة' : 'Active Dataset Registry'}</div>
+            <div className="text-2xl font-bold text-white">{activeDataset?.name || (isRTL ? 'الأساس الوطني المعتمد' : 'National Baseline Dataset')}</div>
+            <div className="flex items-center gap-2 mt-2">
+              <div className="status-dot-active" />
+              <span className="text-xs text-white/70">{isRTL ? 'معتمدة ونشطة' : 'Approved & Active'}</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <GlassStatCard metric={activeDataset?.kpis?.nationalIndex ?? 74.2} caption={isRTL ? 'المؤشر الوطني' : 'National Index'} />
+            <GlassStatCard metric={activeDataset?.coverage?.split(' ')[0] ?? '27'} caption={isRTL ? 'محافظة' : 'Governorates'} />
+            <GlassStatCard metric={activeDataset?.recordCount ?? 270} caption={isRTL ? 'سجل بيانات' : 'Records'} />
+          </div>
+        </div>
+      </div>
+
       {/* 1. Header with System Architecture Context */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200/70">
         <div>

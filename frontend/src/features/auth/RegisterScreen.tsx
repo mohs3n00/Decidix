@@ -5,6 +5,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { DecidixIcon } from '../../components/DecidixIcon';
 import { DecidixButton } from '../../components/DecidixButton';
 import { GoogleSignInButton } from '../../components/GoogleSignInButton';
+import { GrainOverlay } from '../../components/GrainOverlay';
 
 export const RegisterScreen: React.FC = () => {
   const { register, googleLogin } = useAuth();
@@ -100,7 +101,8 @@ export const RegisterScreen: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col lg:flex-row select-none font-cairo overflow-x-hidden">
       {/* 1. Visual Showcase Column (Desktop Hero Panel) */}
-      <div className="hidden lg:flex lg:w-1/2 xl:w-7/12 bg-gradient-to-br from-[#061A3A] via-[#082250] to-[#041028] text-white p-8 xl:p-14 flex-col justify-between relative overflow-hidden border-e border-slate-800/40">
+      <div className="hidden lg:flex lg:w-1/2 xl:w-7/12 bg-hero-dark text-white p-8 xl:p-14 flex-col justify-between relative overflow-hidden border-e border-slate-800/40">
+        <GrainOverlay />
         <div className="absolute -top-32 -start-32 w-96 h-96 bg-blue/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-32 -end-32 w-96 h-96 bg-cyan/15 rounded-full blur-3xl pointer-events-none" />
 
@@ -119,7 +121,7 @@ export const RegisterScreen: React.FC = () => {
           </div>
 
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] text-cyan-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span className="w-2 h-2 rounded-full bg-[#21EAF4] animate-ping" />
             <span>{isRTL ? 'عضوية بحثية مفتوحة' : 'Open Research Access'}</span>
           </div>
         </div>
