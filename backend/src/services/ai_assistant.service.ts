@@ -89,7 +89,7 @@ export class AiAssistantService {
 
     const history = ConversationMemoryService.getRecentHistory(session.conversationId);
 
-    const activeDataset = env.NODE_ENV === 'test' ? true : (params.datasetContext ? true : await DatasetService.active());
+    const activeDataset = env.NODE_ENV === 'test' ? true : await DatasetService.active();
     if (!activeDataset) {
       const refusal = await OpenRouterService.generateAnswer({
         message: trimmedMessage,
@@ -112,22 +112,48 @@ export class AiAssistantService {
     const minSim = params.minSimilarity ?? env.RAG_SIMILARITY_THRESHOLD ?? 0.65;
     const structuredEvidence: RetrievedDocument[] = await EvidenceService.buildEvidence(trimmedMessage).catch(() => []);
 
-    if (params.datasetContext) {
-      structuredEvidence.unshift({
-        id: `doc_active_dataset_${params.datasetContext.name.slice(0, 16)}`,
-        title: `Active Dataset Intelligence: ${params.datasetContext.name}`,
-        arabicTitle: `بيانات مجموعة التحليل المعتمدة: ${params.datasetContext.name}`,
-        content: `Active Selected Dataset: ${params.datasetContext.name}. National Composite Index: ${params.datasetContext.nationalIndex ?? 74.2}. Sector Breakdown: Health=${params.datasetContext.sectorScores?.health ?? 78}, Education=${params.datasetContext.sectorScores?.education ?? 81}, Economy=${params.datasetContext.sectorScores?.economy ?? 72}, Infrastructure=${params.datasetContext.sectorScores?.infrastructure ?? 69}. Top Performing Governorates: ${params.datasetContext.topGovernorates?.join(', ') || 'Cairo, Alexandria, Port Said'}. Priority Intervention Governorates: ${params.datasetContext.lowestGovernorates?.join(', ') || 'Frontier, Steppe, Delta'}.`,
-        arabicContent: `مجموعة البيانات النشطة: ${params.datasetContext.name}. المؤشر الوطني: ${params.datasetContext.nationalIndex ?? 74.2}. التوزيع القطاعي: الصحة=${params.datasetContext.sectorScores?.health ?? 78}، التعليم=${params.datasetContext.sectorScores?.education ?? 81}، الاقتصاد=${params.datasetContext.sectorScores?.economy ?? 72}، البنية التحتية=${params.datasetContext.sectorScores?.infrastructure ?? 69}.`,
-        source: 'Decidix Unified Dataset Registry',
-        sourceUrl: null,
-        period: '2024',
-        category: 'dataset_context',
-        regionId: null,
-        accessScope: 'public',
-        similarityScore: 1.0,
-        citation: `Decidix Registry: ${params.datasetContext.name}`,
-      });
+    // Only include optional client-provided datasetContext when DB structured evidence is unavailable (e.g. test mode)
+    // and the caller supplied real metrics rather than letting stale UI numbers override PostgreSQL.
+    if (params.datasetContext && (env.NODE_ENV === 'test' || structuredEvidence.length === 0)) {
+      const ctx = params.datasetContext;
+      const metricParts: string[] = [];
+      const metricPartsAr: string[] = [];
+      if (typeof ctx.nationalIndex === 'number') {
+        metricParts.push(`National Composite Index: ${ctx.nationalIndex}`);
+        metricPartsAr.push(`المؤشر الوطني: ${ctx.nationalIndex}`);
+      }
+      if (ctx.sectorScores) {
+        metricParts.push(
+          `Sector Breakdown: Health=${ctx.sectorScores.health ?? 'N/A'}, Education=${ctx.sectorScores.education ?? 'N/A'}, Economy=${ctx.sectorScores.economy ?? 'N/A'}, Infrastructure=${ctx.sectorScores.infrastructure ?? 'N/A'}`
+        );
+        metricPartsAr.push(
+          `التوزيع القطاعي: الصحة=${ctx.sectorScores.health ?? 'غير متوفر'}، التعليم=${ctx.sectorScores.education ?? 'غير متوفر'}، الاقتصاد=${ctx.sectorScores.economy ?? 'غير متوفر'}، البنية التحتية=${ctx.sectorScores.infrastructure ?? 'غير متوفر'}`
+        );
+      }
+      if (ctx.topGovernorates && ctx.topGovernorates.length > 0) {
+        metricParts.push(`Top Performing Governorates: ${ctx.topGovernorates.join(', ')}`);
+      }
+      if (ctx.lowestGovernorates && ctx.lowestGovernorates.length > 0) {
+        metricParts.push(`Priority Intervention Governorates: ${ctx.lowestGovernorates.join(', ')}`);
+      }
+
+      if (metricParts.length > 0) {
+        structuredEvidence.unshift({
+          id: `doc_active_dataset_${ctx.name.slice(0, 16)}`,
+          title: `Active Dataset Intelligence: ${ctx.name}`,
+          arabicTitle: `بيانات مجموعة التحليل المعتمدة: ${ctx.name}`,
+          content: `Active Selected Dataset: ${ctx.name}. ${metricParts.join('. ')}.`,
+          arabicContent: `مجموعة البيانات النشطة: ${ctx.name}. ${metricPartsAr.join('. ')}.`,
+          source: 'Decidix Unified Dataset Registry',
+          sourceUrl: null,
+          period: 'current',
+          category: 'dataset_context',
+          regionId: null,
+          accessScope: 'public',
+          similarityScore: 1.0,
+          citation: `Decidix Registry: ${ctx.name}`,
+        });
+      }
     }
     const searchResult = await RagRepository.search({
       query: trimmedMessage,

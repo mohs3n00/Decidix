@@ -1,11 +1,20 @@
 # Decidix Recovery Status
 
-**Last updated:** 2026-11-08  
-**Branch:** `recovery/stabilization`  
+**Last updated:** 2026-11-24  
+**Branch:** `main`  
 **Canonical roadmap:** [DECIDIX_RECOVERY_MASTER_PLAN.md](./DECIDIX_RECOVERY_MASTER_PLAN.md)  
-**Current phase:** Phase 7 — Google Play Store Release Readiness & Android Production Build  
-**Current task:** T7.1 — Google Play Release Audit, 16 KB Page Compatibility & Android Release Bundle Verified  
-**Last verified checkpoint:** 2026-11-08 Signed Android App Bundle built (`build/app/outputs/bundle/release/app-release.aab`, 59.28 MB, SHA-256 `40745A3C659CE93D87237538EE57315D01D72E5BA00043B7A31C0A3439906E29`); independently verified with `jarsigner -verify` and `keytool -printcert` matching genuine upload certificate (DN: `CN=Decidix Mobile Team, OU=Engineering, O=Decidix, C=EG`, SHA-1 `F8:02:17:BD:4D:0D:6C:B1:30:84:53:C0:8F:A9:6F:4E:4A:53:D1:C4`); Android 16 (Target SDK 36, Compile SDK 36); 16 KB ELF page-size alignment 100% verified across arm64-v8a and x86_64; release APK verified on 16 KB page-size Android 16/17 emulator (`16384` page size, PID 4240, 0 crashes); in-app and backend account deletion implemented; `flutter analyze` 0 issues, `flutter test` 251/251 passed; release readiness report and Play Console submission checklist published.
+**Current phase:** Full-Stack Dataset Architecture, Analytics Isolation, Assistant Grounding & Admin Audit Fixes  
+**Current task:** End-to-End Code Audit & Remediation Complete Locally; Staging Deployment & DB Cleanup Pending Owner Authorization  
+**Last verified checkpoint:** 2026-11-24 Full local suite passing after all edits: `npm --prefix backend run build` exit 0, `npm --prefix backend test` **25 files / 320 passed (0 failed)**, `npm --prefix frontend run build` exit 0, `npm --prefix frontend test` **4 files / 24 passed (0 failed)**, `flutter analyze` **0 issues**, `flutter test` **251 passed / 2 skipped**, `npm --prefix backend run r2:verify` exit 0 (`decidcix`). Staging Heroku (`decidix-backend-staging`) and Cloudflare (`web.decidixapp.tech`) remain un-deployed awaiting explicit owner approval.
+
+## Full-Stack Dataset Architecture, Analytics Isolation, Assistant Grounding & Admin Audit — 2026-11-24
+
+- **Dataset Management Decision:** Single canonical lifecycle (`Cloudflare R2` raw file object storage + `PostgreSQL` governance in `DatasetVersion` / `DatasetMetadata` / `DatasetRecord` + strict canonical ingestion into `Region`, `Indicator`, `NationalIndexHistory`, `RegionalMetric` scoped by `datasetVersionId`).
+- **Fixes Applied:**
+  - Backend: Fixed `DatasetService` lifecycle (`uploadDirect` premature `isActive`, `approve`/`reject`, `viewer` filtering in `GET /v1/datasets`, `stats`, offline `active`/`list`), `dataset_parser.ts` (all 27 Egyptian governorates + observation-computed scores/rank/priority/population/at-risk counts), `RegionsRepository` (scoped to active `datasetVersionId`, real `nationalIndexHistory`), `DecisionsRepository` (no fallback leak on empty DB filters), and AI Chatbot (`EvidenceService` full Arabic numeric metrics/forecasts, `AiAssistantService` removing `74.2` fallback & client `datasetContext` override, `OpenRouterService` Arabic-Indic numeral normalization).
+  - Web (`frontend/`): Fixed `apiClient` 401 refresh subscriber rejection on failure, `datasetService` (`/activate`, `delete`, `getReport`, `getRecords`), `WorkspaceContext` API sync + canonical CSV template viewer, `SimulatorScreen` (`$1M` -> whole USD + dynamic regions + `AbortController`), `RecommendationsScreen` (`domain`/`index_impact` + accept/dismiss calls), `PredictionsScreen` (removed hardcoded `R²=0.975`/`Calibrated` & `[52,60]` Y-axis), `OverviewScreen` (live API authority over cache + dataset-activation refresh + dynamic Y-axis), `InsightsScreen`, `HistoricalAnalysisScreen`, `CitizenReportsScreen` (upvote button), `AssistantScreen` (removed hardcoded `74.2` context), and wired `AdminDashboardScreen`, `AdminUsersScreen`, `AdminNotificationsScreen` to live `adminService` endpoints.
+  - Flutter (`lib/`): Removed hardcoded `74.2` `datasetContext` in `AssistantController.send`; added `approve` / `reject` to `DatasetsApi` and admin approval UI in `DatasetUploadScreen`.
+- **Remaining Pending Owner Approval:** Apply pending Prisma migration on local DB / verify staging DB cleanup for stale audit region rows, deploy backend & frontend to staging, and run live staging E2E walkthrough.
 
 ## Google Play Store Release Readiness Audit & Production Bundle — 2026-11-08
 

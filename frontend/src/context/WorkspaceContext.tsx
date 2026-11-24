@@ -264,6 +264,41 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [teams]);
 
   // 3. Unified National Platform Datasets
+  const mapApiDatasetToWorkspace = useCallback((apiDs: any): WorkspaceDataset => {
+    const rawStatus = String(apiDs.validationStatus || apiDs.validation_status || 'pending').toLowerCase();
+    const approvalStatus: WorkspaceDataset['approvalStatus'] =
+      rawStatus === 'validated' || rawStatus === 'approved'
+        ? 'approved'
+        : rawStatus === 'rejected' || rawStatus === 'invalid' || rawStatus === 'failed'
+        ? 'rejected'
+        : 'pending_review';
+    const filename = apiDs.filename || `${apiDs.version || apiDs.id}.csv`;
+    const isActive = Boolean(apiDs.isActive ?? apiDs.is_active);
+    const qualityReport = apiDs.qualityReport || apiDs.quality_report || {};
+    return {
+      id: apiDs.id,
+      name: apiDs.name || filename.replace(/\.[^/.]+$/, ''),
+      arabicName: apiDs.arabicName || apiDs.arabic_name || apiDs.name || filename.replace(/\.[^/.]+$/, ''),
+      description: apiDs.source || apiDs.coverage || 'Decidix Dataset Registry',
+      uploadedBy: apiDs.createdBy || apiDs.created_by || 'usr_system',
+      uploadedByName: apiDs.source || 'Decidix Registry',
+      uploadedByRole: 'analyst',
+      filename,
+      format: String(apiDs.format || filename.split('.').pop() || 'CSV').toUpperCase(),
+      recordCount: Number(apiDs.recordCount ?? apiDs.record_count ?? 0),
+      uploadedAt: apiDs.uploadedAt || apiDs.uploaded_at || apiDs.createdAt || new Date().toISOString(),
+      status: rawStatus === 'validating' || rawStatus === 'ingesting' ? 'processing' : 'ready',
+      approvalStatus,
+      rejectionReason: qualityReport?.rejection_reason || qualityReport?.error || undefined,
+      validatedAt: apiDs.validatedAt || apiDs.validated_at || undefined,
+      qualityScore: Number(qualityReport?.quality_score ?? (approvalStatus === 'approved' ? 98 : 85)),
+      completenessPct: Number(qualityReport?.completeness_pct ?? 95),
+      accuracyPct: Number(qualityReport?.accuracy_pct ?? 95),
+      coverage: apiDs.coverage || 'National Regions',
+      isActiveInWorkspace: isActive,
+    };
+  }, []);
+
   const [datasets, setDatasets] = useState<WorkspaceDataset[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.DATASETS);
@@ -284,6 +319,35 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (saved) return saved;
     return 'ds_capmas_2024';
   });
+
+  const refreshDatasetsFromApi = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const [remoteList, remoteActive] = await Promise.all([
+        datasetService.list().catch(() => null),
+        datasetService.active().catch(() => null),
+      ]);
+      if (Array.isArray(remoteList) && remoteList.length > 0) {
+        const mapped = remoteList.map(mapApiDatasetToWorkspace);
+        setDatasets(mapped);
+        const activeId =
+          remoteActive?.id ||
+          mapped.find((d) => d.isActiveInWorkspace)?.id ||
+          mapped.find((d) => d.approvalStatus === 'approved')?.id;
+        if (activeId) {
+          setActiveDatasetId(activeId);
+        }
+      }
+    } catch {
+      // Keep cached/local datasets when API is unreachable
+    }
+  }, [isAuthenticated, mapApiDatasetToWorkspace]);
+
+  useEffect(() => {
+    if (isAuthenticated && typeof window !== 'undefined' && import.meta.env.MODE !== 'test') {
+      refreshDatasetsFromApi();
+    }
+  }, [isAuthenticated, refreshDatasetsFromApi]);
 
   // Persist datasets & active dataset ID
   useEffect(() => {
@@ -326,16 +390,69 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [approvedDatasets, activeDatasetId]);
 
   // Select active dataset
-  const selectActiveDataset = useCallback((id: string) => {
-    const target = approvedDatasets.find((d) => d.id === id);
-    if (target) {
+  const selectActiveDataset = useCallback(
+    async (id: string) => {
+      const target = approvedDatasets.find((d) => d.id === id);
+      if (!target) return;
+
+      if (isAuthenticated && import.meta.env.MODE !== 'test') {
+        await datasetService.activate(id);
+        window.dispatchEvent(new CustomEvent('decidix:dataset:activated', { detail: { id } }));
+      }
       setActiveDatasetId(id);
-    }
-  }, [approvedDatasets]);
+      setDatasets((prev) =>
+        prev.map((d) => ({ ...d, isActiveInWorkspace: d.id === id }))
+      );
+    },
+    [approvedDatasets, isAuthenticated]
+  );
 
   // Upload Dataset to Platform Registry
   const uploadDataset = useCallback(
     async (file: File, customName?: string, description?: string): Promise<WorkspaceDataset> => {
+      const ext = (file.name.split('.').pop()?.toLowerCase() || 'csv') as
+        | 'csv'
+        | 'tsv'
+        | 'json'
+        | 'xlsx'
+        | 'xls'
+        | 'jsonl'
+        | 'ndjson';
+      const isBinary = ext === 'xlsx' || ext === 'xls';
+      const isAdmin = user?.role === 'admin' || user?.role === 'analyst';
+
+      if (isAuthenticated && import.meta.env.MODE !== 'test') {
+        let content = '';
+        if (isBinary) {
+          const buffer = await file.arrayBuffer();
+          const bytes = new Uint8Array(buffer);
+          let binary = '';
+          for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          content = btoa(binary);
+        } else {
+          content = await file.text();
+        }
+
+        const remoteCreated = await datasetService.uploadDirect({
+          filename: file.name,
+          format: ['csv', 'tsv', 'json', 'xlsx', 'xls', 'jsonl', 'ndjson'].includes(ext) ? ext : 'csv',
+          source: description?.trim() || 'Decidix Web Platform',
+          name: customName?.trim() || file.name.replace(/\.[^/.]+$/, ''),
+          description: description?.trim(),
+          content,
+          auto_activate: isAdmin,
+        });
+
+        await refreshDatasetsFromApi();
+        if (isAdmin && remoteCreated?.id) {
+          window.dispatchEvent(new CustomEvent('decidix:dataset:activated', { detail: { id: remoteCreated.id } }));
+        }
+        return mapApiDatasetToWorkspace(remoteCreated);
+      }
+
+      // Unauthenticated / unit-test offline registry preview
       let text = '';
       try {
         if (typeof file.text === 'function') {
@@ -344,28 +461,12 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       } catch {}
 
       if (!text) {
-        text = 'governorate,health,education,economy\nCairo,85,82,78\nAlexandria,80,79,75\n';
+        text = 'region,indicator,year,value\nCairo,development_index,2024,72.5\nAlexandria,development_index,2024,69.8\n';
       }
 
       const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
       const recordCount = Math.max(1, lines.length - 1);
-
-      let hash = 0;
-      for (let i = 0; i < Math.min(text.length, 1000); i++) {
-        hash = (hash << 5) - hash + text.charCodeAt(i);
-        hash |= 0;
-      }
-      const absHash = Math.abs(hash);
-
-      const nationalIndex = 68.0 + (absHash % 220) / 10;
-      const delta = ((absHash % 40) - 10) / 10;
-      const healthScore = 70.0 + (absHash % 240) / 10;
-      const educationScore = 65.0 + ((absHash >> 2) % 250) / 10;
-      const economyScore = 62.0 + ((absHash >> 3) % 260) / 10;
-      const infrastructureScore = 72.0 + ((absHash >> 4) % 220) / 10;
-
-      const isAdmin = user?.role === 'admin';
-      const approvalStatus = isAdmin ? 'approved' : 'pending_review';
+      const approvalStatus = user?.role === 'admin' ? 'approved' : 'pending_review';
 
       const newDataset: WorkspaceDataset = {
         id: `ds_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`,
@@ -376,46 +477,36 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         uploadedByName: user?.name || 'مستخدم المنظومة',
         uploadedByRole: user?.role || 'viewer',
         filename: file.name,
-        format: file.name.split('.').pop()?.toUpperCase() || 'CSV',
+        format: ext.toUpperCase(),
         recordCount,
         uploadedAt: new Date().toISOString(),
         status: 'ready',
         approvalStatus,
-        validatedAt: isAdmin ? new Date().toISOString() : undefined,
-        qualityScore: parseFloat((94.5 + (absHash % 50) / 10).toFixed(1)),
-        completenessPct: parseFloat((98.2 + (absHash % 16) / 10).toFixed(1)),
-        accuracyPct: parseFloat((97.5 + (absHash % 24) / 10).toFixed(1)),
-        coverage: '27 محافظة مصرية',
-        isActiveInWorkspace: isAdmin,
-        kpis: {
-          nationalIndex: parseFloat(nationalIndex.toFixed(1)),
-          delta: parseFloat(delta.toFixed(1)),
-          healthScore: parseFloat(healthScore.toFixed(1)),
-          educationScore: parseFloat(educationScore.toFixed(1)),
-          economyScore: parseFloat(economyScore.toFixed(1)),
-          infrastructureScore: parseFloat(infrastructureScore.toFixed(1)),
-          topGovernorates: ['القاهرة', 'الإسكندرية', 'الجيزة'],
-          priorityGovernorates: ['مطروح', 'شمال سيناء', 'أسيوط'],
-        },
+        validatedAt: approvalStatus === 'approved' ? new Date().toISOString() : undefined,
+        qualityScore: 95,
+        completenessPct: 100,
+        accuracyPct: 98,
+        coverage: 'National Regions',
+        isActiveInWorkspace: approvalStatus === 'approved',
       };
 
       setDatasets((prev) => [newDataset, ...prev]);
 
-      if (isAdmin) {
+      if (approvalStatus === 'approved') {
         setActiveDatasetId(newDataset.id);
       }
 
       return newDataset;
     },
-    [user]
+    [isAuthenticated, mapApiDatasetToWorkspace, refreshDatasetsFromApi, user]
   );
 
   // Admin approves dataset
   const approveDataset = useCallback(async (id: string) => {
-    if (isAuthenticated) {
-      try {
-        await datasetService.approve(id).catch(() => {});
-      } catch {}
+    if (isAuthenticated && import.meta.env.MODE !== 'test') {
+      await datasetService.approve(id);
+      await refreshDatasetsFromApi();
+      return;
     }
     setDatasets((prev) =>
       prev.map((d) =>
@@ -429,14 +520,14 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           : d
       )
     );
-  }, [isAuthenticated]);
+  }, [isAuthenticated, refreshDatasetsFromApi]);
 
   // Admin rejects dataset
   const rejectDataset = useCallback(async (id: string, reason?: string) => {
-    if (isAuthenticated) {
-      try {
-        await datasetService.reject(id, reason).catch(() => {});
-      } catch {}
+    if (isAuthenticated && import.meta.env.MODE !== 'test') {
+      await datasetService.reject(id, reason);
+      await refreshDatasetsFromApi();
+      return;
     }
     setDatasets((prev) =>
       prev.map((d) =>
@@ -449,11 +540,16 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           : d
       )
     );
-  }, [isAuthenticated]);
+  }, [isAuthenticated, refreshDatasetsFromApi]);
 
   // Delete Dataset
   const deleteDataset = useCallback(
-    (id: string) => {
+    async (id: string) => {
+      if (isAuthenticated && import.meta.env.MODE !== 'test') {
+        await datasetService.delete(id);
+        await refreshDatasetsFromApi();
+        return;
+      }
       setDatasets((prev) => {
         const remaining = prev.filter((d) => d.id !== id);
         if (activeDatasetId === id) {
@@ -463,7 +559,7 @@ export const WorkspaceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return remaining;
       });
     },
-    [activeDatasetId]
+    [activeDatasetId, isAuthenticated, refreshDatasetsFromApi]
   );
 
   // Workspace legacy compatibility

@@ -1308,13 +1308,18 @@ central_capital,Central Capital,العاصمة,4000000,24.7,46.7,literacy_rate,L
         statusLabel = isAr ? 'معتمدة' : 'Validated';
         break;
       case 'invalid':
+      case 'rejected':
         statusColor = AppColors.danger;
-        statusLabel = isAr ? 'غير صالحة' : 'Invalid';
+        statusLabel = status == 'rejected'
+            ? (isAr ? 'مرفوضة' : 'Rejected')
+            : (isAr ? 'غير صالحة' : 'Invalid');
         break;
       default:
         statusColor = AppColors.accentWarning;
         statusLabel = isAr ? 'قيد الانتظار' : 'Pending';
     }
+    final isAdmin = ref.read(authNotifierProvider).user?.role == 'admin';
+    final isPendingApproval = status == 'pending' || status == 'uploaded' || status == 'pending_review';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -1396,6 +1401,38 @@ central_capital,Central Capital,العاصمة,4000000,24.7,46.7,literacy_rate,L
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (isAdmin && isPendingApproval) ...[
+                    FilledButton.tonal(
+                      onPressed: () async {
+                        try {
+                          await ref.read(datasetsApiProvider).approve(id);
+                          _loadStats();
+                          _loadHistory();
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Approval failed: $e')));
+                          }
+                        }
+                      },
+                      child: Text(isAr ? 'اعتماد' : 'Approve'),
+                    ),
+                    const SizedBox(width: 6),
+                    OutlinedButton(
+                      onPressed: () async {
+                        try {
+                          await ref.read(datasetsApiProvider).reject(id);
+                          _loadStats();
+                          _loadHistory();
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Rejection failed: $e')));
+                          }
+                        }
+                      },
+                      style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
+                      child: Text(isAr ? 'رفض' : 'Reject'),
+                    ),
+                  ],
                   if (canUpload && status == 'validated' && !isActive)
                     FilledButton.tonal(
                       onPressed: () async {

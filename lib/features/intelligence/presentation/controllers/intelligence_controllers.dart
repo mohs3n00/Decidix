@@ -108,19 +108,6 @@ class AssistantController extends Notifier<AssistantState> {
             message: message,
             language: language,
             conversationId: state.conversationId,
-            datasetContext: const {
-              'name': 'الأساس الوطني المعتمد (CAPMAS 2021-2024)',
-              'nationalIndex': 74.2,
-              'recordsCount': 270,
-              'sectorScores': {
-                'health': 78.4,
-                'education': 71.9,
-                'economy': 68.5,
-                'infrastructure': 79.1,
-              },
-              'topGovernorates': ['القاهرة', 'الإسكندرية', 'بورسعيد'],
-              'lowestGovernorates': ['مطروح', 'الوادي الجديد', 'شمال سيناء'],
-            },
           );
       state = state.copyWith(
         messages: [...state.messages, ChatBubble.assistant(reply)],

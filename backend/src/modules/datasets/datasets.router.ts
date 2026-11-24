@@ -71,6 +71,7 @@ datasetsRouter.get(
     DatasetService.list({
       search: req.query.search as string | undefined,
       status: req.query.status as string | undefined,
+      viewerUserId: req.user!.role === 'viewer' ? req.user!.id : undefined,
     })
   )
 );
@@ -79,10 +80,11 @@ datasetsRouter.get('/stats', requireAuth, handle(() => DatasetService.stats()));
 
 datasetsRouter.get('/active', requireAuth, handle(() => DatasetService.active()));
 
-// Upload initiation and direct upload (uploadGuard)
+// Upload initiation and direct upload (uploadGuard + verified email)
 datasetsRouter.post(
   '/uploads/initiate',
   requireAuth,
+  requireVerifiedEmail,
   uploadGuard,
   validateRequest({ body: metadataSchema }),
   handle((req) => DatasetService.initiateUpload(req.user!.id, req.body))
@@ -91,14 +93,16 @@ datasetsRouter.post(
 datasetsRouter.post(
   '/upload-direct',
   requireAuth,
+  requireVerifiedEmail,
   uploadGuard,
   validateRequest({ body: uploadDirectSchema }),
-  handle((req) =>
-    DatasetService.uploadDirect(req.user!.id, {
+  handle((req) => {
+    const canAutoActivate = req.user!.role === 'admin' || req.user!.role === 'analyst';
+    return DatasetService.uploadDirect(req.user!.id, {
       ...req.body,
-      autoActivate: req.body.auto_activate,
-    })
-  )
+      autoActivate: canAutoActivate ? req.body.auto_activate : false,
+    });
+  })
 );
 
 // 2. Parameterized routes
@@ -117,11 +121,17 @@ datasetsRouter.get(
     query: z.object({
       page: z.string().regex(/^\d+$/).transform((v) => parseInt(v, 10)).optional(),
       limit: z.string().regex(/^\d+$/).transform((v) => parseInt(v, 10)).optional(),
+      per_page: z.string().regex(/^\d+$/).transform((v) => parseInt(v, 10)).optional(),
     }),
   }),
   handle((req) => {
     const page = typeof req.query.page === 'number' ? req.query.page : 1;
-    const limit = typeof req.query.limit === 'number' ? req.query.limit : 50;
+    const limit =
+      typeof req.query.limit === 'number'
+        ? req.query.limit
+        : typeof req.query.per_page === 'number'
+        ? req.query.per_page
+        : 50;
     return DatasetService.getRecords(req.params.id, page, limit, req.user);
   })
 );
@@ -143,6 +153,7 @@ datasetsRouter.get(
 datasetsRouter.post(
   '/:id/complete',
   requireAuth,
+  requireVerifiedEmail,
   uploadGuard,
   validateRequest({ params: z.object({ id: z.string().min(1) }), body: completeSchema }),
   handle((req) => DatasetService.completeUpload(req.params.id, req.user!.id, req.body))
@@ -151,6 +162,7 @@ datasetsRouter.post(
 datasetsRouter.post(
   '/:id/validate',
   requireAuth,
+  requireVerifiedEmail,
   uploadGuard,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.validate(req.params.id))
@@ -159,6 +171,7 @@ datasetsRouter.post(
 datasetsRouter.post(
   '/:id/ingest',
   requireAuth,
+  requireVerifiedEmail,
   datasetRoles,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.ingest(req.params.id))
@@ -167,6 +180,7 @@ datasetsRouter.post(
 datasetsRouter.post(
   '/:id/activate',
   requireAuth,
+  requireVerifiedEmail,
   datasetRoles,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.activate(req.params.id))
@@ -175,6 +189,7 @@ datasetsRouter.post(
 datasetsRouter.post(
   '/:id/retry',
   requireAuth,
+  requireVerifiedEmail,
   datasetRoles,
   validateRequest({ params: z.object({ id: z.string().min(1) }) }),
   handle((req) => DatasetService.retry(req.params.id))

@@ -61,7 +61,7 @@ const VALUE_ALIASES = [
 /**
  * Standard Decidix Region Metadata registry to resolve names/IDs cleanly.
  */
-export const KNOWN_REGIONS: Record<string, { id: string; name: string; nameAr: string; pop: number; lat: number; lng: number }> = {
+export const KNOWN_REGIONS: Record<string, { id: string; name: string; nameAr: string; pop: number; lat: number; lng: number; aliases?: string[] }> = {
   central_capital: { id: 'central_capital', name: 'Central Capital', nameAr: 'العاصمة المركزية', pop: 8500000, lat: 24.7136, lng: 46.6753 },
   lakeside: { id: 'lakeside', name: 'Lakeside', nameAr: 'ضفاف البحيرة', pop: 3200000, lat: 26.3927, lng: 49.9777 },
   western_coast: { id: 'western_coast', name: 'Western Coast', nameAr: 'الساحل الغربي', pop: 4800000, lat: 21.4858, lng: 39.1925 },
@@ -74,22 +74,57 @@ export const KNOWN_REGIONS: Record<string, { id: string; name: string; nameAr: s
   delta: { id: 'delta', name: 'Delta', nameAr: 'الدلتا', pop: 2200000, lat: 26.1550, lng: 50.1970 },
   steppe: { id: 'steppe', name: 'Steppe', nameAr: 'السهوب', pop: 1100000, lat: 31.0456, lng: 38.2839 },
   frontier: { id: 'frontier', name: 'Frontier', nameAr: 'المنطقة الحدودية', pop: 950000, lat: 31.3090, lng: 37.3386 },
+  // 27 Egyptian Governorates (CAPMAS baseline metadata)
+  cairo: { id: 'cairo', name: 'Cairo', nameAr: 'القاهرة', pop: 10200000, lat: 30.0444, lng: 31.2357, aliases: ['al_qahirah'] },
+  giza: { id: 'giza', name: 'Giza', nameAr: 'الجيزة', pop: 9500000, lat: 30.0131, lng: 31.2089, aliases: ['al_jizah'] },
+  alexandria: { id: 'alexandria', name: 'Alexandria', nameAr: 'الإسكندرية', pop: 5500000, lat: 31.2001, lng: 29.9187, aliases: ['al_iskandariyah'] },
+  dakahlia: { id: 'dakahlia', name: 'Dakahlia', nameAr: 'الدقهلية', pop: 7000000, lat: 31.0409, lng: 31.3785, aliases: ['ad_daqahliyah'] },
+  sharqia: { id: 'sharqia', name: 'Sharqia', nameAr: 'الشرقية', pop: 7900000, lat: 30.5765, lng: 31.5041, aliases: ['ash_sharqiyah'] },
+  qalyubia: { id: 'qalyubia', name: 'Qalyubia', nameAr: 'القليوبية', pop: 6100000, lat: 30.3292, lng: 31.2422, aliases: ['qalyubiyya', 'al_qalyubiyah'] },
+  beheira: { id: 'beheira', name: 'Beheira', nameAr: 'البحيرة', pop: 6800000, lat: 30.8481, lng: 30.3436, aliases: ['al_buhayrah'] },
+  gharbia: { id: 'gharbia', name: 'Gharbia', nameAr: 'الغربية', pop: 5400000, lat: 30.8754, lng: 31.0335, aliases: ['al_gharbia', 'al_gharbiyah'] },
+  menoufia: { id: 'menoufia', name: 'Menoufia', nameAr: 'المنوفية', pop: 4700000, lat: 30.5972, lng: 30.9876, aliases: ['monufia', 'al_minufiyah'] },
+  kafr_el_sheikh: { id: 'kafr_el_sheikh', name: 'Kafr El Sheikh', nameAr: 'كفر الشيخ', pop: 3700000, lat: 31.1107, lng: 30.9388, aliases: ['kafr_al_shaykh'] },
+  damietta: { id: 'damietta', name: 'Damietta', nameAr: 'دمياط', pop: 1620000, lat: 31.4175, lng: 31.8144, aliases: ['dumyat'] },
+  port_said: { id: 'port_said', name: 'Port Said', nameAr: 'بورسعيد', pop: 790000, lat: 31.2653, lng: 32.3019, aliases: ['bur_said'] },
+  ismailia: { id: 'ismailia', name: 'Ismailia', nameAr: 'الإسماعيلية', pop: 1450000, lat: 30.5965, lng: 32.2715, aliases: ['al_ismailiyah'] },
+  suez: { id: 'suez', name: 'Suez', nameAr: 'السويس', pop: 790000, lat: 29.9668, lng: 32.5498, aliases: ['as_suways'] },
+  fayoum: { id: 'fayoum', name: 'Fayoum', nameAr: 'الفيوم', pop: 4100000, lat: 29.3084, lng: 30.8428, aliases: ['fayum', 'faiyum', 'al_fayyum'] },
+  beni_suef: { id: 'beni_suef', name: 'Beni Suef', nameAr: 'بني سويف', pop: 3600000, lat: 29.0661, lng: 31.0994, aliases: ['bani_suwayf'] },
+  minya: { id: 'minya', name: 'Minya', nameAr: 'المنيا', pop: 6300000, lat: 28.0871, lng: 30.7618, aliases: ['al_minya'] },
+  assiut: { id: 'assiut', name: 'Assiut', nameAr: 'أسيوط', pop: 5000000, lat: 27.1783, lng: 31.1859, aliases: ['asyut'] },
+  sohag: { id: 'sohag', name: 'Sohag', nameAr: 'سوهاج', pop: 5700000, lat: 26.5591, lng: 31.6957, aliases: ['suhaj'] },
+  qena: { id: 'qena', name: 'Qena', nameAr: 'قنا', pop: 3600000, lat: 26.1551, lng: 32.7160, aliases: ['qina'] },
+  luxor: { id: 'luxor', name: 'Luxor', nameAr: 'الأقصر', pop: 1400000, lat: 25.6872, lng: 32.6396, aliases: ['al_uqsur'] },
+  aswan: { id: 'aswan', name: 'Aswan', nameAr: 'أسوان', pop: 1650000, lat: 24.0889, lng: 32.8998 },
+  red_sea: { id: 'red_sea', name: 'Red Sea', nameAr: 'البحر الأحمر', pop: 400000, lat: 27.2579, lng: 33.8116, aliases: ['al_bahr_al_ahmar'] },
+  new_valley: { id: 'new_valley', name: 'New Valley', nameAr: 'الوادي الجديد', pop: 265000, lat: 25.4390, lng: 30.5586, aliases: ['al_wadi_al_jadid'] },
+  matrouh: { id: 'matrouh', name: 'Matrouh', nameAr: 'مطروح', pop: 540000, lat: 31.3543, lng: 27.2373, aliases: ['marsa_matruh', 'matruh'] },
+  north_sinai: { id: 'north_sinai', name: 'North Sinai', nameAr: 'شمال سيناء', pop: 510000, lat: 31.1321, lng: 33.8033, aliases: ['shamal_sina'] },
+  south_sinai: { id: 'south_sinai', name: 'South Sinai', nameAr: 'جنوب سيناء', pop: 115000, lat: 28.2364, lng: 33.6254, aliases: ['janub_sina'] },
 };
 
 function normalizeKey(str: string): string {
-  return str.toLowerCase().replace(/[\s\-_]+/g, '_').trim();
+  return str.toLowerCase().replace(/[\s\-_]+/g, '_').replace(/^_+|_+$/g, '').trim();
 }
 
 function resolveRegion(raw: string): { id: string; name: string; nameAr: string } {
-  const norm = normalizeKey(raw);
+  const cleaned = raw.trim().replace(/^محافظة\s+/i, '').replace(/\s+governorate$/i, '').replace(/^governorate\s+of\s+/i, '');
+  const norm = normalizeKey(cleaned);
   for (const [key, data] of Object.entries(KNOWN_REGIONS)) {
-    if (norm === key || norm === normalizeKey(data.name) || raw.trim() === data.nameAr) {
+    if (
+      norm === key ||
+      norm === normalizeKey(data.name) ||
+      cleaned === data.nameAr ||
+      raw.trim() === data.nameAr ||
+      (data.aliases && data.aliases.includes(norm))
+    ) {
       return { id: data.id, name: data.name, nameAr: data.nameAr };
     }
   }
   // Generic fallback for custom region/governorate
   const id = norm || 'region_general';
-  return { id, name: raw.trim(), nameAr: raw.trim() };
+  return { id, name: cleaned || raw.trim(), nameAr: cleaned || raw.trim() };
 }
 
 export class DatasetParserService {
@@ -449,11 +484,16 @@ export class DatasetParserService {
     const metrics: Array<{ region_id: string; indicator_key: string; year: number; value: number }> = [];
     const yearlyValues = new Map<number, number[]>();
 
+    const regionYearlyScores = new Map<string, Map<number, number[]>>();
+    const regionYearlyPreferred = new Map<string, Map<number, number[]>>();
+
     for (const r of rows) {
       const rawReg = String(r[mapping.region] || '').trim();
       const rawInd = String(r[mapping.indicator] || 'development_index').trim();
       const rawYr = parseInt(String(r[mapping.year] || '2025'), 10) || 2025;
-      const val = Math.round(Number(r[mapping.value] || 0) * 10) / 10;
+      const numVal = Number(r[mapping.value]);
+      if (!rawReg || !Number.isFinite(numVal)) continue;
+      const val = Math.round(numVal * 10) / 10;
 
       const reg = resolveRegion(rawReg);
       regionMap.set(reg.id, reg);
@@ -469,25 +509,78 @@ export class DatasetParserService {
       });
 
       if (!yearlyValues.has(rawYr)) yearlyValues.set(rawYr, []);
-      yearlyValues.get(rawYr)!.push(val);
+      if (val >= 0 && val <= 100) {
+        yearlyValues.get(rawYr)!.push(val);
+      }
+
+      if (!regionYearlyScores.has(reg.id)) regionYearlyScores.set(reg.id, new Map());
+      const yrMap = regionYearlyScores.get(reg.id)!;
+      if (!yrMap.has(rawYr)) yrMap.set(rawYr, []);
+      if (val >= 0 && val <= 100) {
+        yrMap.get(rawYr)!.push(val);
+      }
+
+      if (indKey.includes('development_index') || indKey.includes('composite') || indKey === 'score') {
+        if (!regionYearlyPreferred.has(reg.id)) regionYearlyPreferred.set(reg.id, new Map());
+        const pMap = regionYearlyPreferred.get(reg.id)!;
+        if (!pMap.has(rawYr)) pMap.set(rawYr, []);
+        pMap.get(rawYr)!.push(val);
+      }
     }
 
-    // Build Regions list
-    const regions = Array.from(regionMap.values()).map((reg, idx) => {
+    const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / (arr.length || 1);
+
+    // Build Regions list with computed score, change, rank, and priority
+    const computedRegions = Array.from(regionMap.values()).map((reg) => {
       const known = KNOWN_REGIONS[reg.id];
+      const prefByYear = regionYearlyPreferred.get(reg.id);
+      const allByYear = regionYearlyScores.get(reg.id);
+      const sourceByYear = prefByYear && prefByYear.size > 0 ? prefByYear : allByYear;
+
+      let score = known ? 70.0 : 65.0;
+      let change = 0.0;
+
+      if (sourceByYear && sourceByYear.size > 0) {
+        const sortedYears = Array.from(sourceByYear.keys()).sort((a, b) => a - b);
+        const latestYr = sortedYears[sortedYears.length - 1];
+        const latestVals = sourceByYear.get(latestYr)!;
+        score = Math.round(Math.max(0, Math.min(100, avg(latestVals))) * 10) / 10;
+
+        if (sortedYears.length >= 2) {
+          const prevYr = sortedYears[sortedYears.length - 2];
+          const prevVals = sourceByYear.get(prevYr)!;
+          const prevScore = avg(prevVals);
+          change = Math.round((score - prevScore) * 10) / 10;
+        }
+      }
+
+      const priority = score < 50 ? 'high' : score < 65 ? 'medium' : 'low';
       return {
         id: reg.id,
         name: reg.name,
         arabic_name: reg.nameAr,
-        rank: idx + 1,
-        score: known ? 85.0 : 75.0,
-        change: 0.0,
-        priority: 'medium',
+        rank: 0,
+        score,
+        change,
+        priority,
         population: known ? known.pop : 1000000,
-        latitude: known ? known.lat : 24.0,
-        longitude: known ? known.lng : 45.0,
+        latitude: known ? known.lat : 30.0444,
+        longitude: known ? known.lng : 31.2357,
       };
     });
+
+    computedRegions.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+    const regions = computedRegions.map((reg, idx) => ({ ...reg, rank: idx + 1 }));
+
+    const totalPopulation = regions.reduce((sum, r) => sum + r.population, 0) || 39600000;
+    const atRiskRegions = (yr: number) =>
+      regions.filter((reg) => {
+        const pref = regionYearlyPreferred.get(reg.id)?.get(yr);
+        const all = regionYearlyScores.get(reg.id)?.get(yr);
+        const vals = pref && pref.length > 0 ? pref : all;
+        const yrScore = vals && vals.length > 0 ? avg(vals) : reg.score;
+        return yrScore < 50;
+      }).length;
 
     // Build Indicators list with validated unit and domain check constraints
     const indicators = Array.from(indicatorMap.values()).map((ind) => {
@@ -549,13 +642,15 @@ export class DatasetParserService {
           year: yr,
           score,
           band,
-          population: 39600000,
+          population: totalPopulation,
           regions_count: regions.length,
-          at_risk_count: 0,
+          at_risk_count: atRiskRegions(yr),
           ai_insight_text: `National score computed from ${vals.length} observations in ${yr}.`,
           ai_insight_arabic_text: `المؤشر الوطني محسوب من ${vals.length} ملاحظة لعام ${yr}.`,
         };
       });
+
+    const completenessPct = rows.length > 0 ? Math.round((metrics.length / rows.length) * 1000) / 10 : 0;
 
     return {
       regions,
@@ -571,7 +666,7 @@ export class DatasetParserService {
         time_coverage: national_index_history.length > 0 ? `${national_index_history[0].year}-${national_index_history[national_index_history.length - 1].year}` : '2025',
         update_frequency: 'Annual',
         record_count: metrics.length,
-        completeness_pct: 95.0,
+        completeness_pct: completenessPct,
         timeliness_pct: 90.0,
         accuracy_pct: 92.0,
         age_days: 10,

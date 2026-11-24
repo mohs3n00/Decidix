@@ -555,28 +555,40 @@ export interface DatasetStats {
 }
 
 export interface AdminDashboardData {
-  metrics: {
-    total_users: number;
-    active_users: number;
-    suspended_users: number;
-    deleted_users: number;
-    total_datasets: number;
-    active_datasets: number;
-    total_records: number;
-    total_storage_bytes: number;
+  period?: string;
+  kpis?: {
+    users: {
+      total: number;
+      active: number;
+      suspended: number;
+      deleted: number;
+      newInPeriod: number;
+    };
+    datasets: {
+      total: number;
+      validated: number;
+      invalid: number;
+      pending: number;
+      totalStorageBytes: number;
+      totalRecords: number;
+    };
+    activity: {
+      totalEvents: number;
+      uniqueUsers: number;
+    };
+    notifications: {
+      totalCampaigns: number;
+      totalTargeted: number;
+      totalDelivered: number;
+      totalFailed: number;
+    };
   };
-  activity_summary: {
-    total_events: number;
-    api_calls_today: number;
-    active_sessions: number;
+  analytics?: {
+    moduleBreakdown: Array<{ module: string; count: number }>;
+    eventTypeBreakdown: Array<{ eventType: string; count: number }>;
+    dailyTrends: Array<{ date: string; count: number }>;
+    totalEvents?: number;
   };
-  recent_logins: Array<{
-    id: string;
-    email: string;
-    name: string;
-    role: Role;
-    last_login_at: string;
-  }>;
 }
 
 export interface NotificationDispatch {

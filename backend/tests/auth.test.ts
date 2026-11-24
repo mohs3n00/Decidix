@@ -1262,11 +1262,11 @@ describe('Decidix Authentication & RBAC Suite', () => {
 
 
 
-      expect(res.body.data.users).toBeDefined();
+      expect(res.body.data).toBeDefined();
 
 
 
-      expect(Array.isArray(res.body.data.users)).toBe(true);
+      expect(Array.isArray(res.body.data)).toBe(true);
 
 
 

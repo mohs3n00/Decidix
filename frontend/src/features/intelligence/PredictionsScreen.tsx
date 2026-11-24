@@ -55,17 +55,30 @@ export const PredictionsScreen: React.FC = () => {
   ];
 
   const chartSeries = rawSeries.map((item: any) => {
-    const isObserved = item.year <= 2024;
+    const isObserved = item.kind ? item.kind === 'actual' : item.year <= 2024;
+    const isForecastPoint = item.kind ? item.kind === 'forecast' : item.year > 2024;
+    const isBoundaryObserved = isObserved && rawSeries.some((s: any) => s.year > item.year && (s.kind === 'forecast' || s.year > 2024));
+    const maxObservedYear = Math.max(
+      ...rawSeries.filter((s: any) => (s.kind ? s.kind === 'actual' : s.year <= 2024)).map((s: any) => s.year),
+      2024
+    );
     return {
       year: item.year,
       observed: isObserved ? item.value : null,
-      forecast: item.year >= 2024 ? item.value : null,
-      confidenceUpper: item.year >= 2024 ? Number((item.value + 1.2).toFixed(1)) : null,
-      confidenceLower: item.year >= 2024 ? Number((item.value - 1.2).toFixed(1)) : null,
-      kind: item.kind,
+      forecast: isForecastPoint || item.year === maxObservedYear ? item.value : null,
+      confidenceUpper: item.upper_bound ?? (isForecastPoint || isBoundaryObserved ? Number((item.value + 1.2).toFixed(1)) : null),
+      confidenceLower: item.lower_bound ?? (isForecastPoint || isBoundaryObserved ? Number((item.value - 1.2).toFixed(1)) : null),
+      kind: item.kind || (isObserved ? 'actual' : 'forecast'),
       value: item.value,
     };
   });
+
+  const observedPoints = chartSeries.filter((p) => p.kind === 'actual');
+  const firstObserved = observedPoints[0];
+  const lastObserved = observedPoints[observedPoints.length - 1];
+  const primaryModel = data?.models?.[0];
+  const isCalibrated = Boolean(data?.forecast_classification?.is_calibrated);
+  const modelR2 = (primaryModel as any)?.r2;
 
   const projectedIndex = data?.projected_index ?? 56.9;
   const confidence = data?.confidence ?? 95;
@@ -165,13 +178,19 @@ export const PredictionsScreen: React.FC = () => {
           </div>
           <div className="text-xs text-slate-500 mt-1 flex items-center gap-2 flex-wrap">
             <span>
-              {isRTL
-                ? `امتداد مسار الرصد التاريخي الفعلي من 55.5 (2021) حتى 56.1 (2024)`
-                : `Extrapolated from actual historical baseline 55.5 (2021) to 56.1 (2024)`}
+              {firstObserved && lastObserved
+                ? isRTL
+                  ? `امتداد مسار الرصد التاريخي الفعلي من ${firstObserved.value} (${firstObserved.year}) حتى ${lastObserved.value} (${lastObserved.year})`
+                  : `Extrapolated from historical baseline ${firstObserved.value} (${firstObserved.year}) to ${lastObserved.value} (${lastObserved.year})`
+                : isRTL
+                ? 'امتداد مسار الرصد التاريخي من مجموعة البيانات النشطة'
+                : 'Extrapolated from active dataset historical baseline'}
             </span>
-            <span className="text-blue font-bold tabular-nums bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
-              R² = 0.975
-            </span>
+            {typeof modelR2 === 'number' && (
+              <span className="text-blue font-bold tabular-nums bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60">
+                R² = {modelR2.toFixed(3)}
+              </span>
+            )}
           </div>
         </div>
 
@@ -184,11 +203,13 @@ export const PredictionsScreen: React.FC = () => {
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
             {isRTL ? 'أفق النمذجة والاستشراف' : 'FORECAST HORIZON'}
           </div>
-          <div className="text-xl font-bold text-navy tabular-nums mb-1">2021 — {targetYear}</div>
+          <div className="text-xl font-bold text-navy tabular-nums mb-1">
+            {firstObserved?.year ?? 2021} — {targetYear}
+          </div>
           <div className="text-xs text-slate-500 max-w-xs leading-relaxed">
             {isRTL
-              ? 'تعتمد التقديرات على نموذج الانحدار الخطي متعدد القطاعات لسجلات CAPMAS.'
-              : 'Multi-sector trend regression calibrated over verified CAPMAS datasets.'}
+              ? 'تقديرات استرشادية مبنية على السلسلة الزمنية المخزنة في مجموعة البيانات النشطة.'
+              : 'Exploratory projection derived from the active dataset time series.'}
           </div>
         </div>
       </div>
@@ -250,16 +271,16 @@ export const PredictionsScreen: React.FC = () => {
                   <YAxis
                     stroke="#94A3B8"
                     fontSize={11}
-                    domain={[52, 60]}
+                    domain={['dataMin - 2', 'dataMax + 2']}
                     tickLine={false}
                     axisLine={{ stroke: '#E2E8F0' }}
-                    tickFormatter={(v) => `${v} pts`}
+                    tickFormatter={(v) => `${Number(v).toFixed(1)} pts`}
                   />
                   <Tooltip
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
                         const item = payload[0].payload;
-                        const isForecast = item.year > 2024;
+                        const isForecast = item.kind === 'forecast';
                         return (
                           <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-xl p-3 shadow-lg text-xs space-y-1.5">
                             <div className="flex items-center justify-between gap-3 font-bold text-navy">
@@ -333,11 +354,19 @@ export const PredictionsScreen: React.FC = () => {
             <span>
               {isRTL ? 'النموذج النشط: ' : 'Active Model: '}
               <strong className="text-navy font-semibold">
-                {data?.models?.[0]?.name || 'Temporal Trend Forecaster (OLS)'}
+                {primaryModel?.name || 'Temporal Trend Forecaster (OLS)'}
               </strong>
             </span>
-            <span className="text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full text-[11px] border border-emerald-200/60">
-              {isRTL ? 'حالة النموذج: نشط ومعاير' : 'Calibrated'}
+            <span
+              className={`font-semibold px-2.5 py-0.5 rounded-full text-[11px] border ${
+                isCalibrated
+                  ? 'text-emerald-700 bg-emerald-50 border-emerald-200/60'
+                  : 'text-amber-700 bg-amber-50 border-amber-200/60'
+              }`}
+            >
+              {isCalibrated
+                ? isRTL ? 'حالة النموذج: معاير' : 'Calibrated'
+                : isRTL ? 'حالة النموذج: استرشادي تجريبي' : 'Experimental · Uncalibrated'}
             </span>
           </div>
         </div>
@@ -373,13 +402,15 @@ export const PredictionsScreen: React.FC = () => {
                 <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                   {isRTL ? 'حوكمة النماذج التنبؤية' : 'MODEL GOVERNANCE'}
                 </div>
-                <div className="text-xs font-bold text-emerald-700">
-                  {isRTL ? 'نماذج استنتاج معتمدة 100%' : '100% Calibrated Models'}
+                <div className={`text-xs font-bold ${isCalibrated ? 'text-emerald-700' : 'text-amber-700'}`}>
+                  {isCalibrated
+                    ? isRTL ? 'نماذج استنتاج معايرة' : 'Calibrated Models'
+                    : isRTL ? 'استقراء تجريبي غير معاير ميدانياً' : 'Experimental · Not Field Calibrated'}
                 </div>
                 <div className="text-[11px] text-slate-500">
                   {isRTL
-                    ? 'نماذج استقراء إحصائي مؤصلة ومطابقة للسلاسل الزمنية'
-                    : 'Deterministic explainable inference calibrated to official time series'}
+                    ? 'نتائج تحليل اتجاه زمني قابلة للتفسير لأغراض البحث الأكاديمي'
+                    : 'Explainable time-series trend extrapolation for decision exploration'}
                 </div>
               </div>
             </div>

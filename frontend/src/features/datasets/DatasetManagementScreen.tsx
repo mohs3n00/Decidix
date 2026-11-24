@@ -35,6 +35,15 @@ export const DatasetManagementScreen: React.FC = () => {
   // Reject modal state
   const [rejectingDatasetId, setRejectingDatasetId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [showTemplateGuide, setShowTemplateGuide] = useState(false);
+
+  const CSV_TEMPLATE_SNIPPET = `# decidix_template=canonical_v1
+# dataset_name=Egypt Regional Development 2024
+# source=CAPMAS
+# license=CC-BY-4.0
+# geographic_coverage=All Governorates (2024)
+region_id,region_name,region_arabic_name,indicator_key,indicator_label,domain,unit,year,value
+cairo,Cairo,القاهرة,development_index,Development Index,economy,score_100,2024,62.4`;
 
   const isAdmin = user?.role === 'admin';
 
@@ -804,11 +813,37 @@ export const DatasetManagementScreen: React.FC = () => {
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-blue/5 border border-blue/15 text-[11px] text-slate-600">
-                {isAdmin ? (
-                  <span>{isRTL ? 'بصفتك مسؤولاً للمنظومة، سيتم اعتماد وتفعيل هذه المجموعة فورياً.' : 'As administrator, this dataset will be immediately approved and activated.'}</span>
-                ) : (
-                  <span>{isRTL ? 'سيتم تدقيق جودة البيانات آلياً وإرسال المجموعة لمراجعة مسؤول المنظومة لاعتمادها رسمياً.' : 'Data quality will be validated and submitted to system admin for official approval.'}</span>
+              <div className="p-3 rounded-xl bg-blue/5 border border-blue/15 text-[11px] text-slate-600 space-y-2">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  {isAdmin ? (
+                    <span>{isRTL ? 'بصفتك مسؤولاً للمنظومة، سيتم اعتماد وتفعيل هذه المجموعة فورياً.' : 'As administrator, this dataset will be immediately approved and activated.'}</span>
+                  ) : (
+                    <span>{isRTL ? 'سيتم تدقيق جودة البيانات آلياً وإرسال المجموعة لمراجعة مسؤول المنظومة لاعتمادها رسمياً.' : 'Data quality will be validated and submitted to system admin for official approval.'}</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowTemplateGuide((v) => !v)}
+                    className="text-blue font-bold hover:underline shrink-0"
+                  >
+                    {showTemplateGuide
+                      ? isRTL ? 'إخفاء نموذج CSV' : 'Hide CSV Template'
+                      : isRTL ? 'عرض نموذج CSV المعتمد' : 'View CSV Template'}
+                  </button>
+                </div>
+                {showTemplateGuide && (
+                  <div className="mt-2 p-2.5 rounded-lg bg-slate-900 text-slate-100 font-mono text-[10px] overflow-x-auto space-y-1.5" dir="ltr">
+                    <pre className="whitespace-pre-wrap break-all">{CSV_TEMPLATE_SNIPPET}</pre>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(CSV_TEMPLATE_SNIPPET);
+                        toast.show(isRTL ? 'تم نسخ نموذج CSV المعتمد' : 'Canonical CSV template copied', 'success');
+                      }}
+                      className="px-2.5 py-1 rounded bg-blue text-white font-sans text-[10px] font-bold"
+                    >
+                      {isRTL ? 'نسخ النموذج' : 'Copy Template'}
+                    </button>
+                  </div>
                 )}
               </div>
 

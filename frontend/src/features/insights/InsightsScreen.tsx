@@ -53,7 +53,7 @@ export const InsightsScreen: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [activeSector, isRTL]);
+  }, [activeSector]);
 
   const SECTOR_META: Record<
     SectorType,
@@ -203,8 +203,8 @@ export const InsightsScreen: React.FC = () => {
           </h3>
           <p className="text-sm text-[#7D8AA0] mb-6">
             {isRTL
-              ? 'مجموعة البيانات الحالية (CAPMAS 2021-2024) لا تحتوي على مؤشرات موثقة لقطاع البنية التحتية. يمكنك استعراض قطاعات التعليم، الرعاية الصحية، أو الاقتصاد.'
-              : 'The active CAPMAS 2021-2024 dataset does not contain verified indicators for infrastructure. Explore education, healthcare, or economy.'}
+              ? `مجموعة البيانات النشطة لا تحتوي حالياً على مؤشرات كافية مسجلة لقطاع ${currentMeta.shortAr}. يمكنك استعراض القطاعات المتاحة أدناه.`
+              : `The active dataset does not currently contain stored indicators for ${currentMeta.shortEn}. Explore the available sectors below.`}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <button

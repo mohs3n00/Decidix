@@ -191,33 +191,18 @@ export const AssistantScreen: React.FC = () => {
         setTimeout(() => scrollToBottom('smooth'), 50);
 
         try {
-          const datasetContext = activeDataset
-            ? {
-                name: activeDataset.name,
-                nationalIndex: activeDataset.kpis?.nationalIndex,
-                recordsCount: activeDataset.recordCount,
-                sectorScores: {
-                  health: activeDataset.kpis?.healthScore,
-                  education: activeDataset.kpis?.educationScore,
-                  economy: activeDataset.kpis?.economyScore,
-                  infrastructure: activeDataset.kpis?.infrastructureScore,
-                },
-                topGovernorates: activeDataset.kpis?.topGovernorates,
-                lowestGovernorates: activeDataset.kpis?.priorityGovernorates,
-              }
-            : undefined;
-
+          // Send metadata only when no backend active dataset exists; allow backend PostgreSQL/RAG evidence to stay authoritative.
           const res = await intelligenceService.askAssistant(
             query,
             language as 'en' | 'ar',
-            conversationId,
-            datasetContext
+            conversationId
           );
 
           if (res.conversation_id) {
             setConversationId(res.conversation_id);
           }
 
+          const answerSource = (res as any).answer_source || 'grounded_rag';
           const replyText =
             res.reply?.text ||
             (res as any).answer ||
@@ -241,12 +226,12 @@ export const AssistantScreen: React.FC = () => {
             }
           });
 
-          // Fallback verified source if none returned
-          if (sanitizedSources.length === 0) {
+          // Fallback source badge only for non-refusal answers
+          if (sanitizedSources.length === 0 && answerSource !== 'refusal' && activeDataset?.name) {
             sanitizedSources.push({
-              name: 'Decidix Grounded National Dataset v20261107',
-              arabic_name: 'قاعدة البيانات الوطنية المعتمدة لديسيديكس',
-              period: '2024–2025',
+              name: activeDataset.name,
+              arabic_name: activeDataset.arabicName || activeDataset.name,
+              period: activeDataset.coverage || 'Active',
             });
           }
 
@@ -258,7 +243,7 @@ export const AssistantScreen: React.FC = () => {
             table: res.reply?.table || null,
             sources: sanitizedSources,
             suggested_prompts: res.suggested_prompts || [],
-            answer_source: (res as any).answer_source || 'grounded_rag',
+            answer_source: answerSource,
             provider_status: (res as any).provider_status || null,
           };
 
@@ -433,9 +418,21 @@ export const AssistantScreen: React.FC = () => {
                     <span className="font-bold text-navy text-xs tracking-tight">
                       {isRTL ? 'مساعد ديسيديكس' : 'Decidix AI'}
                     </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20">
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        m.answer_source === 'refusal'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200'
+                          : m.answer_source === 'deterministic_fallback'
+                          ? 'bg-slate-100 text-slate-700 border-slate-200'
+                          : 'bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/20'
+                      }`}
+                    >
                       {m.answer_source === 'model'
                         ? isRTL ? 'نموذج مباشر' : 'Live Model'
+                        : m.answer_source === 'deterministic_fallback'
+                        ? isRTL ? 'ملخص منظم' : 'Offline Summary'
+                        : m.answer_source === 'refusal'
+                        ? isRTL ? 'أدلة غير كافية' : 'Insufficient Evidence'
                         : isRTL ? 'أدلة موثقة' : 'Verified Evidence'}
                     </span>
                   </div>

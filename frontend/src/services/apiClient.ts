@@ -25,15 +25,25 @@ export class DecidixApiError extends Error {
   }
 }
 
-let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+interface RefreshSubscriber {
+  resolve: (token: string) => void;
+  reject: (err: unknown) => void;
+}
 
-function subscribeTokenRefresh(cb: (token: string) => void) {
-  refreshSubscribers.push(cb);
+let isRefreshing = false;
+let refreshSubscribers: RefreshSubscriber[] = [];
+
+function subscribeTokenRefresh(subscriber: RefreshSubscriber) {
+  refreshSubscribers.push(subscriber);
 }
 
 function onRefreshed(token: string) {
-  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers.forEach((sub) => sub.resolve(token));
+  refreshSubscribers = [];
+}
+
+function onRefreshFailed(err: unknown) {
+  refreshSubscribers.forEach((sub) => sub.reject(err));
   refreshSubscribers = [];
 }
 
@@ -119,17 +129,19 @@ export const apiClient = {
             } else {
               isRefreshing = false;
               this.clearTokens();
+              onRefreshFailed(new Error('Token refresh failed'));
               window.dispatchEvent(new CustomEvent('decidix:auth:logout'));
             }
-          } catch {
+          } catch (refreshError) {
             isRefreshing = false;
             this.clearTokens();
+            onRefreshFailed(refreshError);
             window.dispatchEvent(new CustomEvent('decidix:auth:logout'));
           }
         } else {
           // Wait for the active refresh to finish
-          const retryToken = await new Promise<string>((resolve) => {
-            subscribeTokenRefresh((newToken) => resolve(newToken));
+          const retryToken = await new Promise<string>((resolve, reject) => {
+            subscribeTokenRefresh({ resolve, reject });
           });
           headers['Authorization'] = `Bearer ${retryToken}`;
           response = await fetch(url, { ...options, headers });

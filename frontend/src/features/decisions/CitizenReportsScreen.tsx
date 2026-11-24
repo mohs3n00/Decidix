@@ -59,6 +59,37 @@ export const CitizenReportsScreen: React.FC = () => {
     );
   };
 
+  const handleToggleLike = (reportId: string) => {
+    requireAuth(
+      isRTL
+        ? 'يتطلب تأييد بلاغات المواطنين تسجيل الدخول للتحقق من الهوية.'
+        : 'Sign in to upvote community reports.',
+      async () => {
+        try {
+          const updated = await decisionsService.toggleLikeReport(reportId);
+          setReportsData((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              items: prev.items.map((item) =>
+                item.id === reportId
+                  ? {
+                      ...item,
+                      likes: typeof updated?.likes === 'number' ? updated.likes : item.liked_by_me ? Math.max(0, item.likes - 1) : item.likes + 1,
+                      liked_by_me: typeof updated?.liked === 'boolean' ? updated.liked : !item.liked_by_me,
+                    }
+                  : item
+              ),
+            };
+          });
+        } catch (err: any) {
+          toast.error(err?.message || (isRTL ? 'تعذر تحديث التأييد' : 'Failed to update vote'));
+        }
+      },
+      isRTL ? 'تأييد بلاغ مواطن' : 'Upvote Report'
+    );
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'resolved':
@@ -271,7 +302,19 @@ export const CitizenReportsScreen: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleLike(r.id)}
+                      className={`h-8 px-3 rounded-lg text-xs font-bold border transition flex items-center gap-1.5 ${
+                        r.liked_by_me
+                          ? 'bg-blue text-white border-blue'
+                          : 'bg-slate-50 text-navy border-slate-200 hover:bg-blue-50 hover:text-blue'
+                      }`}
+                    >
+                      <DecidixIcon name="trend_up" size={13} color="currentColor" />
+                      <span className="tabular-nums">{r.likes}</span>
+                    </button>
                     <span
                       className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full text-center ${badge.className}`}
                     >

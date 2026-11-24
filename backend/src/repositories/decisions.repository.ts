@@ -188,7 +188,18 @@ export class DecisionsRepository {
       });
 
       if (projects.length === 0 && total === 0) {
-        return this.getFallbackProjects(params);
+        if (syntheticDataAllowed() && (!params.status || params.status === 'all')) {
+          return this.getFallbackProjects(params);
+        }
+        return {
+          summary: {
+            projects_count: 0,
+            total_budget: { amount: 0, currency: 'USD' },
+            delayed_count: 0,
+          },
+          items: [],
+          total: 0,
+        };
       }
 
       const allProjects = await prisma.developmentProject.findMany();
@@ -264,12 +275,13 @@ export class DecisionsRepository {
       }
 
       const total = await prisma.citizenReport.count({ where });
+      const totalAll = await prisma.citizenReport.count();
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const openThisWeek = await prisma.citizenReport.count({
         where: { createdAt: { gte: weekAgo }, status: { not: 'resolved' } },
       });
       const resolvedCount = await prisma.citizenReport.count({ where: { status: 'resolved' } });
-      const resolvedRate = total > 0 ? Math.round((resolvedCount / total) * 100) : 0;
+      const resolvedRate = totalAll > 0 ? Math.round((resolvedCount / totalAll) * 100) : 0;
       const reports = await prisma.citizenReport.findMany({
         where,
         include: { region: true, likes: { where: { userId: params.userIdentifier } } },
@@ -279,7 +291,17 @@ export class DecisionsRepository {
       });
 
       if (reports.length === 0 && total === 0) {
-        return this.getFallbackCitizenReports(params);
+        if (syntheticDataAllowed() && params.category === 'all' && (!params.status || params.status === 'all')) {
+          return this.getFallbackCitizenReports(params);
+        }
+        return {
+          summary: {
+            open_this_week: { value: openThisWeek, change: 0, higher_is_better: false },
+            resolved_rate: { value: resolvedRate, change: 0, higher_is_better: true },
+          },
+          items: [],
+          total: 0,
+        };
       }
 
       const items = reports.map((r) => ({

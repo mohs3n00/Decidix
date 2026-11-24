@@ -91,7 +91,18 @@ export class RegionsRepository {
     }
 
     try {
+      const active = await DatasetService.active().catch(() => null);
+      const versionFilter = active
+        ? {
+            OR: [
+              { datasetVersionId: active.id },
+              { metrics: { some: { datasetVersionId: active.id } } },
+            ],
+          }
+        : {};
+
       const regions = await prisma.region.findMany({
+        where: versionFilter,
         orderBy: { rank: 'asc' },
       });
 
@@ -112,7 +123,10 @@ export class RegionsRepository {
         sector === 'overall'
           ? []
           : await prisma.regionalMetric.findMany({
-              where: { indicatorKey: sector },
+              where: {
+                indicatorKey: sector,
+                ...(active ? { datasetVersionId: active.id } : {}),
+              },
               orderBy: { year: 'desc' },
             });
       const measuredByRegion = new Map<string, number>();
@@ -178,20 +192,33 @@ export class RegionsRepository {
     }
 
     try {
-      const where: any = {};
+      const active = await DatasetService.active().catch(() => null);
+      const andClauses: any[] = [];
+      if (active) {
+        andClauses.push({
+          OR: [
+            { datasetVersionId: active.id },
+            { metrics: { some: { datasetVersionId: active.id } } },
+          ],
+        });
+      }
 
       if (params.q && params.q.trim().length > 0) {
         const query = params.q.trim();
-        where.OR = [
-          { name: { contains: query, mode: 'insensitive' } },
-          { arabicName: { contains: query } },
-          { id: { contains: query, mode: 'insensitive' } },
-        ];
+        andClauses.push({
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { arabicName: { contains: query } },
+            { id: { contains: query, mode: 'insensitive' } },
+          ],
+        });
       }
 
       if (params.priority && params.priority !== 'all') {
-        where.priority = params.priority;
+        andClauses.push({ priority: params.priority });
       }
+
+      const where: any = andClauses.length > 0 ? { AND: andClauses } : {};
 
       const total = await prisma.region.count({ where });
 
@@ -202,8 +229,11 @@ export class RegionsRepository {
         take: params.per_page,
       });
 
-      if (regions.length === 0 && total === 0 && (!params.q || params.q.length === 0)) {
-        return this.getFallbackRegions(params);
+      if (regions.length === 0 && total === 0) {
+        if (syntheticDataAllowed() && (!params.q || params.q.length === 0)) {
+          return this.getFallbackRegions(params);
+        }
+        return { items: [], total: 0 };
       }
 
       const items: RegionListItem[] = regions.map((r) => ({
@@ -247,22 +277,39 @@ export class RegionsRepository {
     }
 
     try {
-      const region = await prisma.region.findUnique({
-        where: { id: normalizedId },
+      const active = await DatasetService.active().catch(() => null);
+      const versionFilter = active
+        ? {
+            OR: [
+              { datasetVersionId: active.id },
+              { metrics: { some: { datasetVersionId: active.id } } },
+            ],
+          }
+        : undefined;
+
+      const region = await prisma.region.findFirst({
+        where: versionFilter ? { id: normalizedId, ...versionFilter } : { id: normalizedId },
       });
 
       if (!region) {
         throw AppError.notFound(`Region '${id}' not found`);
       }
 
-      const totalCount = await prisma.region.count();
+      const totalCount = await prisma.region.count({
+        where: versionFilter,
+      });
       const baseScore = toNumber(region.score);
-      const fallback = SEED_REGIONS.find((r) => r.id === normalizedId);
+      const fallback = syntheticDataAllowed()
+        ? SEED_REGIONS.find((r) => r.id === normalizedId)
+        : undefined;
 
       // Only stored regional metrics may provide observed history or domain
       // values. Anything else is labelled as derived and illustrative.
       const metricRows = await prisma.regionalMetric.findMany({
-        where: { regionId: normalizedId },
+        where: {
+          regionId: normalizedId,
+          ...(active ? { datasetVersionId: active.id } : {}),
+        },
         orderBy: { year: 'asc' },
       });
       const latestValue = (key: string): number | undefined => {
@@ -299,7 +346,9 @@ export class RegionsRepository {
       const weakest = [...domains].sort((a, b) => a.score - b.score)[0];
       const gap = Number((baseScore - weakest.score).toFixed(1));
 
-      const metadata = await prisma.datasetMetadata.findMany();
+      const metadata = await prisma.datasetMetadata.findMany({
+        where: active ? { datasetVersionId: active.id } : undefined,
+      });
       const avgCompleteness =
         metadata.length > 0
           ? Number(
@@ -309,6 +358,18 @@ export class RegionsRepository {
               ).toFixed(1)
             )
           : 0;
+
+      const nationalHistoryRows = await prisma.nationalIndexHistory.findMany({
+        where: active ? { datasetVersionId: active.id } : undefined,
+        orderBy: { year: 'asc' },
+        take: 7,
+      });
+      const nationalHistory =
+        nationalHistoryRows.length > 0
+          ? nationalHistoryRows.map((row) => ({ year: row.year, value: toNumber(row.score) }))
+          : syntheticDataAllowed()
+          ? SEED_OVERVIEW.trend_points_7y
+          : [];
 
       return {
         id: region.id,
@@ -325,7 +386,7 @@ export class RegionsRepository {
         domains,
         history: {
           region: observedHistory.length > 0 ? observedHistory : derivedHistory,
-          national: SEED_OVERVIEW.trend_points_7y,
+          national: nationalHistory,
         },
         history_source:
           observedHistory.length > 0 ? 'regional_metrics.development_index' : 'derived_illustrative',

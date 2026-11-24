@@ -257,10 +257,10 @@ export const HistoricalAnalysisScreen: React.FC = () => {
                 <YAxis
                   stroke="#94A3B8"
                   fontSize={11}
-                  domain={[50, 65]}
+                  domain={['dataMin - 2', 'dataMax + 2']}
                   tickLine={false}
                   axisLine={{ stroke: '#E2E8F0' }}
-                  tickFormatter={(v) => `${v} pts`}
+                  tickFormatter={(v) => `${Number(v).toFixed(1)} pts`}
                 />
                 <Tooltip
                   content={({ active, payload, label }) => {

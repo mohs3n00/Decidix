@@ -12,6 +12,7 @@ describe('Authorization hardening', () => {
   beforeAll(() => {
     app = createApp();
     vi.spyOn(DatasetService, 'list').mockResolvedValue([] as never);
+    vi.spyOn(DatasetService, 'activate').mockResolvedValue({ id: 'ds_test', isActive: true } as never);
     vi.spyOn(AuthRepository, 'listUsers').mockResolvedValue([] as never);
   });
 
@@ -85,9 +86,9 @@ describe('Authorization hardening', () => {
         email_verified: true,
       });
 
-      // Cannot access datasets
+      // Cannot mutate/activate datasets
       const dsRes = await request(app)
-        .get('/v1/datasets')
+        .post('/v1/datasets/ds_test/activate')
         .set('Authorization', `Bearer ${viewerToken}`);
       expect(dsRes.status).toBe(403);
       expect(dsRes.body.error.code).toBe('ROLE_NOT_AUTHORIZED');
@@ -100,7 +101,7 @@ describe('Authorization hardening', () => {
       expect(adminRes.body.error.code).toBe('ROLE_NOT_AUTHORIZED');
     });
 
-    it('verifies that ANALYST can access datasets but CANNOT access admin routes', async () => {
+    it('verifies that ANALYST can manage datasets but CANNOT access admin routes', async () => {
       const analystToken = AuthService.signAccessToken({
         id: 'usr_analyst_test',
         email: 'analyst_matrix@decidix.org',
@@ -109,9 +110,9 @@ describe('Authorization hardening', () => {
         email_verified: true,
       });
 
-      // CAN access datasets
+      // CAN activate datasets
       const dsRes = await request(app)
-        .get('/v1/datasets')
+        .post('/v1/datasets/ds_test/activate')
         .set('Authorization', `Bearer ${analystToken}`);
       expect(dsRes.status).toBe(200);
 
@@ -132,9 +133,9 @@ describe('Authorization hardening', () => {
         email_verified: true,
       });
 
-      // CAN access datasets
+      // CAN activate datasets
       const dsRes = await request(app)
-        .get('/v1/datasets')
+        .post('/v1/datasets/ds_test/activate')
         .set('Authorization', `Bearer ${adminToken}`);
       expect(dsRes.status).toBe(200);
 
@@ -145,7 +146,7 @@ describe('Authorization hardening', () => {
       expect(adminRes.status).toBe(200);
     });
 
-    it('blocks unverified accounts even with privileged roles from accessing datasets', async () => {
+    it('blocks unverified accounts even with privileged roles from dataset mutations', async () => {
       const unverifiedAdminToken = AuthService.signAccessToken({
         id: 'usr_unverified_admin',
         email: 'unverified_admin@decidix.org',
@@ -155,7 +156,7 @@ describe('Authorization hardening', () => {
       });
 
       const res = await request(app)
-        .get('/v1/datasets')
+        .post('/v1/datasets/ds_test/activate')
         .set('Authorization', `Bearer ${unverifiedAdminToken}`);
       expect(res.status).toBe(403);
       expect(res.body.error.code).toBe('EMAIL_NOT_VERIFIED');

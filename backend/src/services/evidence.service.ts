@@ -112,13 +112,13 @@ export class EvidenceService {
       });
     }
 
-    if (!latestHistory) return [];
+    if (!latestHistory && regions.length === 0 && allDatasets.length === 0) return [];
 
     const docs: RetrievedDocument[] = [];
-    const latestYear = latestHistory.year;
+    const latestYear = latestHistory?.year ?? new Date().getFullYear();
     const asksProvenance = /source|official|synthetic|provenance|licen|مصدر|رسمي|بيانات|مجموعة بيانات|dataset|datasets|upload|ملف/.test(query);
     const asksForecast = /forecast|predict|projection|future|توقع|تنبؤ|مستقبل/.test(query);
-    const asksIndex = /index|national|overall|score|مؤشر|وطني|درجة/.test(query);
+    const asksIndex = /index|national|overall|score|مؤشر|وطني|درجة|تنمية/.test(query);
     const asksHistory = /history|historical|trend|over time|تاريخ|اتجاه|سنوات/.test(query);
     const asksComparison = /compare|difference|versus|vs|مقارنة|فرق|أفضل|أعلى|أقل/.test(query);
     const yearMatch = query.match(/\b(19|20)\d{2}\b/);
@@ -161,7 +161,7 @@ export class EvidenceService {
     }
 
     // National index (latest observation) only for index/history/year questions.
-    if (asksIndex || asksHistory || yearMatch) {
+    if (latestHistory && (asksIndex || asksHistory || yearMatch)) {
       docs.push(
         doc({
           id: `evidence:national:${active.id}:${latestHistory.period}`,
@@ -173,7 +173,9 @@ export class EvidenceService {
             `band ${latestHistory.band}, ${latestHistory.regionsCount} regions, population ${latestHistory.population}, ` +
             `${latestHistory.atRiskCount} regions at risk.`,
           arabicContent:
-            `مجموعة البيانات ${active.version}. مؤشر التنمية الوطني لعام ${latestHistory.period}: ${round(toNumber(latestHistory.score))}/100.`,
+            `مجموعة البيانات ${active.version}. مؤشر التنمية الوطني لعام ${latestHistory.period}: ${round(toNumber(latestHistory.score))}/100، ` +
+            `التغير ${round(toNumber(latestHistory.change))} مقارنة بـ ${latestHistory.comparedWith}، النطاق ${latestHistory.band}، ` +
+            `${latestHistory.regionsCount} منطقة، السكان ${latestHistory.population}، المناطق عالية الأولوية ${latestHistory.atRiskCount}.`,
           period: latestHistory.period,
           source: active.source,
         })
@@ -181,7 +183,7 @@ export class EvidenceService {
     }
 
     // Historical series (optionally for a mentioned year).
-    if (asksHistory || yearMatch) {
+    if (latestHistory && (asksHistory || yearMatch)) {
       const seriesYears = yearMatch
         ? history.filter((row) => String(row.year) === yearMatch[0])
         : history;
@@ -210,6 +212,17 @@ export class EvidenceService {
         orderBy: { indicatorKey: 'asc' },
         take: 10,
       });
+      const metricSummaryEn = metrics.length
+        ? `Latest indicators: ${metrics
+            .map((metric) => `${metric.indicator.label} ${round(toNumber(metric.value))} ${metric.indicator.unit}`)
+            .join('; ')}.`
+        : 'No indicator observations are stored for this region.';
+      const metricSummaryAr = metrics.length
+        ? `أحدث المؤشرات: ${metrics
+            .map((metric) => `${metric.indicator.arabicLabel || metric.indicator.label} ${round(toNumber(metric.value))} ${metric.indicator.unit}`)
+            .join('؛ ')}.`
+        : 'لا توجد قياسات مؤشرات مسجلة لهذه المنطقة.';
+
       docs.push(
         doc({
           id: `evidence:region:${active.id}:${region.id}`,
@@ -218,12 +231,11 @@ export class EvidenceService {
           content:
             `${region.name} (${region.id}): development index ${round(toNumber(region.score))}/100, ` +
             `rank ${region.rank}, priority ${region.priority}, change ${round(toNumber(region.change))}, population ${region.population}. ` +
-            (metrics.length
-              ? `Latest indicators: ${metrics
-                  .map((metric) => `${metric.indicator.label} ${round(toNumber(metric.value))} ${metric.indicator.unit}`)
-                  .join('; ')}.`
-              : 'No indicator observations are stored for this region.'),
-          arabicContent: `منطقة ${region.arabicName}: مؤشر التنمية ${round(toNumber(region.score))}/100.`,
+            metricSummaryEn,
+          arabicContent:
+            `منطقة ${region.arabicName} (${region.id}): مؤشر التنمية ${round(toNumber(region.score))}/100، ` +
+            `الترتيب ${region.rank}، الأولوية ${region.priority}، التغير ${round(toNumber(region.change))}، السكان ${region.population}. ` +
+            metricSummaryAr,
           period: String(latestYear),
           source: active.source,
           regionId: region.id,
@@ -281,7 +293,12 @@ export class EvidenceService {
               .map((metric) => `${metric.region.name} ${round(toNumber(metric.value))}`)
               .join('; ') +
             '.',
-          arabicContent: `قيم مؤشر ${indicator.arabicLabel} حسب المنطقة لعام ${latestYear}.`,
+          arabicContent:
+            `قيم مؤشر ${indicator.arabicLabel} (${indicator.unit}) حسب المنطقة لعام ${latestYear}: ` +
+            metrics
+              .map((metric) => `${metric.region.arabicName || metric.region.name} ${round(toNumber(metric.value))}`)
+              .join('؛ ') +
+            '.',
           period: String(latestYear),
           source: active.source,
         })
@@ -290,6 +307,23 @@ export class EvidenceService {
 
     // Experimental forecasts.
     if (asksForecast && forecasts.length > 0) {
+      const forecastSeriesEn = forecasts
+        .map(
+          (forecast) =>
+            `${forecast.forecastYear}: ${round(toNumber(forecast.predictedValue))} (${round(
+              toNumber(forecast.lowerBound ?? forecast.predictedValue)
+            )}-${round(toNumber(forecast.upperBound ?? forecast.predictedValue))})`
+        )
+        .join('; ');
+      const forecastSeriesAr = forecasts
+        .map(
+          (forecast) =>
+            `${forecast.forecastYear}: ${round(toNumber(forecast.predictedValue))} (${round(
+              toNumber(forecast.lowerBound ?? forecast.predictedValue)
+            )}-${round(toNumber(forecast.upperBound ?? forecast.predictedValue))})`
+        )
+        .join('؛ ');
+
       docs.push(
         doc({
           id: `evidence:forecast:${active.id}`,
@@ -298,16 +332,10 @@ export class EvidenceService {
           content:
             `Experimental ML forecast from dataset ${active.version} ` +
             `(model ${forecasts[0].modelName} ${forecasts[0].modelVersion}, status ${forecasts[0].validationStatus}, not calibrated): ` +
-            forecasts
-              .map(
-                (forecast) =>
-                  `${forecast.forecastYear}: ${round(toNumber(forecast.predictedValue))} (${round(
-                    toNumber(forecast.lowerBound ?? forecast.predictedValue)
-                  )}-${round(toNumber(forecast.upperBound ?? forecast.predictedValue))})`
-              )
-              .join('; ') +
-            '. This is not an official projection and has no validated real-world accuracy.',
-          arabicContent: `توقع تجريبي غير معاير من مجموعة البيانات ${active.version}؛ وليس توقعاً رسمياً.`,
+            `${forecastSeriesEn}. This is not an official projection and has no validated real-world accuracy.`,
+          arabicContent:
+            `توقع تجريبي غير معاير من مجموعة البيانات ${active.version} (النموذج ${forecasts[0].modelName} ${forecasts[0].modelVersion}، الحالة ${forecasts[0].validationStatus}): ` +
+            `${forecastSeriesAr}. هذا ليس توقعاً رسمياً ولا يملك دقة ميدانية معتمدة.`,
           period: `${forecasts[0].forecastYear}-${forecasts[forecasts.length - 1].forecastYear}`,
           source: active.source,
         })
@@ -352,14 +380,21 @@ export class EvidenceService {
 
     // General platform and indicators fallback if no specific keywords matched
     if (docs.length === 0) {
+      const summaryPeriod = latestHistory?.period ?? String(latestYear);
+      const summaryScore = latestHistory
+        ? `${round(toNumber(latestHistory.score))}/100`
+        : 'available per region';
+      const summaryScoreAr = latestHistory
+        ? `${round(toNumber(latestHistory.score))}/100`
+        : 'متاح حسب المنطقة';
       docs.push(
         doc({
           id: `evidence:platform_summary:${active.id}`,
           title: `Decidix Platform & Indicators Overview`,
           arabicTitle: `نظرة عامة على منصة ومؤشرات ديسيدكس`,
-          content: `Decidix platform monitors ${regions.length} regions with national development score of ${round(toNumber(latestHistory.score))}/100 for ${latestHistory.period}. Tracked regions include: ${regions.slice(0, 6).map((r) => `${r.name} (${round(toNumber(r.score))})`).join(', ')}. Active dataset: ${active.version}.`,
-          arabicContent: `منصة ديسيدكس تتابع ${regions.length} منطقة بمتوسط مؤشر تنموي وطني ${round(toNumber(latestHistory.score))}/100 لعام ${latestHistory.period}. المناطق تشمل: ${regions.slice(0, 6).map((r) => `${r.arabicName} (${round(toNumber(r.score))})`).join('، ')}. مجموعة البيانات النشطة: ${active.version}.`,
-          period: latestHistory.period,
+          content: `Decidix platform monitors ${regions.length} regions with national development score ${summaryScore} for ${summaryPeriod}. Tracked regions include: ${regions.slice(0, 6).map((r) => `${r.name} (${round(toNumber(r.score))})`).join(', ')}. Active dataset: ${active.version}.`,
+          arabicContent: `منصة ديسيدكس تتابع ${regions.length} منطقة بمؤشر تنموي وطني ${summaryScoreAr} لعام ${summaryPeriod}. المناطق تشمل: ${regions.slice(0, 6).map((r) => `${r.arabicName} (${round(toNumber(r.score))})`).join('، ')}. مجموعة البيانات النشطة: ${active.version}.`,
+          period: summaryPeriod,
           source: active.source,
         })
       );

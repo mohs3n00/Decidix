@@ -15,12 +15,17 @@ export const decisionsService = {
       healthcare: number;
       infrastructure: number;
       economy: number;
-    }
+    },
+    signal?: AbortSignal
   ): Promise<SimulationResponse> {
-    const res = await apiClient.post<SimulationResponse>('/decisions/simulate', {
-      region_id,
-      allocations,
-    });
+    const res = await apiClient.post<SimulationResponse>(
+      '/decisions/simulate',
+      {
+        region_id,
+        allocations,
+      },
+      signal ? { signal } : undefined
+    );
     return res.data;
   },
 

@@ -42,17 +42,48 @@ export const RecommendationsScreen: React.FC = () => {
     };
   }, []);
 
-  const handleAction = (item: Recommendation) => {
+  const handleAccept = (item: Recommendation) => {
     requireAuth(
       isRTL
         ? 'يتطلب قبول أو اعتماد التوصيات الذكية تسجيل الدخول بحساب مسؤول معتمد.'
         : 'Sign in with an authorized account to accept or manage policy interventions.',
-      () => {
-        toast.success(
-          isRTL
-            ? `تم حفظ التوصية "${item.arabic_title || item.title}" بنجاح ضمن خطة العمل.`
-            : `Recommendation "${item.title}" saved to action plan.`
-        );
+      async () => {
+        try {
+          const updated = await intelligenceService.acceptRecommendation(item.id);
+          setRecommendations((prev) =>
+            prev.map((rec) => (rec.id === item.id ? { ...rec, ...updated, status: updated.status || 'accepted' } : rec))
+          );
+          toast.success(
+            isRTL
+              ? `تم اعتماد التوصية "${item.arabic_title || item.title}" بنجاح.`
+              : `Recommendation "${item.title}" accepted.`
+          );
+        } catch (err: any) {
+          toast.error(err?.message || (isRTL ? 'تعذر اعتماد التوصية حالياً' : 'Failed to accept recommendation'));
+        }
+      },
+      isRTL ? 'إدارة التوصيات' : 'Manage Interventions'
+    );
+  };
+
+  const handleDismiss = (e: React.MouseEvent, item: Recommendation) => {
+    e.stopPropagation();
+    requireAuth(
+      isRTL
+        ? 'يتطلب استبعاد التوصيات تسجيل الدخول بحساب مسؤول معتمد.'
+        : 'Sign in with an authorized account to dismiss policy interventions.',
+      async () => {
+        try {
+          await intelligenceService.dismissRecommendation(item.id);
+          setRecommendations((prev) => prev.filter((rec) => rec.id !== item.id));
+          toast.info(
+            isRTL
+              ? `تم استبعاد التوصية "${item.arabic_title || item.title}".`
+              : `Recommendation "${item.title}" dismissed.`
+          );
+        } catch (err: any) {
+          toast.error(err?.message || (isRTL ? 'تعذر استبعاد التوصية' : 'Failed to dismiss recommendation'));
+        }
       },
       isRTL ? 'إدارة التوصيات' : 'Manage Interventions'
     );
@@ -104,40 +135,55 @@ export const RecommendationsScreen: React.FC = () => {
           </div>
 
           <div className="divide-y divide-slate-100">
-            {recommendations.map((item) => (
-              <div
-                key={item.id}
-                className="py-3.5 flex items-center justify-between hover:bg-slate-50/70 -mx-3 px-3 rounded-xl transition-colors duration-150 cursor-pointer"
-                onClick={() => handleAction(item)}
-              >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-blue shrink-0">
-                    <DecidixIcon name={item.sector as any} size={16} color="var(--color-blue)" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-navy">
-                      {isRTL ? item.arabic_title || item.title : item.title}
+            {recommendations.map((item) => {
+              const sectorKey = item.domain || (item as any).sector || 'economy';
+              const impactPts = (item as any).index_impact ?? item.estimated_impact_pts ?? 0;
+              return (
+                <div
+                  key={item.id}
+                  className="py-3.5 flex items-center justify-between hover:bg-slate-50/70 -mx-3 px-3 rounded-xl transition-colors duration-150 cursor-pointer"
+                  onClick={() => handleAccept(item)}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center text-blue shrink-0">
+                      <DecidixIcon name={sectorKey as any} size={16} color="var(--color-blue)" />
                     </div>
-                    <div className="text-xs text-slate-400 mt-0.5">
-                      {item.sector.toUpperCase()} · {item.priority.toUpperCase()} PRIORITY
+                    <div>
+                      <div className="text-sm font-bold text-navy">
+                        {isRTL ? item.arabic_title || item.title : item.title}
+                      </div>
+                      <div className="text-xs text-slate-400 mt-0.5">
+                        {String(sectorKey).toUpperCase()} · {String(item.priority || 'medium').toUpperCase()} PRIORITY
+                        {item.status && item.status !== 'suggested' ? ` · ${String(item.status).toUpperCase()}` : ''}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-blue bg-blue-50 px-2.5 py-0.5 rounded-full tabular-nums">
-                    +{item.estimated_impact_pts} pts
-                  </span>
-                  <button
-                    type="button"
-                    className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-blue hover:text-white text-navy flex items-center justify-center transition-colors duration-150"
-                    aria-label="Inspect"
-                  >
-                    <DecidixIcon name="arrow_right" size={14} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-blue bg-blue-50 px-2.5 py-0.5 rounded-full tabular-nums">
+                      +{impactPts} pts
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => handleDismiss(e, item)}
+                      className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-500 flex items-center justify-center transition-colors duration-150"
+                      aria-label={isRTL ? 'استبعاد' : 'Dismiss'}
+                      title={isRTL ? 'استبعاد التوصية' : 'Dismiss'}
+                    >
+                      <DecidixIcon name="close" size={13} />
+                    </button>
+                    <button
+                      type="button"
+                      className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-blue hover:text-white text-navy flex items-center justify-center transition-colors duration-150"
+                      aria-label={isRTL ? 'اعتماد' : 'Accept'}
+                      title={isRTL ? 'اعتماد التوصية' : 'Accept'}
+                    >
+                      <DecidixIcon name="check" size={14} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ) : (

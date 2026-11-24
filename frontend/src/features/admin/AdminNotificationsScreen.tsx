@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../components/Toast';
 import { DecidixIcon } from '../../components/DecidixIcon';
+import { adminService } from '../../services/adminService';
 
 export const AdminNotificationsScreen: React.FC = () => {
   const { isRTL } = useLanguage();
@@ -10,14 +11,55 @@ export const AdminNotificationsScreen: React.FC = () => {
   const [title, setTitle] = useState('New development insights are available');
   const [message, setMessage] = useState('Your regional overview has been updated. Open Decidix to explore the latest indicators.');
   const [lang, setLang] = useState<'en' | 'ar'>('en');
-  const [target, setTarget] = useState<'all' | 'specific' | 'test'>('test');
+  const [target, setTarget] = useState<'all' | 'user' | 'test'>('test');
+  const [targetUserId, setTargetUserId] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
 
-  const handleSendTest = () => {
-    toast.success(
-      isRTL
-        ? 'تم إرسال إشعار التجربة بنجاح إلى جهاز المسؤول عبر FCM.'
-        : 'Test notification sent successfully to admin device via FCM.'
-    );
+  const loadHistory = useCallback(async () => {
+    try {
+      const list = await adminService.getNotificationHistory();
+      setCampaigns(Array.isArray(list) ? list : []);
+    } catch {
+      // Keep current list on transient error
+    }
+  }, []);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
+  const handleSend = async () => {
+    if (!title.trim() || !message.trim()) {
+      toast.error(isRTL ? 'يرجى إدخال العنوان ونص الرسالة' : 'Please enter both title and message');
+      return;
+    }
+    if (target === 'user' && !targetUserId.trim()) {
+      toast.error(isRTL ? 'يرجى تحديد معرّف المستخدم المستهدف' : 'Please enter target user ID');
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const res = await adminService.sendNotification({
+        title: title.trim(),
+        body: message.trim(),
+        target_audience: target,
+        target_user_id: target === 'user' ? targetUserId.trim() : undefined,
+        arabic_title: lang === 'ar' ? title.trim() : undefined,
+        arabic_body: lang === 'ar' ? message.trim() : undefined,
+      });
+      toast.success(
+        isRTL
+          ? `تم تسجيل الحملة (${res.status}) · المستهدف: ${res.targeted_count ?? 0}، المستلم: ${res.delivered_count ?? 0}`
+          : `Campaign recorded (${res.status}) · Targeted: ${res.targeted_count ?? 0}, Delivered: ${res.delivered_count ?? 0}`
+      );
+      await loadHistory();
+    } catch (err: any) {
+      toast.error(err?.message || (isRTL ? 'تعذر إرسال الإشعار' : 'Failed to send notification'));
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handlePreview = () => {
@@ -46,8 +88,8 @@ export const AdminNotificationsScreen: React.FC = () => {
           </p>
         </div>
 
-        <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60">
-          Test mode · no broadcast sent
+        <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+          {isRTL ? 'متصل بخدمة الإشعارات المباشرة FCM' : 'Live FCM Dispatch'}
         </span>
       </div>
 
@@ -151,9 +193,9 @@ export const AdminNotificationsScreen: React.FC = () => {
                   </div>
 
                   <div
-                    onClick={() => setTarget('specific')}
+                    onClick={() => setTarget('user')}
                     className={`p-3.5 rounded-xl border cursor-pointer transition-all duration-150 flex items-center justify-between ${
-                      target === 'specific'
+                      target === 'user'
                         ? 'border-blue bg-blue-50/60 shadow-2xs'
                         : 'border-slate-200/80 hover:bg-slate-50'
                     }`}
@@ -166,10 +208,20 @@ export const AdminNotificationsScreen: React.FC = () => {
                         {isRTL ? 'تحديد حساب مسجل واحد' : 'Select one registered account'}
                       </div>
                     </div>
-                    <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${target === 'specific' ? 'border-blue bg-blue' : 'border-slate-300'}`}>
-                      {target === 'specific' && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    <span className={`w-4 h-4 rounded-full border flex items-center justify-center ${target === 'user' ? 'border-blue bg-blue' : 'border-slate-300'}`}>
+                      {target === 'user' && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
                     </span>
                   </div>
+
+                  {target === 'user' && (
+                    <input
+                      type="text"
+                      value={targetUserId}
+                      onChange={(e) => setTargetUserId(e.target.value)}
+                      placeholder={isRTL ? 'معرّف المستخدم (user_id)' : 'Target user ID (e.g. usr_...)'}
+                      className="w-full h-9 px-3 rounded-lg bg-slate-50 border border-slate-200/80 text-xs text-navy outline-none focus:border-blue"
+                    />
+                  )}
 
                   <div
                     onClick={() => setTarget('test')}
@@ -204,10 +256,17 @@ export const AdminNotificationsScreen: React.FC = () => {
               {isRTL ? 'معاينة الإشعار' : 'Preview notification'}
             </button>
             <button
-              onClick={handleSendTest}
-              className="h-9 px-5 rounded-lg bg-blue hover:bg-blue-hover text-white text-xs font-semibold shadow-2xs active:scale-[0.98] transition-all duration-150"
+              onClick={handleSend}
+              disabled={isSending}
+              className="h-9 px-5 rounded-lg bg-blue hover:bg-blue-hover text-white text-xs font-semibold shadow-2xs active:scale-[0.98] transition-all duration-150 disabled:opacity-50"
             >
-              {isRTL ? 'إرسال إشعار تجريبي' : 'Send test notification'}
+              {isSending
+                ? isRTL ? 'جاري الإرسال...' : 'Sending...'
+                : target === 'all'
+                ? isRTL ? 'بث لجميع المستخدمين' : 'Broadcast notification'
+                : target === 'user'
+                ? isRTL ? 'إرسال للمستخدم المحدد' : 'Send to user'
+                : isRTL ? 'إرسال إشعار تجريبي' : 'Send test notification'}
             </button>
           </div>
         </div>
@@ -249,37 +308,35 @@ export const AdminNotificationsScreen: React.FC = () => {
                 : 'FCM acceptance and device display are separate statuses'}
             </p>
 
-            <div className="divide-y divide-slate-100">
-              <div className="py-2.5 flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold text-navy">Test to admin device</div>
-                  <div className="text-[10px] text-slate-400">1 target</div>
-                </div>
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                  Accepted
-                </span>
+            {campaigns.length === 0 ? (
+              <div className="text-xs text-slate-400 py-4 text-center">
+                {isRTL ? 'لا توجد حملات مسجلة بعد.' : 'No notification campaigns recorded yet.'}
               </div>
-
-              <div className="py-2.5 flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold text-navy">Regional update</div>
-                  <div className="text-[10px] text-slate-400">18 targets</div>
-                </div>
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/60">
-                  Partial
-                </span>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {campaigns.slice(0, 6).map((c: any) => {
+                  const statusClass =
+                    c.status === 'sent'
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                      : c.status === 'partial'
+                      ? 'bg-amber-50 text-amber-700 border border-amber-200/60'
+                      : 'bg-slate-100 text-slate-600 border border-slate-200';
+                  return (
+                    <div key={c.id} className="py-2.5 flex items-center justify-between gap-2">
+                      <div>
+                        <div className="text-xs font-bold text-navy">{isRTL ? c.arabicTitle || c.title : c.title}</div>
+                        <div className="text-[10px] text-slate-400">
+                          {c.targetAudience} · {c.targetedCount ?? 0} targets
+                        </div>
+                      </div>
+                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full capitalize ${statusClass}`}>
+                        {c.status}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
-
-              <div className="py-2.5 flex items-center justify-between">
-                <div>
-                  <div className="text-xs font-bold text-navy">Dataset notice</div>
-                  <div className="text-[10px] text-slate-400">24 targets</div>
-                </div>
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                  Completed
-                </span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

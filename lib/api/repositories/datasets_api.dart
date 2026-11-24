@@ -88,4 +88,17 @@ class DatasetsApi {
     final response = await _client.get('/datasets/$id/report');
     return _unwrap(response.data);
   }
+
+  Future<Map<String, dynamic>> approve(String id) async {
+    final response = await _client.post('/datasets/$id/approve');
+    return _unwrap(response.data);
+  }
+
+  Future<Map<String, dynamic>> reject(String id, {String? reason}) async {
+    final response = await _client.post(
+      '/datasets/$id/reject',
+      data: {if (reason != null && reason.isNotEmpty) 'reason': reason},
+    );
+    return _unwrap(response.data);
+  }
 }

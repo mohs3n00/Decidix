@@ -190,7 +190,7 @@ export class OpenRouterService {
       });
 
       if (outcome.text) {
-        const groundedText = this.validateGroundedResponse(outcome.text, retrievedDocs);
+        const groundedText = this.validateGroundedResponse(outcome.text, retrievedDocs, message);
         if (groundedText) {
           return this.buildResult(groundedText, table, sources, langKey, message, 'model', null);
         }
@@ -232,9 +232,17 @@ export class OpenRouterService {
     };
   }
 
+  private static normalizeDigits(input: string): string {
+    return input
+      .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+      .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
+      .replace(/٫/g, '.');
+  }
+
   private static validateGroundedResponse(
     text: string,
-    retrievedDocs: RetrievedDocument[]
+    retrievedDocs: RetrievedDocument[],
+    userMessage: string = ''
   ): string | null {
     if (!text || text.trim().length === 0) return null;
 
@@ -262,18 +270,21 @@ export class OpenRouterService {
       }
     }
 
-    // Filter out list item numbering (e.g. "1.", "2)", "3.") from factual number validation
-    const cleanedText = processedText.replace(/(?:^|\n|\s)\d+[\.\)]\s/g, ' ');
+    // Filter out list item numbering (e.g. "1.", "2)", "3.") and normalize Arabic-Indic digits
+    const normalizedResponse = this.normalizeDigits(processedText).replace(/(?:^|\n|\s)\d+[\.\)]\s/g, ' ');
+    const normalizedQuery = this.normalizeDigits(userMessage);
 
-    const evidenceNumbers = new Set(
-      retrievedDocs.flatMap((doc) =>
-        `${doc.title} ${doc.arabicTitle} ${doc.period} ${doc.content} ${doc.arabicContent}`
+    const evidenceNumbers = new Set<string>([
+      '100',
+      ...(normalizedQuery.match(/\b\d+(?:[.,]\d+)?\b/g)?.map((v) => v.replace(',', '.')) ?? []),
+      ...retrievedDocs.flatMap((doc) =>
+        this.normalizeDigits(`${doc.title} ${doc.arabicTitle} ${doc.period} ${doc.content} ${doc.arabicContent}`)
           .match(/\b\d+(?:[.,]\d+)?\b/g)
           ?.map((value) => value.replace(',', '.')) ?? []
-      )
-    );
+      ),
+    ]);
     // Allow single digits 0-9 as conversational words or rankings
-    const responseNumbers = (cleanedText.match(/\b\d+(?:[.,]\d+)?\b/g) ?? [])
+    const responseNumbers = (normalizedResponse.match(/\b\d+(?:[.,]\d+)?\b/g) ?? [])
       .filter((n) => Number(n) > 9 || n.includes('.') || n.includes(','));
 
     const ungroundedNumbers = responseNumbers.filter((value) => !evidenceNumbers.has(value.replace(',', '.')));

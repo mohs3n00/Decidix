@@ -51,8 +51,13 @@ export const OverviewScreen: React.FC = () => {
     };
 
     fetchOverview();
+    const handleDatasetActivated = () => {
+      fetchOverview();
+    };
+    window.addEventListener('decidix:dataset:activated', handleDatasetActivated);
     return () => {
       isMounted = false;
+      window.removeEventListener('decidix:dataset:activated', handleDatasetActivated);
     };
   }, [range]);
 
@@ -90,10 +95,11 @@ export const OverviewScreen: React.FC = () => {
     ? data.trend.points.map((p) => ({ year: String(p.year), value: Number(p.value), target: 63.0 }))
     : getHistoricalPoints(range);
 
-  // Accurate KPI Extraction from API Data or Workspace Dataset
-  const devIndex = workspaceKpi.isCustom
-    ? workspaceKpi.score
-    : (data?.index?.score ?? data?.index?.current ?? 74.2);
+  // Accurate KPI Extraction from live API Data, falling back to active workspace only when offline
+  const devIndex =
+    data?.index?.score ??
+    data?.index?.current ??
+    (workspaceKpi.isCustom ? workspaceKpi.score : 74.2);
   const regionsCount = data?.index?.regions_count ?? 27;
   const priorityCount = data?.index?.at_risk_count ?? 4;
   const trackedKpi = data?.kpis?.find((k) => k.key === 'tracked_indicators');
@@ -385,10 +391,10 @@ export const OverviewScreen: React.FC = () => {
                 <YAxis
                   stroke="#94A3B8"
                   fontSize={11}
-                  domain={[48, 68]}
+                  domain={['dataMin - 2', 'dataMax + 2']}
                   tickLine={false}
                   axisLine={{ stroke: '#E2E8F0' }}
-                  tickFormatter={(v) => `${v} pts`}
+                  tickFormatter={(v) => `${Number(v).toFixed(1)} pts`}
                 />
                 <Tooltip
                   content={({ active, payload, label }) => {
@@ -485,7 +491,7 @@ export const OverviewScreen: React.FC = () => {
             to="/regions"
             className="text-xs font-semibold text-blue hover:text-blue-hover mt-4 inline-flex items-center gap-1.5 transition-colors duration-150"
           >
-            <span>{isRTL ? 'عرض جميع المناطق (20 منطقة)' : 'Browse all regions'}</span>
+            <span>{isRTL ? `عرض جميع المناطق (${regionsCount})` : `Browse all regions (${regionsCount})`}</span>
             <DecidixIcon name={isRTL ? 'arrow_left' : 'arrow_right'} size={13} color="currentColor" />
           </Link>
         </div>

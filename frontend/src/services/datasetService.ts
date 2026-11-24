@@ -45,11 +45,15 @@ export const datasetService = {
     return res.data;
   },
 
-  async activateVersion(datasetId: string, version: string): Promise<any> {
+  async activate(datasetId: string): Promise<any> {
     const res = await apiClient.post<any>(
-      `/datasets/${encodeURIComponent(datasetId)}/versions/${encodeURIComponent(version)}/activate`
+      `/datasets/${encodeURIComponent(datasetId)}/activate`
     );
     return res.data;
+  },
+
+  async activateVersion(datasetId: string, _version?: string): Promise<any> {
+    return this.activate(datasetId);
   },
 
   async approve(datasetId: string): Promise<any> {
@@ -59,6 +63,23 @@ export const datasetService = {
 
   async reject(datasetId: string, reason?: string): Promise<any> {
     const res = await apiClient.post<any>(`/datasets/${encodeURIComponent(datasetId)}/reject`, { reason });
+    return res.data;
+  },
+
+  async delete(datasetId: string): Promise<any> {
+    const res = await apiClient.delete<any>(`/datasets/${encodeURIComponent(datasetId)}`);
+    return res.data;
+  },
+
+  async getReport(datasetId: string): Promise<any> {
+    const res = await apiClient.get<any>(`/datasets/${encodeURIComponent(datasetId)}/report`);
+    return res.data;
+  },
+
+  async getRecords(datasetId: string, page: number = 1, limit: number = 50): Promise<any> {
+    const res = await apiClient.get<any>(
+      `/datasets/${encodeURIComponent(datasetId)}/records?page=${page}&limit=${limit}`
+    );
     return res.data;
   },
 };

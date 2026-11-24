@@ -6,6 +6,7 @@ import { DecidixIcon } from '../../components/DecidixIcon';
 import { GrainOverlay } from '../../components/GrainOverlay';
 import { GlassStatCard } from '../../components/GlassStatCard';
 import { decisionsService } from '../../services/decisionsService';
+import { overviewService } from '../../services/overviewService';
 import { SimulationResponse } from '../../types';
 import {
   BarChart,
@@ -30,35 +31,61 @@ export const SimulatorScreen: React.FC = () => {
   const [econVal, setEconVal] = useState<number>(5);
 
   const [simResult, setSimResult] = useState<SimulationResponse | null>(null);
-
-  const REGIONS = [
+  const [regions, setRegions] = useState<Array<{ id: string; name: string; arabic_name: string }>>([
     { id: 'cairo', name: 'Cairo', arabic_name: 'القاهرة' },
     { id: 'alexandria', name: 'Alexandria', arabic_name: 'الإسكندرية' },
     { id: 'giza', name: 'Giza', arabic_name: 'الجيزة' },
     { id: 'aswan', name: 'Aswan', arabic_name: 'أسوان' },
     { id: 'port_said', name: 'Port Said', arabic_name: 'بورسعيد' },
-  ];
+  ]);
+
+  // Fetch active regions directory from backend
+  useEffect(() => {
+    let isMounted = true;
+    overviewService
+      .getRegions({ per_page: 100 })
+      .then((res) => {
+        if (!isMounted || !Array.isArray(res.items) || res.items.length === 0) return;
+        const mapped = res.items.map((r) => ({
+          id: r.id,
+          name: r.name,
+          arabic_name: r.arabic_name || r.name,
+        }));
+        setRegions(mapped);
+        setSelectedRegion((prev) => (mapped.some((m) => m.id === prev) ? prev : mapped[0].id));
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Run backend simulation whenever region or sliders change
   useEffect(() => {
-    let isMounted = true;
+    const controller = new AbortController();
     const runSimulation = async () => {
       try {
-        const res = await decisionsService.simulate(selectedRegion, {
-          education: eduVal,
-          healthcare: healthVal,
-          infrastructure: infraVal,
-          economy: econVal,
-        });
-        if (isMounted) setSimResult(res);
-      } catch (err) {
-        console.warn('Simulation error:', err);
+        const res = await decisionsService.simulate(
+          selectedRegion,
+          {
+            education: eduVal * 1_000_000,
+            healthcare: healthVal * 1_000_000,
+            infrastructure: infraVal * 1_000_000,
+            economy: econVal * 1_000_000,
+          },
+          controller.signal
+        );
+        if (!controller.signal.aborted) setSimResult(res);
+      } catch (err: any) {
+        if (err?.name !== 'AbortError') {
+          console.warn('Simulation error:', err);
+        }
       }
     };
 
     const timer = setTimeout(runSimulation, 250);
     return () => {
-      isMounted = false;
+      controller.abort();
       clearTimeout(timer);
     };
   }, [selectedRegion, healthVal, eduVal, infraVal, econVal]);
@@ -66,7 +93,11 @@ export const SimulatorScreen: React.FC = () => {
   const baseline = simResult?.today_score ?? 75;
   const projected = simResult?.projected_score ?? 75;
   const gain = simResult?.gain ?? 0;
-  const totalPackage = simResult?.total_package?.amount ?? healthVal + eduVal + infraVal + econVal;
+  const rawTotalPackage = simResult?.total_package?.amount;
+  const totalPackage =
+    typeof rawTotalPackage === 'number'
+      ? Math.round((rawTotalPackage >= 1000 ? rawTotalPackage / 1_000_000 : rawTotalPackage) * 10) / 10
+      : healthVal + eduVal + infraVal + econVal;
 
   const leverChartData = [
     {
@@ -191,7 +222,7 @@ export const SimulatorScreen: React.FC = () => {
                 onChange={(e) => setSelectedRegion(e.target.value)}
                 className="bg-slate-50 border border-slate-200/80 rounded-lg px-2.5 py-1.5 text-xs font-bold text-navy outline-none cursor-pointer focus:ring-2 focus:ring-blue/15 focus:border-blue transition-colors"
               >
-                {REGIONS.map((r) => (
+                {regions.map((r) => (
                   <option key={r.id} value={r.id}>
                     {isRTL ? r.arabic_name : r.name}
                   </option>
@@ -415,7 +446,9 @@ export const SimulatorScreen: React.FC = () => {
                   >
                     <span className="font-semibold text-navy capitalize">{lv.domain}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-slate-400 tabular-nums">${lv.amount}M</span>
+                      <span className="text-[11px] text-slate-400 tabular-nums">
+                        ${Math.round((lv.amount >= 1000 ? lv.amount / 1_000_000 : lv.amount) * 10) / 10}M
+                      </span>
                       <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-[11px] border border-emerald-200/60 tabular-nums">
                         +{lv.yield_per_million} pts / $1M
                       </span>
